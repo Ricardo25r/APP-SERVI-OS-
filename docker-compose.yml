@@ -1,4 +1,4 @@
-# TrampoJá — Ambiente de desenvolvimento (Docker Compose)
+# FazTudo — Ambiente de desenvolvimento (Docker Compose)
 # Sintaxe: Compose Spec (sem a chave `version:` obsoleta).
 #
 # Por padrão `docker compose up` sobe SÓ a infraestrutura (db, redis, minio, createbuckets).

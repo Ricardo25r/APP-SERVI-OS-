@@ -2,7 +2,7 @@
 
 # Search Engine
 
-Projeto: TrampoJá
+Projeto: FazTudo
 
 Versão: 1.0
 
@@ -12,7 +12,7 @@ Status: Documento Oficial
 
 # 1. Objetivo
 
-O **Search Engine** é o módulo responsável pela **busca ativa** na plataforma TrampoJá.
+O **Search Engine** é o módulo responsável pela **busca ativa** na plataforma FazTudo.
 
 Enquanto o **Matching Engine** (`06-matching-engine`) executa a **distribuição passiva** de leads — o sistema empurra um lead para os profissionais mais compatíveis —, o Search Engine faz o caminho inverso: permite que **usuários encontrem ativamente** profissionais e categorias por meio de consulta textual, filtros e ordenação.
 

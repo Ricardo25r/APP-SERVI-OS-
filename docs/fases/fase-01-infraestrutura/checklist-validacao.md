@@ -1,6 +1,6 @@
 # Fase 1 — Infraestrutura · Checklist de Validação
 
-> **Objetivo:** conferir, de forma acionável, que a base do TrampoJá está OK (sobe, roda e fica verde) — **sem nenhuma regra de negócio**.
+> **Objetivo:** conferir, de forma acionável, que a base do FazTudo está OK (sobe, roda e fica verde) — **sem nenhuma regra de negócio**.
 > Referências: [`plano.md`](./plano.md) · [`foundation-conventions.md`](./foundation-conventions.md).
 >
 > ⚠️ **Windows:** use o launcher **`py`** no lugar de `python` (ex.: `py -m venv`, `py -3.12 -m venv`). Em macOS/Linux troque `py` por `python3` e ative o venv com `source .venv/bin/activate`.
@@ -159,7 +159,7 @@ Validação executada com Docker + Python 3.13 + Node 24:
   ```powershell
   npm run dev
   ```
-- [ ] http://localhost:3000 abre a página "TrampoJá".
+- [ ] http://localhost:3000 abre a página "FazTudo".
 - [ ] Com o backend no ar (passo 3), o `NEXT_PUBLIC_API_URL` aponta para http://localhost:8000 (sem erros de CORS no console — `CORS_ORIGINS` inclui `http://localhost:3000`).
 
 ---

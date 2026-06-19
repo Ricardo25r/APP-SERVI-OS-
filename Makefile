@@ -1,4 +1,4 @@
-# TrampoJá — atalhos de desenvolvimento.
+# FazTudo — atalhos de desenvolvimento.
 # Comandos POSIX: no Windows, rode via Git Bash ou WSL ("make up").
 # Requer Docker Desktop instalado e rodando.
 
@@ -10,7 +10,7 @@ COMPOSE := docker compose
 .PHONY: help up up-full down logs ps db-shell migrate backend-install frontend-install test
 
 help: ## Lista os alvos disponíveis
-	@echo "TrampoJá — alvos disponíveis:"
+	@echo "FazTudo — alvos disponíveis:"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
 		awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
 

@@ -1,4 +1,4 @@
-"""Ponto de entrada da TrampoJá API.
+"""Ponto de entrada da FazTudo API.
 
 Cria o app FastAPI, configura CORS, registra um middleware simples de logging
 e monta o router agregador (`/api/v1`).
@@ -23,7 +23,7 @@ setup_logging()
 logger = logging.getLogger("trampoja.api")
 
 app = FastAPI(
-    title="TrampoJá API",
+    title="FazTudo API",
     version="0.1.0",
     debug=settings.APP_DEBUG,
 )
@@ -64,4 +64,4 @@ app.include_router(api_router)
 @app.get("/", tags=["root"])
 async def root() -> dict[str, str]:
     """Endpoint raiz informativo."""
-    return {"app": "TrampoJá API", "docs": "/docs", "health": "/api/v1/health"}
+    return {"app": "FazTudo API", "docs": "/docs", "health": "/api/v1/health"}

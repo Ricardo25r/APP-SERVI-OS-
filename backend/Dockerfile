@@ -1,4 +1,4 @@
-# Backend TrampoJá — imagem de produção/dev.
+# Backend FazTudo — imagem de produção/dev.
 FROM python:3.12-slim
 
 # Configurações de runtime do Python.

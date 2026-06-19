@@ -1,5 +1,5 @@
 /**
- * Cliente HTTP central do TrampoJá.
+ * Cliente HTTP central do FazTudo.
  *
  * - Lê `NEXT_PUBLIC_API_URL` (base do backend; default localhost:8000).
  * - Helpers tipados `apiGet/apiPost/apiPatch/apiPut/apiDelete` montam

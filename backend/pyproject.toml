@@ -1,7 +1,7 @@
 [project]
 name = "trampoja-backend"
 version = "0.1.0"
-description = "TrampoJá API — backend FastAPI do marketplace de serviços locais."
+description = "FazTudo API — backend FastAPI do marketplace de serviços locais."
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "Proprietary" }

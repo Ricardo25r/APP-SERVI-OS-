@@ -1,9 +1,9 @@
-# ✅ Checklist de Execução — TrampoJá
+# ✅ Checklist de Execução — FazTudo
 
 > **Este é o nosso mapa.** Serve para nós dois (cliente + Claude) não nos perdermos.
 > Atualize os checkboxes conforme avançamos.
 >
-> - Projeto: **TrampoJá** — Marketplace Inteligente de Prestadores de Serviços Locais
+> - Projeto: **FazTudo** — Marketplace Inteligente de Prestadores de Serviços Locais
 > - Repositório: https://github.com/Ricardo25r/APP-SERVI-OS-
 > - Pasta local: `C:\TrampoJa`
 > - Última atualização: **2026-06-18**

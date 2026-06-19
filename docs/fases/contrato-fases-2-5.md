@@ -1,6 +1,6 @@
 # Contrato Técnico — Fases 2 a 5 (Auth, Perfis, Leads, Créditos + Matching + Compra)
 
-> **Status:** CONTRATO OFICIAL E FONTE DA VERDADE para as Fases 2–5 do TrampoJá.
+> **Status:** CONTRATO OFICIAL E FONTE DA VERDADE para as Fases 2–5 do FazTudo.
 > **Público-alvo:** ~10 agentes implementando em paralelo. Este documento existe para que cada agente seja **dono exclusivo** dos seus arquivos e siga **exatamente** os mesmos nomes, tipos, contratos de API e regras de negócio — sem colisões e sem divergências.
 > **Precedência:** este contrato detalha e aplica o schema canônico `docs/04-banco-de-dados/database-schema.md` e as convenções da `docs/fases/fase-01-infraestrutura/foundation-conventions.md`. Em caso de dúvida sobre **nomes/tipos de tabela**, o canônico é o doc 04 + as decisões abaixo. Em caso de dúvida sobre **estrutura de pastas/stack**, a base é a Fase 1.
 > **Regra de ouro:** não renomear, não re-discutir decisões já tomadas, não criar tabelas/campos/endpoints fora deste escopo. Se algo faltar, registrar e pedir OK — **não improvisar**.

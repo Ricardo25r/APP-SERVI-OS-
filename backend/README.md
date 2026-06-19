@@ -1,6 +1,6 @@
-# TrampoJá — Backend (FastAPI)
+# FazTudo — Backend (FastAPI)
 
-API do marketplace TrampoJá. Esta é a base da Fase 1: sobe e responde um
+API do marketplace FazTudo. Esta é a base da Fase 1: sobe e responde um
 health check. Lógica de negócio virá nas próximas fases.
 
 ## Requisitos

@@ -2,7 +2,7 @@
 
 # Notification Engine — Motor de Notificações e Comunicação
 
-Projeto: TrampoJá
+Projeto: FazTudo
 
 Versão: 1.0
 
@@ -665,4 +665,4 @@ O Notification Engine será bem-sucedido quando:
 * cada envio for **auditável, idempotente e seguro**;
 * o motor permanecer **agnóstico de provedor** e **pronto para escalar** para push, sms e whatsapp sem reescrever a orquestração.
 
-Toda comunicação da plataforma TrampoJá deve passar pelo Notification Engine.
+Toda comunicação da plataforma FazTudo deve passar pelo Notification Engine.

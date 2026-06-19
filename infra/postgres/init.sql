@@ -1,4 +1,4 @@
--- TrampoJá — init do PostgreSQL (executado apenas na primeira criação do volume)
+-- FazTudo — init do PostgreSQL (executado apenas na primeira criação do volume)
 -- Habilita extensões usadas pelo projeto.
 --   uuid-ossp : geração de UUIDs
 --   pg_trgm   : busca por similaridade / índices trigram

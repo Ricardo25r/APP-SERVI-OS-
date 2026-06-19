@@ -7,7 +7,7 @@ import { SiteHeader } from "@/components/site-header";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "TrampoJá",
+  title: "FazTudo",
   description: "Marketplace de prestadores de serviços locais",
 };
 

@@ -2,7 +2,7 @@
 
 # Verification Engine
 
-Projeto: TrampoJá
+Projeto: FazTudo
 
 Versão: 1.0
 
@@ -18,7 +18,7 @@ Status: Documento Oficial
 
 # 1. Objetivo
 
-O Verification Engine é responsável por **validar a identidade real dos usuários** da plataforma TrampoJá, transformando uma solicitação paga em um **Perfil Verificado** com selo de confiança.
+O Verification Engine é responsável por **validar a identidade real dos usuários** da plataforma FazTudo, transformando uma solicitação paga em um **Perfil Verificado** com selo de confiança.
 
 Responsabilidades:
 
@@ -119,7 +119,7 @@ A plataforma adota níveis progressivos de confiança. O MVP entrega o **Nível 
 | **N3** | Prova de vida | liveness / biometria facial automática | Futuro |
 | **N4** | KYC reforçado | provedor KYC de mercado + OCR + validação de base oficial | Futuro |
 
-O selo "Perfil Verificado" do TrampoJá corresponde ao **N2**. Os níveis N3/N4 reaproveitam a mesma tabela `verification_requests` com extensões propostas na seção de Modelo de Dados.
+O selo "Perfil Verificado" do FazTudo corresponde ao **N2**. Os níveis N3/N4 reaproveitam a mesma tabela `verification_requests` com extensões propostas na seção de Modelo de Dados.
 
 ---
 

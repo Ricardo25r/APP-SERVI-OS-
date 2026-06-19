@@ -1,6 +1,6 @@
 # Contrato Técnico — Fase 6: Pagamentos (Compra de Créditos)
 
-> **Status:** CONTRATO OFICIAL E FONTE DA VERDADE para a Fase 6 do TrampoJá.
+> **Status:** CONTRATO OFICIAL E FONTE DA VERDADE para a Fase 6 do FazTudo.
 > **Público-alvo:** 1 agente de **backend** e 1 agente de **frontend**. Este documento existe para que ambos sigam **exatamente** os mesmos nomes, tipos, contratos de API e regras de negócio — sem divergências.
 > **Precedência:** este contrato aplica e estende o schema canônico `docs/04-banco-de-dados/database-schema.md` (tabelas `credit_packages`, `payment_orders`), as regras oficiais de `docs/05-payment-engine/payment-engine.md` e as **convenções de módulos/stack** já fixadas em `docs/fases/contrato-fases-2-5.md` (mesma estrutura de pastas, mixins, enums, exceções de domínio, RBAC, paginação). Em caso de dúvida sobre **convenções de código**, valem as Fases 2–5.
 > **Regra de ouro:** não renomear, não re-discutir decisões já tomadas, não criar tabelas/campos/endpoints fora deste escopo. Se algo faltar, **registrar e pedir OK — não improvisar**.

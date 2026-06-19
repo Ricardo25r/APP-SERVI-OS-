@@ -1,5 +1,5 @@
 /**
- * Tela de **Perfil** do TrampoJá (`/profile`).
+ * Tela de **Perfil** do FazTudo (`/profile`).
  *
  * Protegida por `useRequireAuth()` — redireciona para `/login` se não houver
  * sessão (após a hidratação). Renderiza conforme o papel do usuário:

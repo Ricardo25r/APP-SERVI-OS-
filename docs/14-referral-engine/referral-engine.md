@@ -2,7 +2,7 @@
 
 # Referral Engine — Motor de Indicações
 
-Projeto: TrampoJá
+Projeto: FazTudo
 
 Versão: 1.0
 
@@ -12,7 +12,7 @@ Status: Documento Oficial
 
 # 1. Objetivo
 
-O Referral Engine é o motor responsável por organizar, executar e proteger o **Programa de Indicação** do TrampoJá.
+O Referral Engine é o motor responsável por organizar, executar e proteger o **Programa de Indicação** do FazTudo.
 
 Seu papel é transformar usuários satisfeitos em um canal de aquisição de baixo custo, criando um ciclo de crescimento orgânico (viral) em que profissionais convidam outros profissionais para a plataforma.
 

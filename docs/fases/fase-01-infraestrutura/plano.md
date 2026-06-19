@@ -1,6 +1,6 @@
 # Fase 1 — Infraestrutura · Plano Técnico
 
-> **Projeto:** TrampoJá — Marketplace Inteligente de Prestadores de Serviços Locais
+> **Projeto:** FazTudo — Marketplace Inteligente de Prestadores de Serviços Locais
 > **Status:** em execução (primeira fase de código).
 > **Contrato da base:** [`foundation-conventions.md`](./foundation-conventions.md) — fonte da verdade para layout, portas, variáveis e versões. **Não divergir** sem atualizar o contrato.
 > **Regra de fase** (ver [`00-CHECKLIST-EXECUCAO.md`](../../00-CHECKLIST-EXECUCAO.md)): toda fase entrega **código + migrations + testes + documentação + checklist de validação**.
@@ -9,7 +9,7 @@
 
 ## 🎯 Objetivo
 
-Montar o **esqueleto que roda** do monorepo TrampoJá: ambiente de desenvolvimento reprodutível (Docker), backend FastAPI com health check verde, frontend Next.js que abre, Alembic configurado para migrations async e CI básico no GitHub.
+Montar o **esqueleto que roda** do monorepo FazTudo: ambiente de desenvolvimento reprodutível (Docker), backend FastAPI com health check verde, frontend Next.js que abre, Alembic configurado para migrations async e CI básico no GitHub.
 
 Critério de sucesso: qualquer dev clona o repositório, sobe a infra, roda backend e frontend, e o `GET /api/v1/health` responde `200 {"status":"ok"}` — **sem nenhuma regra de negócio implementada**.
 
@@ -38,7 +38,7 @@ Critério de sucesso: qualquer dev clona o repositório, sobe a infra, roda back
   - `Dockerfile` do backend.
 - **Alembic configurado**: `alembic.ini` + `alembic/env.py` async, apontando para a `DATABASE_URL`. **Sem migrations de domínio ainda** (apenas a estrutura pronta para `alembic upgrade head` rodar sem erro).
 - **Frontend Next.js 14 base** (App Router):
-  - `src/app/layout.tsx`, `src/app/page.tsx` (landing simples "TrampoJá"), `globals.css` (Tailwind), `providers.tsx` (React Query).
+  - `src/app/layout.tsx`, `src/app/page.tsx` (landing simples "FazTudo"), `globals.css` (Tailwind), `providers.tsx` (React Query).
   - `src/lib/utils.ts` (`cn()`), `src/services/api.ts` (cliente HTTP usando `NEXT_PUBLIC_API_URL`), base shadcn em `src/components/ui/`.
   - Placeholders (`.gitkeep`) em `modules/`, `hooks/`, `store/`, `types/`.
   - `package.json`, `tsconfig.json`, `next.config.mjs`, `tailwind.config.ts`, `postcss.config.mjs`, `components.json`, `.eslintrc.json`, `.env.local.example`.
@@ -137,7 +137,7 @@ As variáveis ficam no `.env.example` da raiz (consumido por compose e backend).
 3. **Backend base** — `app/main.py`, router `/api/v1`, `health.py`, `core/config.py` (pydantic-settings lendo o `.env`), `database/base.py` e `session.py` (engine async + `get_db()`), placeholders das próximas fases, `pyproject.toml`/`requirements.txt`, `Dockerfile`.
 4. **Alembic** — `alembic.ini` + `alembic/env.py` async lendo `DATABASE_URL`; garantir que `alembic upgrade head` roda sem erro (sem migrations de domínio).
 5. **Teste do backend** — `tests/test_health.py` validando `GET /api/v1/health` → `200 {"status":"ok"}`.
-6. **Frontend base** — projeto Next.js 14 (App Router) com landing "TrampoJá", Tailwind, React Query provider, `services/api.ts`, base shadcn e `.env.local.example`.
+6. **Frontend base** — projeto Next.js 14 (App Router) com landing "FazTudo", Tailwind, React Query provider, `services/api.ts`, base shadcn e `.env.local.example`.
 7. **CI** — workflow(s) em `.github/workflows/`: backend (ruff + pytest) e frontend (eslint + tsc + `next build`).
 8. **Documentação + validação** — este `plano.md`, o `checklist-validacao.md` e a atualização do `README.md`.
 9. **Validação final** — rodar o [`checklist-validacao.md`](./checklist-validacao.md) ponta a ponta e confirmar CI verde no GitHub.

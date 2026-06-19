@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Tela de Login do TrampoJá.
+ * Tela de Login do FazTudo.
  *
  * Formulário e-mail + senha. Em sucesso, persiste a sessão (`setAuth`) e
  * redireciona conforme o papel (customer → /leads, professional → /marketplace,
@@ -102,7 +102,7 @@ export default function LoginPage() {
   return (
     <AuthCard
       title="Entrar"
-      description="Acesse sua conta do TrampoJá"
+      description="Acesse sua conta do FazTudo"
       footer={
         <p className="text-sm text-muted-foreground">
           Ainda não tem conta?{" "}

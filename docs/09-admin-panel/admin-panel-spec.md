@@ -2,7 +2,7 @@
 
 # Painel Administrativo (Admin Panel)
 
-Projeto: TrampoJá
+Projeto: FazTudo
 
 Versão: 1.0
 
@@ -21,7 +21,7 @@ Status: Documento Oficial
 
 # 1. Objetivo
 
-O Painel Administrativo é a interface centralizada de operação, moderação, monetização e governança da plataforma TrampoJá. Ele existe para que a equipe interna possa:
+O Painel Administrativo é a interface centralizada de operação, moderação, monetização e governança da plataforma FazTudo. Ele existe para que a equipe interna possa:
 
 * operar e monitorar todo o marketplace (usuários, profissionais, contratantes, leads, créditos e finanças) a partir de um único ponto de controle;
 * moderar conteúdo gerado por usuários (avaliações e denúncias) preservando confiança e qualidade;

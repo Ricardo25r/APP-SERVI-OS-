@@ -2,7 +2,7 @@
 
 # Support Center — Central de Ajuda e Atendimento
 
-Projeto: TrampoJá
+Projeto: FazTudo
 
 Versão: 1.0
 
@@ -18,7 +18,7 @@ Status: Documento Oficial
 
 ## 1. Objetivo
 
-O **Support Center** é o módulo responsável por **atender, organizar e resolver as solicitações de ajuda dos usuários** da plataforma TrampoJá (contratantes, profissionais e parceiros internos), além de **reduzir o volume de atendimento humano** por meio de autoatendimento (central de ajuda e base de conhecimento).
+O **Support Center** é o módulo responsável por **atender, organizar e resolver as solicitações de ajuda dos usuários** da plataforma FazTudo (contratantes, profissionais e parceiros internos), além de **reduzir o volume de atendimento humano** por meio de autoatendimento (central de ajuda e base de conhecimento).
 
 Objetivos específicos:
 
@@ -88,7 +88,7 @@ O Support Center **não** decide reputação, **não** processa pagamentos e **n
 | `denuncia` | Usuário quer reportar conduta/golpe/abuso. | **Reports** (`reports`) — ver 3.6 |
 | `tecnico` | Bug, erro de sistema, indisponibilidade. | Plataforma |
 
-> A categoria `lead` com motivo "lead inválido / contato inexistente / fraude" frequentemente **gera um caso financeiro de reembolso em créditos** (Payment Engine, seção 5.2), pois reembolso na TrampoJá é **em créditos, nunca em dinheiro** (`05-payment-engine` → "Regras de Reembolso").
+> A categoria `lead` com motivo "lead inválido / contato inexistente / fraude" frequentemente **gera um caso financeiro de reembolso em créditos** (Payment Engine, seção 5.2), pois reembolso na FazTudo é **em créditos, nunca em dinheiro** (`05-payment-engine` → "Regras de Reembolso").
 
 ### 3.3 Prioridades
 

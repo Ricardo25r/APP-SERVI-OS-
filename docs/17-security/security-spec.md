@@ -2,7 +2,7 @@
 
 # Security Specification — Segurança de Aplicação
 
-Projeto: TrampoJá
+Projeto: FazTudo
 
 Versão: 1.0
 
@@ -30,7 +30,7 @@ Status: Documento Oficial
 
 # 1. Objetivo
 
-Definir a política e os controles de **segurança de aplicação** do TrampoJá, garantindo que o
+Definir a política e os controles de **segurança de aplicação** do FazTudo, garantindo que o
 marketplace — onde contratantes publicam necessidades que viram *Leads*, profissionais gastam *créditos*,
 e reputação/gamificação/monetização movimentam dinheiro real — opere com:
 
@@ -69,7 +69,7 @@ Objetivos mensuráveis:
 * **Proteção contra bots** (CAPTCHA, detecção) — camada de aplicação.
 * Controles transversais: **gestão de segredos**, **CORS**, **headers de segurança**,
   **criptografia em repouso/trânsito**, **política de senhas e hashing**, **LGPD**.
-* Mapeamento **OWASP Top 10** ao contexto do TrampoJá.
+* Mapeamento **OWASP Top 10** ao contexto do FazTudo.
 
 ## 2.2 Fora do escopo (referenciado, não detalhado aqui)
 
@@ -297,7 +297,7 @@ audit_logs: action=auth.password.reset
 
 Para **cada** item abaixo: **Ameaça → Mitigação concreta → Como testar**.
 
-## 6.1 OWASP Top 10 (mapeado ao TrampoJá)
+## 6.1 OWASP Top 10 (mapeado ao FazTudo)
 
 ### A01:2021 — Broken Access Control
 * **Ameaça**: profissional acessa lead/conversa de outro; usuário chama rota de admin; IDOR em

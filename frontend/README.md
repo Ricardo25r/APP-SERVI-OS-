@@ -1,6 +1,6 @@
-# TrampoJá — Frontend
+# FazTudo — Frontend
 
-Esqueleto do frontend do **TrampoJá**: Next.js 14 (App Router) + TypeScript + TailwindCSS + Shadcn UI (base) + React Query + Zustand + React Hook Form + Zod.
+Esqueleto do frontend do **FazTudo**: Next.js 14 (App Router) + TypeScript + TailwindCSS + Shadcn UI (base) + React Query + Zustand + React Hook Form + Zod.
 
 ## Pré-requisitos
 

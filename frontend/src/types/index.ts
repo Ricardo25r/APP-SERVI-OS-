@@ -1,5 +1,5 @@
 /**
- * Tipos compartilhados do TrampoJá — espelham os schemas `*Read` do backend
+ * Tipos compartilhados do FazTudo — espelham os schemas `*Read` do backend
  * (contrato Fases 2-5). Fonte da verdade é sempre o backend; estes tipos
  * existem para tipar respostas/requests no frontend.
  *

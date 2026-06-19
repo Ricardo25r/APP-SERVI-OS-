@@ -1,6 +1,6 @@
 # CI — GitHub Actions
 
-Workflows de integração contínua do monorepo **TrampoJá**.
+Workflows de integração contínua do monorepo **FazTudo**.
 
 ## `ci.yml`
 

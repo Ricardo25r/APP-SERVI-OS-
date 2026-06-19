@@ -2,7 +2,7 @@
 
 # Analytics & Business Intelligence — Especificação de Métricas, KPIs e Dashboards
 
-Projeto: TrampoJá
+Projeto: FazTudo
 
 Versão: 1.0
 
@@ -12,7 +12,7 @@ Status: Documento Oficial
 
 # 1. Objetivo
 
-O módulo de Analytics é a **camada de consolidação, definição e padronização de métricas** do marketplace TrampoJá.
+O módulo de Analytics é a **camada de consolidação, definição e padronização de métricas** do marketplace FazTudo.
 
 Ele **não cria** novas metas de negócio nem redefine regras dos motores existentes. Sua missão é:
 
@@ -403,7 +403,7 @@ Os totais financeiros agregados (ex.: receita mensal) devem ser **reconciliávei
 * **Frequência**: horária/diária
 
 ### Take Rate
-* **Definição**: parcela do valor transacionado retida pela plataforma. No modelo TrampoJá, **a plataforma é o vendedor dos créditos**, logo o take rate efetivo da venda de leads é **100% da receita de créditos** (não há repasse a terceiros). Métrica útil para comparação com marketplaces de comissão.
+* **Definição**: parcela do valor transacionado retida pela plataforma. No modelo FazTudo, **a plataforma é o vendedor dos créditos**, logo o take rate efetivo da venda de leads é **100% da receita de créditos** (não há repasse a terceiros). Métrica útil para comparação com marketplaces de comissão.
 * **Fórmula**: `Receita da plataforma ÷ Valor bruto transacionado (GMV-proxy)` — no modelo atual ≈ 100%, pois GMV-proxy = receita de créditos.
 * **Fonte**: `payment_orders.amount` (receita); GMV de serviços fechados **não é capturado** (não há valor do serviço no schema — ver Seção 10).
 * **Frequência**: mensal

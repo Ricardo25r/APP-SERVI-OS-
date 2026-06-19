@@ -1,8 +1,8 @@
 # future-ai-engine.md
 
-# Future AI Engine — Camada de Inteligência Artificial do TrampoJá
+# Future AI Engine — Camada de Inteligência Artificial do FazTudo
 
-Projeto: TrampoJá
+Projeto: FazTudo
 
 Versão: 1.0
 
@@ -12,7 +12,7 @@ Status: Documento Estratégico — Futuro
 
 > **AVISO DE ESCOPO TEMPORAL**
 >
-> Este documento descreve uma camada de capacidades **FUTURAS** da plataforma TrampoJá.
+> Este documento descreve uma camada de capacidades **FUTURAS** da plataforma FazTudo.
 > **Nada aqui pertence ao MVP** nem às fases 1–10 descritas em `01-projeto/master-task.md`.
 > Cada recurso abaixo está explicitamente marcado com sua **fase de ativação (V3 → V4 → V5)**,
 > em consistência com os roadmaps já existentes nos motores 06 (Matching), 07 (Reputation),
@@ -32,7 +32,7 @@ Status: Documento Estratégico — Futuro
 # 1. Objetivo
 
 O **Future AI Engine** é a camada estratégica de inteligência artificial que potencializará — sem
-substituir — os motores existentes do TrampoJá. Seu objetivo central é transformar a plataforma de
+substituir — os motores existentes do FazTudo. Seu objetivo central é transformar a plataforma de
 um marketplace baseado em **regras determinísticas** (MVP/V1/V2) em um marketplace **adaptativo,
 preditivo e assistido por IA** (V3/V4/V5).
 
@@ -56,7 +56,7 @@ limites (guardrails) e registro de auditoria no backend.
 
 ## 2.1 Dentro do escopo (FUTURO)
 
-A camada de IA atua **exclusivamente sobre o domínio do marketplace TrampoJá** já modelado nos
+A camada de IA atua **exclusivamente sobre o domínio do marketplace FazTudo** já modelado nos
 documentos 01–08. Estão dentro do escopo:
 
 1. **Assistente para contratantes** — criação e qualificação de solicitações em linguagem natural.
@@ -426,7 +426,7 @@ e a **Moderação** (denúncias, avaliações, documentos — 03).
 * **Saídas:** respostas de primeiro nível, resolução de casos simples (saldo, como comprar lead, como
   funciona reembolso), escalonamento para humano.
 * **Abordagem:** LLM (`claude-sonnet-4-6` para volume; `claude-opus-4-8` para casos complexos) com
-  recuperação de conhecimento (RAG) restrita ao domínio do TrampoJá. **Não** executa ações financeiras
+  recuperação de conhecimento (RAG) restrita ao domínio do FazTudo. **Não** executa ações financeiras
   ou administrativas sensíveis sem confirmação humana.
 
 **Guardrails gerais:** toda ação assistida por IA gera auditoria (seção 7) e respeita o RBAC de 03 —

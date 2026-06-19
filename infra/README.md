@@ -1,4 +1,4 @@
-# Infraestrutura de desenvolvimento — TrampoJá
+# Infraestrutura de desenvolvimento — FazTudo
 
 Ambiente local orquestrado via **Docker Compose**: PostgreSQL, Redis e MinIO,
 com backend (FastAPI) e frontend (Next.js) opcionais.

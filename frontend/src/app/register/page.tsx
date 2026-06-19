@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Tela de Cadastro do TrampoJá.
+ * Tela de Cadastro do FazTudo.
  *
  * Formulário: nome, e-mail, telefone, senha e tipo de conta
  * (Contratante = customer / Profissional = professional). Em sucesso, persiste
@@ -126,7 +126,7 @@ export default function RegisterPage() {
   return (
     <AuthCard
       title="Criar conta"
-      description="Cadastre-se no TrampoJá"
+      description="Cadastre-se no FazTudo"
       footer={
         <p className="text-sm text-muted-foreground">
           Já tem conta?{" "}

@@ -127,7 +127,7 @@ frontend/
 ├── src/
 │   ├── app/
 │   │   ├── layout.tsx
-│   │   ├── page.tsx            # landing simples "TrampoJá"
+│   │   ├── page.tsx            # landing simples "FazTudo"
 │   │   ├── globals.css         # tailwind
 │   │   └── providers.tsx       # React Query provider
 │   ├── components/ui/          # base shadcn (button.tsx) + components.json na raiz do frontend

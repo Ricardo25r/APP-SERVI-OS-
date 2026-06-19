@@ -1,5 +1,5 @@
 /**
- * Store de autenticação (Zustand) do TrampoJá.
+ * Store de autenticação (Zustand) do FazTudo.
  *
  * Guarda `{ user, accessToken, refreshToken }` e persiste em localStorage
  * (zustand/middleware `persist`). A hidratação acontece no client; use
