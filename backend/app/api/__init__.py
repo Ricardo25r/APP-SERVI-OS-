@@ -46,6 +46,7 @@ _FEATURE_ROUTERS: tuple[tuple[str, str, str], ...] = (
     ("app.api.payments.routes", "/payments", "payments"),
     ("app.api.reviews.routes", "/reviews", "reviews"),
     ("app.api.chat.routes", "/chat", "chat"),
+    ("app.api.gamification.routes", "/gamification", "gamification"),
 )
 
 for _module_path, _prefix, _tag in _FEATURE_ROUTERS:

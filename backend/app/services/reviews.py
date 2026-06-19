@@ -59,6 +59,7 @@ from app.schemas.reviews import (
     ReviewCreate,
     ReviewOut,
 )
+from app.services.gamification import GamificationService
 
 __all__ = ["ReviewService", "REPUTATION_SCALE"]
 
@@ -113,6 +114,13 @@ class ReviewService:
 
         # Atualiza a reputação do alvo na MESMA transação (atômico).
         await self._recalculate_reputation(target_id)
+
+        # Gamificação (Fase 9 — gamification-engine doc 08): a avaliação RECEBIDA
+        # concede/penaliza XP do ALVO conforme o score, na MESMA transação. O
+        # ``GamificationService.award_xp`` grava a XpTransaction e (quando o alvo
+        # é profissional) atualiza xp/level; para um alvo customer só registra a
+        # transação (auditoria) — clientes ainda não acumulam nível no MVP.
+        await self._award_review_xp(target_id, data.score)
 
         await self.db.commit()
         await self.db.refresh(review)
@@ -188,6 +196,35 @@ class ReviewService:
         customer = await self.repo.get_or_create_customer_profile_by_user(target_id)
         customer.reputation_score = avg_2dp
         await self.repo.flush()
+
+    # ------------------------------------------------------------------ #
+    # Gamificação: XP do alvo conforme o score (mesma transação) — Fase 9
+    # ------------------------------------------------------------------ #
+    async def _award_review_xp(self, target_id: uuid.UUID, score: int) -> None:
+        """Concede/penaliza XP ao alvo conforme o ``score`` (doc 08).
+
+        Mapeamento MVP (gamification-engine §Atividades/§Penalidades):
+        - 5★ → +50 (``review_5star``);
+        - 4★ → +30 (``review_positive``);
+        - 1★/2★ → -50 (``review_negative``);
+        - 3★ → 0 (neutro, no-op).
+
+        Sem commit (o ``create`` commita na mesma transação)."""
+        if score >= 5:
+            amount, source = 50, "review_5star"
+        elif score >= 4:
+            amount, source = 30, "review_positive"
+        elif score <= 2:
+            amount, source = -50, "review_negative"
+        else:  # score == 3
+            return
+
+        await GamificationService(self.db).award_xp(
+            user_id=target_id,
+            amount=amount,
+            source=source,
+            description=f"Avaliação {score}★ recebida",
+        )
 
     # ------------------------------------------------------------------ #
     # Avaliações RECEBIDAS por um usuário (público, paginado)

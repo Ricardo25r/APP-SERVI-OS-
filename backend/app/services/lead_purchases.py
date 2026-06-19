@@ -57,6 +57,7 @@ from app.schemas.lead_purchases import (
 from app.schemas.leads import LeadContact, LeadRead
 from app.services.chat import ChatService
 from app.services.credits import CreditService
+from app.services.gamification import GamificationService
 from app.services.leads import LeadService
 
 __all__ = ["LeadPurchaseService"]
@@ -158,6 +159,18 @@ class LeadPurchaseService:
                 lead_id=lead.id,
                 customer_id=lead.customer_id,
                 professional_id=current_user.id,
+            )
+
+            # (6.2) Gamificação (Fase 9 — gamification-engine doc 08 §Atividades).
+            # A compra de lead concede +10 XP ao profissional comprador NA MESMA
+            # transação da compra (sem commit próprio — quem commita é aqui). Falhas
+            # aqui revertem tudo (except externo). ``GamificationService.award_xp``
+            # grava a ``XpTransaction`` e atualiza xp/level do perfil.
+            await GamificationService(self.db).award_xp(
+                user_id=current_user.id,
+                amount=10,
+                source="lead_purchase",
+                description=f"Compra do lead {lead.id}",
             )
 
             # (7) Commit único.

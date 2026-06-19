@@ -11,6 +11,7 @@ Enums são centralizados em ``app.models.enums`` (§3.8) e reexportados aqui.
 from __future__ import annotations
 
 from app.database.base import Base
+from app.models.achievement import Achievement, UserAchievement
 from app.models.category import Category
 from app.models.conversation import Conversation
 from app.models.credit_package import CreditPackage
@@ -44,6 +45,7 @@ from app.models.professional_profile import ProfessionalProfile
 from app.models.refresh_token import RefreshToken
 from app.models.review import Review
 from app.models.user import User
+from app.models.xp_transaction import XpTransaction
 
 __all__ = [
     # Base + mixins
@@ -68,6 +70,9 @@ __all__ = [
     "Review",
     "Conversation",
     "Message",
+    "XpTransaction",
+    "Achievement",
+    "UserAchievement",
     # Enums
     "UserRole",
     "UserStatus",
