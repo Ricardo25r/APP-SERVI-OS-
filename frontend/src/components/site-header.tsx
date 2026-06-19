@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -54,9 +54,18 @@ const NAV_BY_ROLE: Record<UserRole, NavLink[]> = {
   ],
 };
 
+/** Rotas de autenticação têm header próprio (painel azul / AppHeader). */
+const AUTH_ROUTES = ["/login", "/register", "/escolha-perfil", "/recuperar-senha"];
+
 export function SiteHeader() {
   const router = useRouter();
+  const pathname = usePathname() ?? "";
   const { user, role, isAuthenticated, hasHydrated, logout } = useAuth();
+
+  // Não mostrar a barra de marketing nas telas de auth (evita header duplicado).
+  if (AUTH_ROUTES.some((r) => pathname === r || pathname.startsWith(`${r}/`))) {
+    return null;
+  }
 
   const handleLogout = () => {
     logout();
