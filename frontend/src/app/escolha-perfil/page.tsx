@@ -51,7 +51,7 @@ const OPTIONS: ProfileOption[] = [
     mascoteAlt: "Profissional com tablet representando contratação de serviços",
     badgeIcon: Home,
     cardClassName: "bg-primary/5",
-    badgeClassName: "bg-primary/10 text-primary",
+    badgeClassName: "text-primary",
   },
   {
     value: "professional",
@@ -61,7 +61,7 @@ const OPTIONS: ProfileOption[] = [
     mascoteAlt: "Profissional com ferramentas representando oferta de serviços",
     badgeIcon: Briefcase,
     cardClassName: "bg-success/5",
-    badgeClassName: "bg-success/10 text-success",
+    badgeClassName: "text-success",
   },
 ];
 
@@ -118,56 +118,64 @@ export default function EscolhaPerfilPage() {
                 aria-checked={isSelected}
                 onClick={() => setSelected(option.value)}
                 className={cn(
-                  "relative flex w-full items-center gap-4 rounded-2xl border-2 p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                  option.cardClassName,
+                  "group relative flex w-full flex-col overflow-hidden rounded-2xl border-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                   isSelected
                     ? "border-primary"
                     : "border-transparent hover:border-primary/30"
                 )}
               >
-                {/* Mascote */}
-                <div className="relative h-20 w-16 shrink-0">
-                  <Image
-                    src={option.mascote}
-                    alt={option.mascoteAlt}
-                    fill
-                    sizes="64px"
-                    className="object-contain object-bottom"
-                  />
+                {/* Palco do mascote (busto) */}
+                <div
+                  className={cn(
+                    "relative h-44 w-full overflow-hidden",
+                    option.cardClassName
+                  )}
+                >
+                  <div className="absolute left-1/2 top-3 h-[22rem] w-40 -translate-x-1/2">
+                    <Image
+                      src={option.mascote}
+                      alt={option.mascoteAlt}
+                      fill
+                      sizes="160px"
+                      className="object-contain object-top"
+                      priority
+                    />
+                  </div>
+                  {/* Badge de ícone flutuante */}
+                  <span
+                    className={cn(
+                      "absolute right-3 top-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-card shadow-md",
+                      option.badgeClassName
+                    )}
+                  >
+                    <BadgeIcon className="h-5 w-5" aria-hidden />
+                  </span>
                 </div>
 
-                {/* Texto */}
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={cn(
-                        "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg",
-                        option.badgeClassName
-                      )}
-                    >
-                      <BadgeIcon className="h-4 w-4" aria-hidden />
-                    </span>
+                {/* Texto + indicador de rádio */}
+                <div className="flex items-start gap-3 p-4">
+                  <span
+                    aria-hidden
+                    className={cn(
+                      "mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
+                      isSelected
+                        ? "border-primary"
+                        : "border-muted-foreground/40"
+                    )}
+                  >
+                    {isSelected ? (
+                      <span className="h-2.5 w-2.5 rounded-full bg-primary" />
+                    ) : null}
+                  </span>
+                  <div className="min-w-0 flex-1">
                     <span className="text-base font-bold text-foreground">
                       {option.title}
                     </span>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {option.description}
+                    </p>
                   </div>
-                  <p className="mt-1.5 text-sm text-muted-foreground">
-                    {option.description}
-                  </p>
                 </div>
-
-                {/* Indicador de rádio */}
-                <span
-                  aria-hidden
-                  className={cn(
-                    "ml-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
-                    isSelected ? "border-primary" : "border-muted-foreground/40"
-                  )}
-                >
-                  {isSelected ? (
-                    <span className="h-2.5 w-2.5 rounded-full bg-primary" />
-                  ) : null}
-                </span>
               </button>
             );
           })}
