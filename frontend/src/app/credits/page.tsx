@@ -1,11 +1,12 @@
 /**
  * CRÉDITOS (carteira) do profissional — `/credits`.
  *
- * Mostra o saldo (`GET /credits/balance`) e o histórico de transações
- * (`GET /credits/history`) com tipo (bonus/spend/...), valor (+/-) e data.
+ * Mostra o saldo (`GET /credits/balance`), a seção "Comprar créditos" (Fase 6 —
+ * catálogo de pacotes + criação de pedido + confirmação simulada em dev) e o
+ * histórico de transações (`GET /credits/history`) com tipo, valor (+/-) e data.
  *
- * Nota: a compra REAL de créditos é Fase 6. Por ora, os créditos são
- * concedidos pelo admin — a tela explica isso ao usuário.
+ * Ao confirmar uma compra (modo dev), a `BuyCreditsSection` invalida as queries
+ * do React Query e chama `onPaid`, que recarrega o saldo/histórico locais.
  *
  * Protegida: `useRequireAuth("professional")`.
  */
@@ -27,6 +28,7 @@ import type {
 import { BalanceCard } from "@/modules/credits/balance-card";
 import { TransactionList } from "@/modules/credits/transaction-list";
 import { messageFromError } from "@/modules/credits/utils";
+import { BuyCreditsSection } from "@/modules/payments";
 
 export default function CreditsPage() {
   const auth = useRequireAuth("professional");
@@ -64,14 +66,14 @@ export default function CreditsPage() {
 
   if (!auth.hasHydrated || auth.role !== "professional") {
     return (
-      <main className="mx-auto max-w-2xl px-6 py-10">
+      <main className="mx-auto max-w-4xl px-6 py-10">
         <p className="text-sm text-muted-foreground">Carregando...</p>
       </main>
     );
   }
 
   return (
-    <main className="mx-auto max-w-2xl px-6 py-10">
+    <main className="mx-auto max-w-4xl px-6 py-10">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Meus créditos</h1>
@@ -89,10 +91,7 @@ export default function CreditsPage() {
 
       <BalanceCard balance={balance} loading={loading} className="mb-6" />
 
-      <div className="mb-8 rounded-md border border-dashed bg-muted/30 p-4 text-sm text-muted-foreground">
-        A compra de créditos estará disponível em breve. Por enquanto, os
-        créditos são concedidos pela administração do TrampoJá.
-      </div>
+      <BuyCreditsSection onPaid={() => void load()} className="mb-8" />
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-2">

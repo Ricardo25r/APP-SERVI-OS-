@@ -7,7 +7,7 @@
 > - Repositório: https://github.com/Ricardo25r/APP-SERVI-OS-
 > - Pasta local: `C:\TrampoJa`
 > - Última atualização: **2026-06-18**
-> - Fase atual: **✅ Fases 1–5 CONCLUÍDAS e validadas** (backend E2E no Postgres: grant→compra→409; 46 testes; frontend builda com 11 rotas). No branch `feat/fases-2-5-wip` (merge para `main`). Próximo: Fase 6 — Pagamentos.
+> - Fase atual: **✅ Fases 1–6 CONCLUÍDAS e validadas** (ciclo econômico E2E no Postgres: comprar créditos → comprar lead; 55 testes; frontend builda). Próximo: Fase 7 — Avaliações + Reputação.
 
 ---
 
@@ -182,7 +182,7 @@ Os agentes que escreveram os specs encontraram pontos onde a fonte da verdade **
   Criar / visualizar / editar / cancelar oportunidade; classificação de lead.
 - [x] **Fase 5 — Sistema de Leads (créditos + matching + compra)** — ✅ *carteira, grant (admin), compra atômica (Lead Exclusivo, 409), débito + contato liberado, histórico.*
   Carteira, compra de lead, desbloqueio de contato, distribuição (matching), histórico.
-- [ ] **Fase 6 — Pagamentos**
+- [x] **Fase 6 — Pagamentos** — ✅ *compra de créditos (5 pacotes) com provedor DEV/sandbox; webhook HMAC idempotente; crédito atômico só no `paid`; reembolso em créditos. Gateway real (PIX/cartão) = plugar adaptador Mercado Pago/Stripe com as chaves.*
   Pacotes de créditos, PIX, cartão, webhooks assinados, idempotência, reembolso em créditos.
 - [ ] **Fase 7 — Avaliações + Reputação**
   Avaliação mútua (1–5 + comentário), reputation score, selos.
