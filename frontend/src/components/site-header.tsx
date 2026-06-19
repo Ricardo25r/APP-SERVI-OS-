@@ -28,6 +28,9 @@ const NAV_BY_ROLE: Record<UserRole, NavLink[]> = {
     { href: "/conversas", label: "Conversas" },
     { href: "/avaliacoes", label: "Avaliações" },
     { href: "/ranking", label: "Ranking" },
+    { href: "/profile", label: "Meu perfil" },
+    { href: "/configuracoes", label: "Configurações" },
+    { href: "/suporte", label: "Suporte" },
   ],
   professional: [
     { href: "/marketplace", label: "Oportunidades" },
@@ -37,6 +40,8 @@ const NAV_BY_ROLE: Record<UserRole, NavLink[]> = {
     { href: "/gamificacao", label: "Nível" },
     { href: "/ranking", label: "Ranking" },
     { href: "/profile", label: "Meu perfil" },
+    { href: "/configuracoes", label: "Configurações" },
+    { href: "/suporte", label: "Suporte" },
   ],
   admin: [
     { href: "/admin", label: "Painel" },

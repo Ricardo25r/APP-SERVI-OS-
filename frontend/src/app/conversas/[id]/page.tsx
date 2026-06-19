@@ -2,9 +2,10 @@
  * Página de **thread** de uma conversa (`/conversas/{id}`).
  *
  * Protegida (qualquer usuário logado). Mostra:
- * - cabeçalho com nome da contraparte + título do lead + botão voltar;
+ * - `AppHeader` azul (mode="title") no mobile, com Avatar + nome da contraparte;
+ * - cabeçalho de cartão equivalente no desktop;
  * - `MessageThread` (com polling) ocupando a área central;
- * - `MessageInput` fixo no rodapé do cartão.
+ * - `MessageInput` fixo no rodapé do cartão (botão laranja).
  *
  * O cabeçalho usa `GET /chat/conversations/{id}`; se falhar, ainda assim a
  * thread tenta carregar (degrada graciosamente).
@@ -16,6 +17,8 @@ import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 
+import { AppHeader } from "@/components/app-shell/app-header";
+import { Avatar } from "@/components/ui/avatar";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useRequireAuth } from "@/hooks/use-auth";
@@ -23,7 +26,6 @@ import {
   MessageInput,
   MessageThread,
   conversationLeadTitle,
-  counterpartInitials,
   counterpartName,
   fetchConversation,
 } from "@/modules/chat";
@@ -57,45 +59,68 @@ export default function ConversaThreadPage() {
   }
 
   const name = conversation ? counterpartName(conversation) : "Conversa";
-  const leadTitle = conversation
-    ? conversationLeadTitle(conversation)
-    : null;
-  const initials = conversation ? counterpartInitials(conversation) : "?";
+  const leadTitle = conversation ? conversationLeadTitle(conversation) : null;
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-col px-4 py-6 sm:px-6 sm:py-8">
-      <Link
-        href="/conversas"
-        className={cn(
-          buttonVariants({ variant: "ghost", size: "sm" }),
-          "mb-4 w-fit gap-1.5 px-2"
-        )}
-      >
-        <ArrowLeft className="h-4 w-4" aria-hidden />
-        Voltar
-      </Link>
+    <>
+      {/* Mobile: header azul do app com Avatar + nome da contraparte. */}
+      <div className="lg:hidden">
+        <AppHeader
+          mode="title"
+          backHref="/conversas"
+          title={
+            <span className="flex min-w-0 items-center justify-center gap-2">
+              <Avatar
+                name={name}
+                size="sm"
+                className="bg-primary-foreground/15 text-primary-foreground"
+              />
+              <span className="truncate">{name}</span>
+            </span>
+          }
+        />
+      </div>
 
-      <div className="flex h-[calc(100vh-13rem)] min-h-[420px] flex-col overflow-hidden rounded-lg border bg-card">
-        <header className="flex items-center gap-3 border-b px-4 py-3">
-          <span
-            aria-hidden
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary"
-          >
-            {initials}
-          </span>
-          <div className="min-w-0">
-            <p className="truncate font-semibold text-foreground">{name}</p>
-            {leadTitle && (
+      <main className="mx-auto flex w-full max-w-3xl flex-col px-4 py-6 sm:px-6 sm:py-8">
+        {/* Desktop: link de voltar acima do cartão. */}
+        <Link
+          href="/conversas"
+          className={cn(
+            buttonVariants({ variant: "ghost", size: "sm" }),
+            "mb-4 hidden w-fit gap-1.5 px-2 lg:inline-flex"
+          )}
+        >
+          <ArrowLeft className="h-4 w-4" aria-hidden />
+          Voltar
+        </Link>
+
+        <div className="flex h-[calc(100vh-13rem)] min-h-[420px] flex-col overflow-hidden rounded-2xl border bg-card shadow-sm">
+          {/* Cabeçalho do cartão (desktop); no mobile o AppHeader já cobre. */}
+          <header className="hidden items-center gap-3 border-b px-4 py-3 lg:flex">
+            <Avatar name={name} size="md" />
+            <div className="min-w-0">
+              <p className="truncate font-semibold text-foreground">{name}</p>
+              {leadTitle && (
+                <p className="truncate text-xs text-muted-foreground">
+                  {leadTitle}
+                </p>
+              )}
+            </div>
+          </header>
+
+          {/* No mobile, mostra o título do lead logo abaixo do AppHeader. */}
+          {leadTitle && (
+            <div className="border-b bg-muted/30 px-4 py-2 lg:hidden">
               <p className="truncate text-xs text-muted-foreground">
                 {leadTitle}
               </p>
-            )}
-          </div>
-        </header>
+            </div>
+          )}
 
-        <MessageThread conversationId={id} currentUserId={user.id} />
-        <MessageInput conversationId={id} currentUserId={user.id} />
-      </div>
-    </main>
+          <MessageThread conversationId={id} currentUserId={user.id} />
+          <MessageInput conversationId={id} currentUserId={user.id} />
+        </div>
+      </main>
+    </>
   );
 }

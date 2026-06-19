@@ -1,14 +1,14 @@
 /**
  * Página **Ranking** (`/ranking`).
  *
- * Protegida (qualquer papel logado). Mostra `RankingTable` com os melhores
- * profissionais. Filtro opcional por cidade e UF (aplicado ao submeter o form,
- * para não disparar uma chamada a cada tecla). Só tokens do design system.
+ * Protegida (qualquer papel logado). Mostra `RankingTable` (pódio + lista) com
+ * os melhores profissionais. Filtro opcional por cidade e UF (aplicado ao
+ * submeter o form, para não disparar uma chamada a cada tecla). Só tokens.
  */
 "use client";
 
 import { useState } from "react";
-import { Search, X } from "lucide-react";
+import { Search, Trophy, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,17 +57,27 @@ export default function RankingPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
-      <header className="mb-8 space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight">Ranking</h1>
-        <p className="text-muted-foreground">
-          Os profissionais com mais XP no FazTudo.
-        </p>
+    <main className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-10">
+      <header className="mb-6 flex items-start gap-3">
+        <span
+          aria-hidden
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand/10 text-brand"
+        >
+          <Trophy className="h-6 w-6" />
+        </span>
+        <div className="space-y-1">
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+            Ranking
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Os profissionais com mais XP no FazTudo.
+          </p>
+        </div>
       </header>
 
       <form
         onSubmit={handleSubmit}
-        className="mb-6 grid gap-4 rounded-lg border bg-card p-4 sm:grid-cols-[1fr_auto_auto] sm:items-end"
+        className="mb-6 grid gap-4 rounded-2xl border bg-card p-4 shadow-sm sm:grid-cols-[1fr_auto_auto] sm:items-end"
       >
         <div className="space-y-2">
           <Label htmlFor="ranking-city">Cidade</Label>

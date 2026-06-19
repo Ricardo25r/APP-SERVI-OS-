@@ -107,7 +107,7 @@ export function MessageInput({
       {error && (
         <p
           role="alert"
-          className="mb-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-1.5 text-xs text-destructive"
+          className="mb-2 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-1.5 text-xs text-destructive"
         >
           {error}
         </p>
@@ -127,13 +127,14 @@ export function MessageInput({
           placeholder="Escreva uma mensagem... (Enter envia, Shift+Enter quebra linha)"
           aria-label="Mensagem"
           rows={1}
-          className="max-h-40 min-h-[40px] flex-1 resize-none"
+          className="max-h-40 min-h-[40px] flex-1 resize-none rounded-xl"
         />
         <Button
           type="submit"
           size="icon"
           disabled={!value.trim() || mutation.isPending}
           aria-label="Enviar mensagem"
+          className="shrink-0 rounded-xl bg-brand text-brand-foreground hover:bg-brand/90"
         >
           {mutation.isPending ? (
             <Loader2 className="h-4 w-4 animate-spin" aria-hidden />

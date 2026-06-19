@@ -1,15 +1,17 @@
 /**
  * `ReviewList` — lista de avaliações RECEBIDAS por um usuário.
  *
- * Cada item mostra: estrelas (nota), comentário (quando houver), autor e data.
- * Estados de loading/erro/vazio tratados. Usa apenas tokens do design system.
+ * Cada item mostra: `Avatar` + autor, estrelas (nota), comentário (quando
+ * houver) e data. Estados de loading/erro/vazio tratados. Usa apenas tokens
+ * do design system.
  */
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, MessageSquare } from "lucide-react";
 
-import { Card, CardContent } from "@/components/ui/card";
+import { Avatar } from "@/components/ui/avatar";
+import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
 
 import { fetchUserReviews } from "./api";
@@ -55,12 +57,9 @@ export function ReviewList({
     return (
       <div
         role="alert"
-        className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+        className="rounded-xl border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive"
       >
-        {reviewErrorMessage(
-          error,
-          "Não foi possível carregar as avaliações."
-        )}
+        {reviewErrorMessage(error, "Não foi possível carregar as avaliações.")}
       </div>
     );
   }
@@ -69,39 +68,46 @@ export function ReviewList({
 
   if (reviews.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center gap-2 py-10 text-center text-sm text-muted-foreground">
-        <MessageSquare className="h-6 w-6 text-muted-foreground/60" aria-hidden />
-        <span>{emptyLabel}</span>
-      </div>
+      <EmptyState
+        icon={MessageSquare}
+        title="Sem avaliações"
+        description={emptyLabel}
+        className="border-0 bg-transparent py-8"
+      />
     );
   }
 
   return (
     <ul className={cn("space-y-3", className)}>
-      {reviews.map((review, idx) => (
-        <li key={review.id ?? idx}>
-          <Card>
-            <CardContent className="space-y-2 pt-4">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <StarRating value={review.score} size="sm" />
-                  <span className="text-sm font-medium">
-                    {reviewAuthorName(review)}
+      {reviews.map((review, idx) => {
+        const author = reviewAuthorName(review);
+        return (
+          <li
+            key={review.id ?? idx}
+            className="rounded-xl border bg-card p-4 shadow-sm"
+          >
+            <div className="flex items-start gap-3">
+              <Avatar name={author} size="md" className="shrink-0" />
+              <div className="min-w-0 flex-1 space-y-1.5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="truncate text-sm font-semibold text-foreground">
+                    {author}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {formatReviewDate(review.created_at)}
                   </span>
                 </div>
-                <span className="text-xs text-muted-foreground">
-                  {formatReviewDate(review.created_at)}
-                </span>
+                <StarRating value={review.score} size="sm" />
+                {review.comment?.trim() && (
+                  <p className="text-sm text-muted-foreground">
+                    {review.comment}
+                  </p>
+                )}
               </div>
-              {review.comment?.trim() && (
-                <p className="text-sm text-muted-foreground">
-                  {review.comment}
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        </li>
-      ))}
+            </div>
+          </li>
+        );
+      })}
     </ul>
   );
 }

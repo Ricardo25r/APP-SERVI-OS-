@@ -22,6 +22,7 @@ import {
 } from "@tanstack/react-query";
 import { Loader2, MessageSquare } from "lucide-react";
 
+import { IconChip } from "@/components/ui/icon-chip";
 import { cn } from "@/lib/utils";
 
 import { fetchMessages } from "./api";
@@ -96,7 +97,7 @@ export function MessageThread({
       <div className={cn("flex-1 p-4", className)}>
         <div
           role="alert"
-          className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+          className="rounded-xl border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive"
         >
           {chatErrorMessage(error, "Não foi possível carregar as mensagens.")}
         </div>
@@ -108,18 +109,17 @@ export function MessageThread({
     return (
       <div
         className={cn(
-          "flex flex-1 flex-col items-center justify-center gap-2 text-center text-sm text-muted-foreground",
+          "flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center text-sm text-muted-foreground",
           className
         )}
       >
-        <MessageSquare
-          className="h-8 w-8 text-muted-foreground/60"
-          aria-hidden
-        />
-        <span>Nenhuma mensagem ainda.</span>
-        <span className="text-xs text-muted-foreground/80">
-          Envie a primeira mensagem abaixo.
-        </span>
+        <IconChip icon={MessageSquare} color="blue" size="md" />
+        <div className="space-y-0.5">
+          <p className="font-semibold text-foreground">Nenhuma mensagem ainda</p>
+          <p className="text-xs text-muted-foreground">
+            Envie a primeira mensagem abaixo.
+          </p>
+        </div>
       </div>
     );
   }
@@ -139,8 +139,8 @@ export function MessageThread({
         return (
           <div key={message.id} className="space-y-2">
             {showDay && (
-              <div className="flex justify-center py-1">
-                <span className="rounded-full bg-muted px-3 py-0.5 text-xs text-muted-foreground">
+              <div className="flex justify-center py-2">
+                <span className="rounded-full bg-muted px-3 py-0.5 text-xs font-medium text-muted-foreground shadow-sm">
                   {formatDayLabel(message.created_at)}
                 </span>
               </div>
@@ -166,7 +166,7 @@ function MessageBubble({ message, mine }: MessageBubbleProps) {
   if (isSystemMessage(message)) {
     return (
       <div className="flex justify-center py-1">
-        <span className="max-w-[80%] text-center text-xs text-muted-foreground">
+        <span className="max-w-[85%] rounded-full bg-muted/70 px-3 py-1 text-center text-xs text-muted-foreground">
           {message.message}
         </span>
       </div>
@@ -177,19 +177,19 @@ function MessageBubble({ message, mine }: MessageBubbleProps) {
     <div className={cn("flex", mine ? "justify-end" : "justify-start")}>
       <div
         className={cn(
-          "max-w-[78%] rounded-2xl px-3 py-2 text-sm shadow-sm",
+          "max-w-[78%] rounded-2xl px-3.5 py-2 text-sm shadow-sm",
           mine
-            ? "rounded-br-sm bg-primary text-primary-foreground"
-            : "rounded-bl-sm bg-muted text-foreground"
+            ? "rounded-br-md bg-primary text-primary-foreground"
+            : "rounded-bl-md bg-muted text-foreground"
         )}
       >
-        <p className="whitespace-pre-wrap break-words">{message.message}</p>
+        <p className="whitespace-pre-wrap break-words leading-relaxed">
+          {message.message}
+        </p>
         <span
           className={cn(
             "mt-1 block text-right text-[10px]",
-            mine
-              ? "text-primary-foreground/70"
-              : "text-muted-foreground"
+            mine ? "text-primary-foreground/70" : "text-muted-foreground"
           )}
         >
           {formatTime(message.created_at)}

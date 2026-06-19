@@ -8,19 +8,64 @@
  * - **professional** → `ProfessionalProfileSection` (dados + saldo de créditos)
  *                      seguida de `ProfessionalCategoriesSection` (categorias).
  *
+ * O topo exibe o `ProfileHeaderCard` (Avatar + nome + papel; nota/nível quando
+ * profissional) e o `ProfileLinksSection` (atalhos p/ Configurações e Suporte).
+ *
+ * A camada de **lógica** (carregar/criar/editar perfis, categorias, reputação,
+ * nível) permanece intacta nas seções; aqui só houve reestilização.
+ *
  * Estados de loading (hidratação/auth) e erro são tratados aqui e nas seções.
  */
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
+
 import { useRequireAuth } from "@/hooks/use-auth";
+import { ApiError, apiGet } from "@/services/api";
+import type { ProfessionalProfile } from "@/types";
 
 import { CustomerProfileSection } from "@/modules/profile/customer-profile-section";
 import { ProfessionalProfileSection } from "@/modules/profile/professional-profile-section";
 import { ProfessionalCategoriesSection } from "@/modules/profile/professional-categories-section";
+import { ProfileHeaderCard } from "@/modules/profile/profile-header-card";
+import { ProfileLinksSection } from "@/modules/profile/profile-links-section";
 import { LoadingState } from "@/modules/profile/feedback";
+
+type ProfessionalProfileResponse = ProfessionalProfile & { balance?: number };
+
+/**
+ * Lê a reputação do profissional a partir do **cache compartilhado** da query
+ * `["professional-profile"]` (a mesma usada por `ProfessionalProfileSection`).
+ * O React Query deduplica a requisição — não há fetch extra nem lógica nova.
+ */
+function useProfessionalReputation(enabled: boolean) {
+  const { data } = useQuery<ProfessionalProfileResponse | null>({
+    queryKey: ["professional-profile"],
+    queryFn: async () => {
+      try {
+        return await apiGet<ProfessionalProfileResponse>(
+          "/users/me/professional-profile"
+        );
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 404) return null;
+        throw err;
+      }
+    },
+    enabled,
+  });
+
+  if (!data) return undefined;
+  return {
+    rating: data.rating ?? 0,
+    totalReviews: data.total_reviews ?? 0,
+    level: data.level ?? 0,
+    xp: data.xp ?? 0,
+  };
+}
 
 export default function ProfilePage() {
   const { user, role, isAuthenticated, hasHydrated } = useRequireAuth();
+  const reputation = useProfessionalReputation(role === "professional");
 
   // Enquanto a sessão persistida não foi restaurada (ou o redirect de
   // `useRequireAuth` ainda não rodou), evitamos renderizar conteúdo protegido.
@@ -33,13 +78,22 @@ export default function ProfilePage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
-      <header className="mb-8 space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight">Meu perfil</h1>
-        <p className="text-muted-foreground">
-          Olá, {user.name}. Gerencie suas informações abaixo.
+    <main className="mx-auto w-full max-w-3xl space-y-6 px-4 py-8 sm:px-6 sm:py-10">
+      <header className="space-y-1">
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+          Meu perfil
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Gerencie suas informações, preferências e suporte.
         </p>
       </header>
+
+      <ProfileHeaderCard
+        user={user}
+        reputation={role === "professional" ? reputation : undefined}
+      />
+
+      <ProfileLinksSection />
 
       {role === "customer" && <CustomerProfileSection />}
 

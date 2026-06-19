@@ -15,6 +15,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { Avatar } from "@/components/ui/avatar";
 import { useRequireAuth } from "@/hooks/use-auth";
 import {
   ConversationList,
@@ -68,7 +69,7 @@ export default function ConversasPage() {
           />
         </div>
 
-        <section className="flex min-h-[60vh] flex-col overflow-hidden rounded-lg border bg-card">
+        <section className="flex min-h-[60vh] flex-col overflow-hidden rounded-2xl border bg-card shadow-sm">
           {selected ? (
             <SelectedConversation
               conversation={selected}
@@ -103,13 +104,16 @@ function SelectedConversation({
   return (
     <>
       <header className="flex items-center justify-between gap-3 border-b px-4 py-3">
-        <div className="min-w-0">
-          <p className="truncate font-semibold text-foreground">{name}</p>
-          {leadTitle && (
-            <p className="truncate text-xs text-muted-foreground">
-              {leadTitle}
-            </p>
-          )}
+        <div className="flex min-w-0 items-center gap-3">
+          <Avatar name={name} size="md" />
+          <div className="min-w-0">
+            <p className="truncate font-semibold text-foreground">{name}</p>
+            {leadTitle && (
+              <p className="truncate text-xs text-muted-foreground">
+                {leadTitle}
+              </p>
+            )}
+          </div>
         </div>
         <button
           type="button"
