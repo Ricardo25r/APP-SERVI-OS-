@@ -7,7 +7,7 @@
 > - Repositório: https://github.com/Ricardo25r/APP-SERVI-OS-
 > - Pasta local: `C:\TrampoJa`
 > - Última atualização: **2026-06-18**
-> - Fase atual: **✅ Fase 1 (Infraestrutura) VALIDADA (roda via Docker: infra healthy + health 200 + alembic ok). Pronta para a Fase 2 — Autenticação**
+> - Fase atual: **✅ Fases 1–5 CONCLUÍDAS e validadas** (backend E2E no Postgres: grant→compra→409; 46 testes; frontend builda com 11 rotas). No branch `feat/fases-2-5-wip` (merge para `main`). Próximo: Fase 6 — Pagamentos.
 
 ---
 
@@ -174,13 +174,13 @@ Os agentes que escreveram os specs encontraram pontos onde a fonte da verdade **
 
 - [x] **Fase 1 — Infraestrutura** — ✅ *validada em 2026-06-19: infra Docker healthy, `GET /api/v1/health` → 200, `alembic upgrade head` ok, pytest/ruff/build verdes (roda via `docker compose --profile full up`)*
   Setup monorepo, Docker (Postgres/Redis/MinIO), FastAPI base, Next.js base, Alembic, CI básico, padrões de projeto/segurança base.
-- [ ] **Fase 2 — Autenticação**
+- [x] **Fase 2 — Autenticação** — ✅ *register/login/refresh/logout/me + password-reset; JWT com rotação; RBAC. Smoke E2E ok.*
   Cadastro, login, recuperação de senha, JWT + refresh token, sessões, RBAC base.
-- [ ] **Fase 3 — Perfis**
+- [x] **Fase 3 — Perfis** — ✅ *customer/professional + categorias (N:N) + wallet criada; CRUD admin de categorias.*
   Contratante, Profissional, Administrador; categorias; áreas de atuação.
-- [ ] **Fase 4 — Solicitações (Leads)**
+- [x] **Fase 4 — Solicitações (Leads)** — ✅ *criar/listar/editar/cancelar + classificação de custo + matching de elegibilidade.*
   Criar / visualizar / editar / cancelar oportunidade; classificação de lead.
-- [ ] **Fase 5 — Sistema de Leads (créditos + matching + compra)**
+- [x] **Fase 5 — Sistema de Leads (créditos + matching + compra)** — ✅ *carteira, grant (admin), compra atômica (Lead Exclusivo, 409), débito + contato liberado, histórico.*
   Carteira, compra de lead, desbloqueio de contato, distribuição (matching), histórico.
 - [ ] **Fase 6 — Pagamentos**
   Pacotes de créditos, PIX, cartão, webhooks assinados, idempotência, reembolso em créditos.
