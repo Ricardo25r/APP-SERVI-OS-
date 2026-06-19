@@ -37,6 +37,8 @@ import type { AvailabilityStatus, ProfessionalProfile } from "@/types";
 
 import { StarRating } from "@/modules/reviews/star-rating";
 import { ReviewList } from "@/modules/reviews/review-list";
+import { LevelBadge } from "@/modules/gamification/level-badge";
+import { formatXp } from "@/modules/gamification/utils";
 
 import {
   AVAILABILITY_OPTIONS,
@@ -202,13 +204,15 @@ export function ProfessionalProfileSection() {
   const balance = profile?.balance ?? 0;
   const rating = profile?.rating ?? 0;
   const totalReviews = profile?.total_reviews ?? 0;
+  const xp = profile?.xp ?? 0;
+  const level = profile?.level ?? 0;
 
   return (
     <div className="space-y-6">
-      {/* Reputação: nota média + total de avaliações */}
+      {/* Reputação: nota média + total de avaliações + nível/XP */}
       {exists && (
         <Card>
-          <CardContent className="flex flex-col gap-3 pt-6 sm:flex-row sm:items-center sm:justify-between">
+          <CardContent className="flex flex-col gap-4 pt-6 sm:flex-row sm:items-center sm:justify-between">
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Reputação</p>
               <div className="flex items-center gap-2">
@@ -217,14 +221,30 @@ export function ProfessionalProfileSection() {
                   {rating.toFixed(1)}
                 </span>
               </div>
+              <p className="text-sm text-muted-foreground">
+                {totalReviews === 0
+                  ? "Nenhuma avaliação ainda"
+                  : totalReviews === 1
+                    ? "1 avaliação recebida"
+                    : `${totalReviews} avaliações recebidas`}
+              </p>
             </div>
-            <p className="text-sm text-muted-foreground">
-              {totalReviews === 0
-                ? "Nenhuma avaliação ainda"
-                : totalReviews === 1
-                  ? "1 avaliação recebida"
-                  : `${totalReviews} avaliações recebidas`}
-            </p>
+
+            <div className="space-y-1 sm:text-right">
+              <p className="text-sm text-muted-foreground">Nível</p>
+              <div className="flex items-center gap-2 sm:justify-end">
+                <LevelBadge level={level} size="md" />
+                <span className="text-2xl font-semibold leading-tight tabular-nums">
+                  {formatXp(xp)} XP
+                </span>
+              </div>
+              <Link
+                href="/gamificacao"
+                className="inline-block text-sm font-medium text-primary hover:underline"
+              >
+                Ver progresso
+              </Link>
+            </div>
           </CardContent>
         </Card>
       )}
