@@ -56,7 +56,7 @@ export function TransactionList({ transactions }: TransactionListProps) {
               <p
                 className={cn(
                   "text-lg font-semibold tabular-nums",
-                  meta.isCredit ? "text-green-600" : "text-destructive"
+                  meta.isCredit ? "text-success" : "text-destructive"
                 )}
               >
                 {formatSignedAmount(tx)}

@@ -14,7 +14,8 @@ Regras-chave:
   antigo, emite novo par). Reuso de token revogado → revoga todos os tokens do
   usuário (defesa básica — §2.2).
 - Logout revoga o refresh token apresentado.
-- Password-reset: ``request`` gera JWT efêmero e o **retorna no corpo** (MVP,
+- Password-reset: ``request`` responde sempre 200 genérico (anti-enumeração —
+  §2.2); fora de produção devolve o JWT efêmero no corpo (conveniência de dev/MVP,
   sem email — §7); ``confirm`` troca a senha e revoga todos os refresh tokens.
 """
 
@@ -29,7 +30,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.core.exceptions import AuthError, ConflictError, NotFoundError
+from app.core.exceptions import AuthError, ConflictError
 from app.core.security import (
     create_access_token,
     create_password_reset_token,
@@ -223,18 +224,24 @@ class AuthService:
     async def password_reset_request(
         self, data: PasswordResetRequestIn
     ) -> PasswordResetRequestOut:
-        """Gera o token efêmero de reset e o retorna no corpo (MVP — §7).
+        """Solicita reset de senha sem revelar se o email existe (anti-enumeração).
 
-        Não revela se o email existe (resposta uniforme), mas no MVP só há token
-        a devolver quando o usuário existe. Para evitar enumeração, devolvemos
-        sempre 200; quando o usuário não existe, lançamos 404? — Decisão MVP:
-        como o token é dev-only e devolvido no corpo, retornamos 404 apenas se
-        não houver usuário (o front trata). Mantém o contrato (``{reset_token}``).
+        SEMPRE responde de forma genérica (resposta uniforme — §2.2): nunca
+        lança 404, independentemente de o usuário existir. Isso impede que um
+        atacante enumere e-mails cadastrados pela resposta da API.
+
+        Token: por conveniência de dev/MVP (ainda sem envio de e-mail), o
+        ``reset_token`` é incluído no corpo apenas quando
+        ``settings.APP_ENV != "production"`` E o usuário existe. Em produção o
+        token NUNCA é retornado.
+
+        TODO: quando o notification-engine existir, enviar o token por e-mail
+        (sempre, sem expô-lo na resposta).
         """
+        reset_token: str | None = None
         user = await self.users.get_by_email(data.email)
-        if user is None:
-            raise NotFoundError("Usuário não encontrado.")
-        reset_token = create_password_reset_token(user.id)
+        if user is not None and settings.APP_ENV != "production":
+            reset_token = create_password_reset_token(user.id)
         return PasswordResetRequestOut(reset_token=reset_token)
 
     async def password_reset_confirm(self, data: PasswordResetConfirmIn) -> None:

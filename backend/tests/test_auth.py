@@ -207,3 +207,79 @@ async def test_register_duplicate_phone_409(client: httpx.AsyncClient) -> None:
     # Email diferente, mesmo telefone → conflito de telefone.
     dup = await _register(client, email="e2@faztudo.com", phone="11955554444")
     assert dup.status_code == 409, dup.text
+
+
+# --------------------------------------------------------------------------- #
+# Password reset (anti-enumeração)
+# --------------------------------------------------------------------------- #
+@pytest.mark.asyncio
+async def test_password_reset_request_unknown_email_is_generic_200(
+    client: httpx.AsyncClient,
+) -> None:
+    """E-mail inexistente → 200 genérico, SEM token e SEM revelar inexistência.
+
+    Anti-enumeração (§2.2): a resposta para um e-mail desconhecido é
+    indistinguível da de um e-mail válido (status 200 + mensagem genérica) e
+    nunca traz ``reset_token``.
+    """
+    resp = await client.post(
+        "/api/v1/auth/password-reset/request",
+        json={"email": "ninguem@faztudo.com"},
+    )
+    assert resp.status_code == 200, resp.text
+    body = resp.json()
+    assert body["message"]  # mensagem genérica presente
+    assert body["reset_token"] is None  # nada de token para e-mail inexistente
+
+
+@pytest.mark.asyncio
+async def test_password_reset_flow_dev_returns_token_and_confirm_works(
+    client: httpx.AsyncClient,
+) -> None:
+    """Em dev: request devolve o token (200) e o confirm troca a senha (204).
+
+    Cobre o fluxo MVP completo fora de produção (APP_ENV != production): o token
+    vem no corpo por conveniência, o confirm o aceita e a NOVA senha autentica
+    no login (e a antiga deixa de funcionar).
+    """
+    email = "reset@faztudo.com"
+    old_password = "senha-antiga-123"
+    new_password = "senha-nova-456"
+    await _register(client, email=email, phone="11933332222", password=old_password)
+
+    # request → 200 + token presente (estamos fora de produção nos testes).
+    req = await client.post(
+        "/api/v1/auth/password-reset/request", json={"email": email}
+    )
+    assert req.status_code == 200, req.text
+    reset_token = req.json()["reset_token"]
+    assert reset_token, "em dev o reset_token deve vir no corpo"
+
+    # confirm → 204 (troca a senha + revoga refresh tokens).
+    confirm = await client.post(
+        "/api/v1/auth/password-reset/confirm",
+        json={"reset_token": reset_token, "new_password": new_password},
+    )
+    assert confirm.status_code == 204, confirm.text
+
+    # A nova senha autentica; a antiga não.
+    ok = await client.post(
+        "/api/v1/auth/login", json={"email": email, "password": new_password}
+    )
+    assert ok.status_code == 200, ok.text
+    fail = await client.post(
+        "/api/v1/auth/login", json={"email": email, "password": old_password}
+    )
+    assert fail.status_code == 401, fail.text
+
+
+@pytest.mark.asyncio
+async def test_password_reset_confirm_invalid_token_401(
+    client: httpx.AsyncClient,
+) -> None:
+    """confirm com token inválido → 401 (validação do token inalterada)."""
+    resp = await client.post(
+        "/api/v1/auth/password-reset/confirm",
+        json={"reset_token": "nao-e-um-jwt", "new_password": "qualquer-senha-8"},
+    )
+    assert resp.status_code == 401, resp.text

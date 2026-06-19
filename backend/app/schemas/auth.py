@@ -128,9 +128,16 @@ class RefreshResponse(BaseModel):
 
 
 class PasswordResetRequestOut(BaseModel):
-    """Resposta do request de reset (MVP: token devolvido no corpo — §7)."""
+    """Resposta do request de reset (anti-enumeração — §2.2).
 
-    reset_token: str
+    ``message`` é sempre genérica (não revela se o e-mail existe). ``reset_token``
+    é uma conveniência de dev/MVP: vem preenchido apenas fora de produção e
+    quando o usuário existe; em produção é sempre ``None`` (o token irá por
+    e-mail quando o notification-engine existir — §7).
+    """
+
+    message: str = "Se o e-mail existir, enviaremos instruções para redefinir a senha."
+    reset_token: str | None = None
 
 
 __all__ = [

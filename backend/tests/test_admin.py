@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import uuid
 from collections.abc import AsyncGenerator
+from datetime import UTC, datetime
 
 import httpx
 import pytest
@@ -36,6 +37,7 @@ from app.models import (
     LeadUrgency,
     PaymentOrder,
     PaymentOrderStatus,
+    RefreshToken,
     User,
     UserRole,
     UserStatus,
@@ -339,6 +341,62 @@ async def test_admin_blocks_user_changes_status_and_writes_audit(
     audit_body = audit.json()
     assert audit_body["total"] == 1
     assert audit_body["items"][0]["action"] == "user_block"
+
+
+# --------------------------------------------------------------------------- #
+# Bloqueio/suspensão revoga os refresh tokens ativos do usuário
+# --------------------------------------------------------------------------- #
+@pytest.mark.asyncio
+@pytest.mark.parametrize("new_status", ["blocked", "suspended"])
+async def test_status_change_revokes_user_refresh_tokens(
+    client: httpx.AsyncClient, session_maker, new_status: str
+) -> None:
+    """Bloquear/suspender revoga TODOS os refresh tokens ativos do alvo.
+
+    Segurança (§2.2): mudar o status para ``blocked``/``suspended`` encerra as
+    sessões — os refresh tokens do usuário ficam ``revoked_at`` preenchido na
+    mesma transação da mudança de status.
+    """
+    async with session_maker() as s:
+        admin = await _make_admin(s)
+        target = await _make_user(
+            s, role=UserRole.professional, email=f"{new_status}@t.com"
+        )
+        target_id = target.id
+        # Dois refresh tokens ativos (revoked_at = None) para o alvo.
+        s.add_all(
+            [
+                RefreshToken(
+                    user_id=target_id,
+                    token_hash=f"hash-{new_status}-1",
+                    expires_at=datetime(2099, 1, 1, tzinfo=UTC),
+                ),
+                RefreshToken(
+                    user_id=target_id,
+                    token_hash=f"hash-{new_status}-2",
+                    expires_at=datetime(2099, 1, 1, tzinfo=UTC),
+                ),
+            ]
+        )
+        await s.commit()
+
+    resp = await client.patch(
+        f"/api/v1/admin/users/{target_id}/status",
+        headers=_auth(admin),
+        json={"status": new_status, "reason": "segurança"},
+    )
+    assert resp.status_code == 200, resp.text
+    assert resp.json()["status"] == new_status
+
+    # Todos os refresh tokens do alvo agora estão revogados.
+    async with session_maker() as s:
+        tokens = (
+            await s.execute(
+                select(RefreshToken).where(RefreshToken.user_id == target_id)
+            )
+        ).scalars().all()
+        assert len(tokens) == 2
+        assert all(t.revoked_at is not None for t in tokens)
 
 
 @pytest.mark.asyncio

@@ -110,7 +110,7 @@ function XpTransactionList({
             <p
               className={cn(
                 "shrink-0 text-lg font-semibold tabular-nums",
-                isPositive ? "text-green-600" : "text-destructive"
+                isPositive ? "text-success" : "text-destructive"
               )}
             >
               {formatSignedXp(tx.amount)}{" "}

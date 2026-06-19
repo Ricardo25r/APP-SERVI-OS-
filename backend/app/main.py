@@ -22,10 +22,17 @@ setup_logging()
 
 logger = logging.getLogger("faztudo.api")
 
+# Em produção, a documentação interativa e o schema OpenAPI ficam desativados
+# (reduz superfície de exposição). Fora de produção, mantém os padrões do FastAPI.
+_is_production = settings.APP_ENV == "production"
+
 app = FastAPI(
     title="FazTudo API",
     version="0.1.0",
     debug=settings.APP_DEBUG,
+    docs_url=None if _is_production else "/docs",
+    redoc_url=None if _is_production else "/redoc",
+    openapi_url=None if _is_production else "/openapi.json",
 )
 
 # Handlers globais para as exceções de domínio (§3.9).

@@ -133,9 +133,10 @@ async def webhook(
 
 
 # --------------------------------------------------------------------------- #
-# 6. Dev confirm (dono/admin) — montado SÓ quando PAYMENT_PROVIDER=dev.
+# 6. Dev confirm (dono/admin) — montado SÓ quando PAYMENT_PROVIDER=dev E o
+#    ambiente NÃO for produção (nunca expor o confirm simulado em prod).
 # --------------------------------------------------------------------------- #
-if settings.PAYMENT_PROVIDER == "dev":
+if settings.PAYMENT_PROVIDER == "dev" and settings.APP_ENV != "production":
 
     @router.post(
         "/dev/confirm/{order_id}",

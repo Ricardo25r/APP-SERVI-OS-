@@ -36,7 +36,7 @@ export default function HomePage() {
 
   const statusColor: Record<HealthStatus, string> = {
     loading: "bg-muted-foreground",
-    online: "bg-green-500",
+    online: "bg-success",
     offline: "bg-destructive",
   };
 

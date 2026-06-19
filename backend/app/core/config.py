@@ -6,7 +6,12 @@ Lê todas as variáveis canônicas definidas no contrato da Fase 1
 
 from __future__ import annotations
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# Valores-sentinela inseguros que NUNCA podem permanecer em produção.
+_INSECURE_JWT_SECRET = "troque-este-segredo-em-producao"  # noqa: S105
+_INSECURE_WEBHOOK_SECRET = "dev-webhook-secret"  # noqa: S105
 
 
 class Settings(BaseSettings):
@@ -25,7 +30,8 @@ class Settings(BaseSettings):
 
     # App
     APP_ENV: str = "development"
-    APP_DEBUG: bool = True
+    # Default seguro: debug DESLIGADO. Em dev, defina APP_DEBUG=true no ambiente.
+    APP_DEBUG: bool = False
     BACKEND_PORT: int = 8000
 
     # PostgreSQL
@@ -76,6 +82,42 @@ class Settings(BaseSettings):
         Aceita múltiplas origens separadas por vírgula.
         """
         return [origin.strip() for origin in self.CORS_ORIGINS.split(",") if origin.strip()]
+
+    @model_validator(mode="after")
+    def _fail_fast_in_production(self) -> Settings:
+        """Em produção, recusa subir com defaults inseguros (fail-fast).
+
+        Somente quando ``APP_ENV == "production"``: levanta erro se algum segredo
+        crítico ainda usar o valor padrão de desenvolvimento ou se o provedor de
+        pagamento estiver no modo ``dev`` (fake checkout). Em development/test não
+        valida nada — não quebra o ambiente local nem a suíte de testes.
+        """
+        if self.APP_ENV != "production":
+            return self
+
+        problems: list[str] = []
+        if self.JWT_SECRET == _INSECURE_JWT_SECRET:
+            problems.append(
+                "JWT_SECRET ainda usa o valor padrão de desenvolvimento — "
+                "defina um segredo forte e único."
+            )
+        if self.PAYMENT_WEBHOOK_SECRET == _INSECURE_WEBHOOK_SECRET:
+            problems.append(
+                "PAYMENT_WEBHOOK_SECRET ainda usa o valor padrão de "
+                "desenvolvimento — defina o HMAC real do provedor."
+            )
+        if self.PAYMENT_PROVIDER == "dev":
+            problems.append(
+                "PAYMENT_PROVIDER='dev' (checkout simulado) não é permitido em "
+                "produção — configure um provedor real (ex.: mercadopago)."
+            )
+
+        if problems:
+            raise ValueError(
+                "Configuração insegura para APP_ENV=production:\n- "
+                + "\n- ".join(problems)
+            )
+        return self
 
 
 settings = Settings()

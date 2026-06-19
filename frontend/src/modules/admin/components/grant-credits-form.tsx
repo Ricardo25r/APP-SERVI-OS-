@@ -146,9 +146,9 @@ export function GrantCreditsForm() {
         {mutation.isSuccess ? (
           <p
             role="status"
-            className="flex items-center gap-2 rounded-md border border-green-500/40 bg-green-500/10 px-3 py-2 text-sm text-foreground"
+            className="flex items-center gap-2 rounded-md border border-success/40 bg-success/10 px-3 py-2 text-sm text-foreground"
           >
-            <CheckCircle2 className="h-4 w-4 text-green-600" aria-hidden />
+            <CheckCircle2 className="h-4 w-4 text-success" aria-hidden />
             Créditos concedidos com sucesso.
           </p>
         ) : null}

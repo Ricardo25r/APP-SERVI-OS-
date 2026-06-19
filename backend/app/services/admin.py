@@ -36,6 +36,7 @@ from app.models import (
     UserStatus,
 )
 from app.repositories.admin import AdminRepository
+from app.repositories.auth import RefreshTokenRepository
 from app.schemas.admin import (
     AdminLeadRead,
     AdminMetrics,
@@ -68,6 +69,7 @@ class AdminService:
     def __init__(self, db: AsyncSession) -> None:
         self.db = db
         self.repo = AdminRepository(db)
+        self.tokens = RefreshTokenRepository(db)
 
     # ------------------------------------------------------------------ #
     # Métricas (GET /admin/metrics)
@@ -165,6 +167,8 @@ class AdminService:
         - ``404`` se o usuário não existir;
         - admin **não** pode mudar o próprio status (auto-ação proibida → ``422``);
         - mudar para o mesmo status é no-op idempotente (sem erro);
+        - ao mudar para ``blocked``/``suspended``, todos os refresh tokens do
+          usuário são revogados na MESMA transação (encerra sessões ativas);
         - toda mudança grava um :class:`AuditLog` na MESMA transação.
         """
         if user_id == admin.id:
@@ -192,6 +196,12 @@ class AdminService:
                     "new_status": new_status.value,
                 },
             )
+            # Bloqueio/suspensão encerra as sessões ativas: revoga todos os
+            # refresh tokens do usuário (mesma transação que a mudança de status).
+            if new_status in (UserStatus.blocked, UserStatus.suspended):
+                await self.tokens.revoke_all_for_user(
+                    target.id, datetime.now(UTC)
+                )
             await self.repo.flush()
             await self.db.commit()
             await self.db.refresh(target)

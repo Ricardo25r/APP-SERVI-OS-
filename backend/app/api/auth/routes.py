@@ -8,7 +8,6 @@ pelo handler global registrado em ``main.py`` (§3.9):
 
 - :class:`ConflictError` → 409 (email/telefone duplicado no register).
 - :class:`AuthError` → 401 (credenciais/refresh/reset inválidos).
-- :class:`NotFoundError` → 404 (usuário inexistente no reset request).
 
 Endpoints (§4 — Fase 2):
 - ``POST /register``                 → público, 201 (usuário + par de tokens).
@@ -16,7 +15,8 @@ Endpoints (§4 — Fase 2):
 - ``POST /refresh``                  → público (refresh no corpo), 200 (rotação).
 - ``POST /logout``                   → JWT access, 204 (revoga o refresh).
 - ``GET  /me``                       → JWT access, 200 (usuário + flags de perfis).
-- ``POST /password-reset/request``   → público, 200 (token devolvido — §7).
+- ``POST /password-reset/request``   → público, 200 (resposta genérica; token
+  no corpo só fora de produção — §2.2 / §7).
 - ``POST /password-reset/confirm``   → público, 204 (troca senha + revoga tokens).
 """
 
@@ -127,14 +127,15 @@ async def me(
 @router.post(
     "/password-reset/request",
     response_model=PasswordResetRequestOut,
-    summary="Solicitar token de reset de senha (MVP: token no corpo)",
+    summary="Solicitar reset de senha (resposta genérica, anti-enumeração)",
 )
 async def password_reset_request(
     payload: PasswordResetRequestIn,
     db: AsyncSession = Depends(get_db),
 ) -> PasswordResetRequestOut:
-    """Gera o token efêmero de reset e o devolve no corpo (MVP, sem email — §7).
-    Usuário inexistente → 404."""
+    """SEMPRE responde 200 com mensagem genérica, sem revelar se o e-mail existe
+    (anti-enumeração — §2.2). Fora de produção, o ``reset_token`` vem no corpo
+    (conveniência de dev/MVP); em produção nunca (irá por e-mail — §7)."""
     service = AuthService(db)
     return await service.password_reset_request(payload)
 

@@ -18,7 +18,7 @@ interface ContactCardProps {
 
 export function ContactCard({ contact, className }: ContactCardProps) {
   return (
-    <Card className={cn("border-green-500/40 bg-green-500/5", className)}>
+    <Card className={cn("border-success/40 bg-success/5", className)}>
       <CardHeader className="p-4 pb-2">
         <div className="flex items-center gap-2">
           <Badge variant="success">Contato liberado</Badge>
