@@ -56,9 +56,9 @@ const OPTIONS: ProfileOption[] = [
     badgeIcon: Home,
     cardClassName: "bg-primary/5",
     badgeClassName: "text-primary",
-    // Imagem já é busto (cabeça→cintura): ancora embaixo e mostra inteira.
-    mascoteWrapper: "absolute inset-x-0 bottom-0 top-3",
-    mascoteImg: "object-contain object-bottom",
+    // Mesmo enquadramento do boneco (w-44 + object-top) p/ ficarem proporcionais.
+    mascoteWrapper: "absolute left-1/2 top-3 h-[22rem] w-44 -translate-x-1/2",
+    mascoteImg: "object-contain object-top",
   },
   {
     value: "professional",
