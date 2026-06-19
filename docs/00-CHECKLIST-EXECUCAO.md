@@ -7,7 +7,7 @@
 > - Repositório: https://github.com/Ricardo25r/APP-SERVI-OS-
 > - Pasta local: `C:\TrampoJa`
 > - Última atualização: **2026-06-18**
-> - Fase atual: **✅ Fases 1–6 CONCLUÍDAS e validadas** (ciclo econômico E2E no Postgres: comprar créditos → comprar lead; 55 testes; frontend builda). Próximo: Fase 7 — Avaliações + Reputação.
+> - Fase atual: **✅ Fases 1–7 CONCLUÍDAS e validadas** (+ Design System oficial aplicado). E2E no Postgres: créditos→lead→avaliação mútua→reputação. 67 testes; frontend builda. Próximo: Fase 8 — Chat.
 
 ---
 
@@ -184,7 +184,7 @@ Os agentes que escreveram os specs encontraram pontos onde a fonte da verdade **
   Carteira, compra de lead, desbloqueio de contato, distribuição (matching), histórico.
 - [x] **Fase 6 — Pagamentos** — ✅ *compra de créditos (5 pacotes) com provedor DEV/sandbox; webhook HMAC idempotente; crédito atômico só no `paid`; reembolso em créditos. Gateway real (PIX/cartão) = plugar adaptador Mercado Pago/Stripe com as chaves.*
   Pacotes de créditos, PIX, cartão, webhooks assinados, idempotência, reembolso em créditos.
-- [ ] **Fase 7 — Avaliações + Reputação**
+- [x] **Fase 7 — Avaliações + Reputação** — ✅ *avaliação mútua (1–5 + comentário) pós-compra; reputação (profissional 0–5 + total; contratante 0–1000); UI com estrelas + página /avaliacoes. Smoke E2E ok.*
   Avaliação mútua (1–5 + comentário), reputation score, selos.
 - [ ] **Fase 8 — Chat**
   Conversa por lead, abertura automática, anexos, moderação, denúncias.

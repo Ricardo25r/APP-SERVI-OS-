@@ -35,6 +35,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { apiGet, apiPatch, apiPost, ApiError } from "@/services/api";
 import type { AvailabilityStatus, ProfessionalProfile } from "@/types";
 
+import { StarRating } from "@/modules/reviews/star-rating";
+import { ReviewList } from "@/modules/reviews/review-list";
+
 import {
   AVAILABILITY_OPTIONS,
   BRAZIL_STATES,
@@ -197,9 +200,35 @@ export function ProfessionalProfileSection() {
   }
 
   const balance = profile?.balance ?? 0;
+  const rating = profile?.rating ?? 0;
+  const totalReviews = profile?.total_reviews ?? 0;
 
   return (
     <div className="space-y-6">
+      {/* Reputação: nota média + total de avaliações */}
+      {exists && (
+        <Card>
+          <CardContent className="flex flex-col gap-3 pt-6 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">Reputação</p>
+              <div className="flex items-center gap-2">
+                <StarRating value={rating} />
+                <span className="text-2xl font-semibold leading-tight">
+                  {rating.toFixed(1)}
+                </span>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {totalReviews === 0
+                ? "Nenhuma avaliação ainda"
+                : totalReviews === 1
+                  ? "1 avaliação recebida"
+                  : `${totalReviews} avaliações recebidas`}
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Card de créditos / saldo */}
       <Card>
         <CardContent className="flex flex-col gap-4 pt-6 sm:flex-row sm:items-center sm:justify-between">
@@ -385,6 +414,24 @@ export function ProfessionalProfileSection() {
           </form>
         </CardContent>
       </Card>
+
+      {/* Avaliações recebidas pelo profissional */}
+      {exists && profile?.user_id && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Avaliações recebidas</CardTitle>
+            <CardDescription>
+              O que os contratantes dizem sobre o seu trabalho.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ReviewList
+              userId={profile.user_id}
+              emptyLabel="Você ainda não recebeu avaliações."
+            />
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
