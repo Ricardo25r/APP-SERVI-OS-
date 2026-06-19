@@ -5,7 +5,59 @@
 Conecta contratantes que precisam de um serviço a profissionais disponíveis na sua região.
 Não é um catálogo — é um **marketplace de oportunidades (leads)**: o profissional usa créditos para acessar oportunidades qualificadas.
 
-> ⚠️ **Estágio atual:** fase de **documentação**. Nenhum código de aplicação foi escrito ainda.
+> 🚧 **Estágio atual:** **Fase 1 — Infraestrutura** (em execução). O código começou: monorepo, Docker (db/redis/minio), FastAPI base, Next.js base, Alembic e CI. Sem regra de negócio ainda. Ver [plano da Fase 1](docs/fases/fase-01-infraestrutura/plano.md).
+
+---
+
+## 🏗️ Estrutura do projeto
+
+Monorepo:
+
+```
+TrampoJa/
+├── backend/                 # API FastAPI (Python 3.12+, async) — health check em /api/v1/health
+├── frontend/                # App Next.js 14 (TypeScript, App Router) — landing "TrampoJá"
+├── infra/                   # scripts de infraestrutura (init db, bucket MinIO, etc.)
+├── .github/workflows/       # CI (lint + testes back/front)
+├── docs/                    # documentação (specs + planos de fase)
+├── docker-compose.yml       # db (Postgres 16) + redis (7) + minio
+├── .env.example             # variáveis compartilhadas (compose/backend)
+├── Makefile                 # atalhos de dev
+└── README.md
+```
+
+> Contrato da base (layout, portas, variáveis e versões): [`docs/fases/fase-01-infraestrutura/foundation-conventions.md`](docs/fases/fase-01-infraestrutura/foundation-conventions.md).
+
+---
+
+## 🚀 Como rodar (dev)
+
+**Pré-requisitos:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) · **Python 3.12+** (no Windows via launcher `py`) · **Node 20+**.
+
+```powershell
+# 0. variáveis de ambiente
+copy .env.example .env
+copy frontend\.env.local.example frontend\.env.local
+
+# 1. infraestrutura (Postgres 5432 · Redis 6379 · MinIO 9000/9001)
+docker compose up -d
+
+# 2. backend (a partir de backend/) — usar o launcher "py" no Windows
+py -3.12 -m venv .venv
+.venv\Scripts\Activate.ps1
+py -m pip install -r requirements.txt
+py -m alembic upgrade head
+py -m uvicorn app.main:app --reload --port 8000
+# health:  GET http://localhost:8000/api/v1/health  ->  200 {"status":"ok"}
+
+# 3. frontend (a partir de frontend/)
+npm install
+npm run dev          # abre http://localhost:3000
+```
+
+> macOS/Linux: troque `py` por `python3`, `copy` por `cp` e ative o venv com `source .venv/bin/activate`.
+
+👉 **Passo a passo completo e checklist de validação:** [`docs/fases/fase-01-infraestrutura/checklist-validacao.md`](docs/fases/fase-01-infraestrutura/checklist-validacao.md).
 
 ---
 

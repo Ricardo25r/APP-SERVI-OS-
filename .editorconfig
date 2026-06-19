@@ -1,0 +1,28 @@
+# EditorConfig — https://editorconfig.org
+# Regras de formatação compartilhadas do monorepo TrampoJá.
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+# Python — indentação de 4 espaços
+[*.py]
+indent_size = 4
+
+# Web / configs — indentação de 2 espaços
+[*.{js,jsx,ts,tsx,mjs,cjs,json,jsonc,css,scss,html,yml,yaml}]
+indent_size = 2
+
+# Markdown — não remover trailing whitespace (dois espaços = quebra de linha)
+[*.md]
+trim_trailing_whitespace = false
+
+# Makefile exige tabs reais
+[Makefile]
+indent_style = tab

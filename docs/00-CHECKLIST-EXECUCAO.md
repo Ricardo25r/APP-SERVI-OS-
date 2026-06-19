@@ -7,7 +7,7 @@
 > - Repositório: https://github.com/Ricardo25r/APP-SERVI-OS-
 > - Pasta local: `C:\TrampoJa`
 > - Última atualização: **2026-06-18**
-> - Fase atual: **📄 Documentação concluída — aguardando decisões antes de codar**
+> - Fase atual: **🏗️ Fase 1 (Infraestrutura) — base scaffoldada e verificada (compila/builda); validação local pendente (Docker + deps)**
 
 ---
 
@@ -138,7 +138,7 @@ Os agentes que escreveram os specs encontraram pontos onde a fonte da verdade **
 
 > Cada fase só é marcada como concluída quando entregar **código + migrations + testes + documentação + checklist de validação** e for validada.
 
-- [ ] **Fase 1 — Infraestrutura**
+- [ ] **Fase 1 — Infraestrutura** — 🟡 *scaffold criado e verificado (backend compila, frontend builda/typecheck OK); falta validar rodando com Docker + deps instaladas*
   Setup monorepo, Docker (Postgres/Redis/MinIO), FastAPI base, Next.js base, Alembic, CI básico, padrões de projeto/segurança base.
 - [ ] **Fase 2 — Autenticação**
   Cadastro, login, recuperação de senha, JWT + refresh token, sessões, RBAC base.
@@ -165,13 +165,15 @@ Os agentes que escreveram os specs encontraram pontos onde a fonte da verdade **
 
 ## 5) Onde estamos agora / Próximos passos
 
-- [x] Documentação 100% organizada em `docs/` (18 documentos + este checklist).
+- [x] Documentação 100% organizada em `docs/` (19 documentos + este checklist).
 - [x] Conflitos e gaps mapeados (seção 2).
 - [x] **Subir tudo para o GitHub** (commit + push) — feito (commit inicial + este).
 - [x] `anti-fraud-engine.md` recebido e integrado (doc 19) — lacuna resolvida.
 - [ ] Você revisar as **decisões pendentes** da seção 2 (principalmente 2.1 e 2.2).
 - [ ] Resolver setup da seção 3 (Python, gateway, Docker).
-- [ ] **Então** começamos a **Fase 1 — Infraestrutura** (eu monto o plano técnico detalhado da fase antes de codar).
+- [x] **Fase 1 — Infraestrutura: scaffold criado** (backend FastAPI + frontend Next.js + infra Docker + CI) e verificado (compila/builda). Ver `docs/fases/fase-01-infraestrutura/`.
+- [ ] **Validar a Fase 1 localmente** (instalar Docker Desktop + deps) usando `docs/fases/fase-01-infraestrutura/checklist-validacao.md`.
+- [ ] Depois: **Fase 2 — Autenticação** (resolver antes as decisões de schema da seção 2 que afetam auth/users).
 
 ---
 
