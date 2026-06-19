@@ -41,18 +41,21 @@
 
 ## Checklist de adaptação visual (UI)
 
-- [ ] **Fundação:** app-shell (AppHeader azul + BottomNav mobile) + primitivos (IconChip, StatCard, BalanceCard, SectionHeader, StatusBadge, Avatar, EmptyState, SearchInput).
-- [ ] Landing/onboarding (herói + mascotes + CTA).
-- [ ] Login / Cadastro / Recuperar senha (visual das telas 09/27).
-- [ ] Home logada (contratante e profissional / dashboard 36).
-- [ ] Leads: lista, nova solicitação, detalhes (telas 13/02/14) + categorias (12).
-- [ ] Marketplace profissional + Detalhes do lead (03/04).
-- [ ] Créditos / Carteira (05/20) — BalanceCard + histórico.
-- [ ] Conversas + Chat (15/06).
-- [ ] Avaliações (18) · Gamificação/Ranking (24).
-- [ ] Perfil · Configurações · Suporte (16/07/21/22).
-- [ ] Notificações (19/38).
-- [ ] Admin desktop refinado (08/34/35).
-- [ ] Responsividade (mobile bottom-nav ↔ desktop), a11y, estados loading/erro/vazio.
+- [x] **Fundação:** app-shell (AppHeader azul + BottomNav mobile + FAB) + primitivos (IconChip, StatCard, BalanceCard, SectionHeader, StatusBadge, Avatar, EmptyState, SearchInput, SettingsRow, ToggleSwitch).
+- [x] Landing/onboarding (herói + mascotes + busca + categorias + como funciona + CTA).
+- [x] Login / Cadastro (2 colunas + painel azul/mascote) / Recuperar senha (telas 09/27).
+- [x] Home logada por papel (contratante / profissional / admin).
+- [x] Leads: lista (cards+StatusBadge+filtro), nova solicitação (grid de categorias), detalhes (telas 13/02/14/12).
+- [x] Marketplace profissional + compra de lead (03/04).
+- [x] Créditos / Carteira (05/20) — BalanceCard + StatCards + histórico.
+- [x] Conversas + Chat (15/06) — lista com Avatar + bolhas.
+- [x] Avaliações (18) · Gamificação (barra de progresso) / Ranking (pódio) (24).
+- [x] Perfil · Configurações · Suporte (16/07/21/22).
+- [x] Notificações (19) — abas + lista (placeholder até notification-engine).
+- [ ] Admin desktop refinado (08/34/35) — funcional (tabelas/métricas); refino visual pendente.
+- [x] Responsividade (mobile bottom-nav ↔ desktop), a11y, estados loading/erro/vazio.
+- [ ] Futuro (dependem de backend não implementado): Onboarding/Splash dedicados (25/26), Escolha de perfil (10), KYC/Aprovação (28/29), Propostas/Contratar/Serviço em andamento (31/32/33), Mapa (23), Notificações reais.
+
+> **Status (2026-06-19):** núcleo visual do app adaptado aos mockups (16 telas/rotas redesenhadas + 4 novas). Build verde. Pendentes: refino do admin desktop e telas que dependem de features futuras.
 
 > Regra: **somente tokens** (sem cor hardcoded), Montserrat, PT-BR, `next/image` para mascotes/ícones PNG. Manter funcionalidade/rotas existentes — só a camada visual muda.
