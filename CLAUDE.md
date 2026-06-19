@@ -21,6 +21,14 @@ Marketplace de prestadores de serviços locais (leads pagos por créditos). Mono
 
 ---
 
+## 📱 ESTRATÉGIA — MOBILE-FIRST (diretriz fixa)
+
+> **O foco principal é app iOS/Android.** Faço **mobile-first** e, como é o mesmo código (Next.js responsivo), o **desktop sai junto na mesma passada** — priorizando o layout de celular (é o que vira o app). Os dois de uma vez, com o **mobile mandando no design**. Quando formos empacotar como app nativo, dá pra usar **Capacitor / React Native Web** sobre essa base.
+
+Na prática: projetar/validar primeiro no viewport de celular (bottom-nav, FAB, cards full-width, toque); usar breakpoints (`sm:`/`lg:`) para o desktop como progressivo. Telas de referência em `design-system/telas-referencia/` são **mobile** — segui-las como alvo principal.
+
+---
+
 ## ⚙️ Como rodar / verificar
 
 - Ambiente: `docker compose --profile full up -d` (db/redis/minio/backend) + `npm --prefix frontend run dev` (frontend :3000). App: http://localhost:3000 · API: http://localhost:8000.
@@ -30,5 +38,5 @@ Marketplace de prestadores de serviços locais (leads pagos por créditos). Mono
 
 ## 🧭 Método
 
-- **Uma fase por vez** (ver `docs/00-CHECKLIST-EXECUCAO.md`). Cada fase: código + migrations + testes + documentação + checklist. Fases 1–6 concluídas; próxima: Fase 7 (Avaliações + Reputação).
+- **Uma fase por vez** (ver `docs/00-CHECKLIST-EXECUCAO.md`). Cada fase: código + migrations + testes + documentação + checklist. **Fases 1–10 concluídas** + UI adaptada aos mockups (`design-system/telas-referencia/`); refino contínuo das telas mobile.
 - Identificadores de infra usam o slug `faztudo`. A pasta local no PC do dono é `C:\TrampoJa` (apenas o caminho).
