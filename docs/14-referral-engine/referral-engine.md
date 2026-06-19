@@ -49,7 +49,7 @@ Objetivos específicos:
 * **Concessão e cálculo de XP / níveis** → Gamification Engine (08) via `XP_TRANSACTIONS`. O Referral Engine apenas **dispara** o evento; os valores são propriedade do doc 08.
 * **Distribuição de leads** → Lead Engine (02) e Matching Engine (06).
 * **Validação de identidade / verificação de documento** → Payment Engine (05) e fluxo de `VERIFICATION_REQUESTS`.
-* **Regras gerais e motor central de detecção de fraude** → `anti-fraud-engine.md` (dependência atualmente **ausente** no repositório; ver seção 6 e seção 10).
+* **Regras gerais e motor central de detecção de fraude** → `anti-fraud-engine.md` (dependência **disponível** em docs/19; integração a detalhar na implementação — ver seção 6 e seção 10).
 
 ## 2.3 Atores
 
@@ -266,7 +266,7 @@ Se o indicador estiver `suspended`/`blocked` no momento da aprovação, a recomp
 
 # 6. Segurança (Antifraude)
 
-> **Dependência:** o motor central de detecção de fraude está especificado em `anti-fraud-engine.md`, documento **ausente** no repositório. O Referral Engine **consome** esse motor e **não duplica** suas regras. As regras gerais de detecção (sinais, scoring, bloqueios) são propriedade desse documento; abaixo descrevem-se apenas os **gatilhos e políticas específicos de indicação**.
+> **Dependência:** o motor central de detecção de fraude está especificado em `anti-fraud-engine.md`, documento **disponível** em `docs/19-anti-fraud-engine/anti-fraud-engine.md`. O Referral Engine **consome** esse motor e **não duplica** suas regras; a integração será detalhada na implementação. As regras gerais de detecção (sinais, scoring, bloqueios) são propriedade desse documento; abaixo descrevem-se apenas os **gatilhos e políticas específicos de indicação**.
 
 ## 6.1 Vetores de abuso tratados
 
@@ -370,7 +370,7 @@ Essas métricas alimentam o Painel Financeiro Admin (doc 05) e o painel de métr
 
 ## 10.2 Dependências e ausências
 
-* **`anti-fraud-engine.md` ausente:** este motor depende dele para o scoring central de fraude. Enquanto não existir, o Referral Engine aplica apenas as **políticas locais** da seção 6 (auto-indicação, IP/dispositivo, limites) e marca como `flagged` o que exigir análise. As regras gerais **não** foram duplicadas aqui — devem ser definidas no documento próprio.
+* **`anti-fraud-engine.md` disponível (docs/19):** este motor depende dele para o scoring central de fraude, agora documentado em `docs/19-anti-fraud-engine/anti-fraud-engine.md`. O Referral Engine aplica as **políticas locais** da seção 6 (auto-indicação, IP/dispositivo, limites) e marca como `flagged` o que exigir análise, encaminhando ao motor central; a integração será detalhada na implementação. As regras gerais **não** foram duplicadas aqui — vivem no documento próprio (docs/19).
 * **README desatualizado:** o índice (`docs/README.md`) lista apenas 01–08, mas o repositório já contém `10-notification-engine` e `11-chat-engine` (e agora `14-referral-engine`). Recomenda-se atualizar o índice. (Observação de organização — não afeta as regras deste motor.)
 * **Numeração:** este documento foi criado como **14** conforme solicitado, embora não haja docs 09, 12 e 13 visíveis. Sem impacto funcional.
 

@@ -20,7 +20,7 @@ Status: Documento Oficial
 >
 > **Escopo antifraude profundo.** A detecção comportamental de fraude (contas duplicadas, manipulação de
 > ranking, avaliações falsas, auto contratação, abuso de bônus, IP/dispositivo repetido) pertence ao
-> documento relacionado `anti-fraud-engine.md` (**ausente** na data desta versão — ver
+> documento relacionado `anti-fraud-engine.md` (**disponível** em docs/19 — ver
 > "## Conflitos e Observações"), com base já delineada em `02-lead-engine/lead-engine.md`
 > (seção "Sistema Anti-Fraude") e `07-reputation-engine/reputation-engine.md` (seção "Detecção de Fraude").
 > Aqui tratamos apenas dos **controles de aplicação** que sustentam o antifraude (sinais, ganchos de
@@ -74,7 +74,7 @@ Objetivos mensuráveis:
 ## 2.2 Fora do escopo (referenciado, não detalhado aqui)
 
 * **Detecção comportamental de fraude** (scoring de risco, grafo de contas, manipulação de
-  ranking/reputação): documento relacionado **`anti-fraud-engine.md`** (ausente) + bases em
+  ranking/reputação): documento relacionado **`anti-fraud-engine.md`** (disponível em docs/19) + bases em
   `02-lead-engine` e `07-reputation-engine`.
 * Regras de negócio de monetização e reembolso em si: `05-payment-engine`.
 * Lógica de distribuição/elegibilidade de leads: `06-matching-engine`.
@@ -184,7 +184,7 @@ Sucesso:
 * **Timing constante**: executar o hash/verify mesmo quando o e-mail não existe, para não vazar
   existência por tempo de resposta.
 * Falhas registram `audit_logs` (`auth.login.failed`) com IP e user-agent — base para detecção de
-  força bruta e para o futuro `anti-fraud-engine`.
+  força bruta e para o `anti-fraud-engine` (docs/19).
 
 ## 4.3 Refresh (POST /auth/refresh) — rotação de token
 
@@ -619,7 +619,7 @@ Consolidação de `05-payment-engine` (seção "Segurança").
   * Ganchos para o motor antifraude consumir (eventos de login, registro, compra de lead, review).
   * Bloqueio rápido via `status` do usuário e revogação de tokens.
   * Bloqueio de auto contratação/self-review em regra de negócio.
-* **Detecção e decisão de fraude** → documento relacionado **`anti-fraud-engine.md`** (a criar).
+* **Detecção e decisão de fraude** → documento relacionado **`anti-fraud-engine.md`** (disponível em docs/19).
 * **Como testar (camada de aplicação)**: confirmar que cada evento sensível emite sinal com IP/UA;
   confirmar que bloqueio de conta corta acesso imediatamente.
 
@@ -740,7 +740,7 @@ Alinhado às fases de `01-projeto` e aos roadmaps de `03-arquitetura`/`05-paymen
 
 **V3:**
 
-* Criação e integração plena do **`anti-fraud-engine`** (scoring de risco, grafo de contas).
+* Integração plena com o **`anti-fraud-engine`** (docs/19 — scoring de risco, grafo de contas).
 * Ativação do modo **multi-tenant** (de "ready" para ativo) com `tenant_id` e filtro global.
 * Criptografia em nível de aplicação para PII de documentos de verificação.
 
@@ -753,11 +753,12 @@ Alinhado às fases de `01-projeto` e aos roadmaps de `03-arquitetura`/`05-paymen
 
 # 10. Conflitos e Observações
 
-1. **`anti-fraud-engine.md` ausente.** O documento dedicado de antifraude profundo não existe na data
-   desta versão (2026-06-18). Este spec referencia-o como **documento relacionado** e cobre apenas os
-   controles de aplicação que o sustentam. Bases já existentes: `02-lead-engine` ("Sistema Anti-Fraude")
-   e `07-reputation-engine` ("Detecção de Fraude"). **Recomendação:** criar `anti-fraud-engine.md`
-   consolidando esses sinais (IP/dispositivo/múltiplas contas, manipulação de ranking, abuso de bônus).
+1. **`anti-fraud-engine.md` disponível (docs/19).** O documento dedicado de antifraude profundo agora
+   existe em `docs/19-anti-fraud-engine/anti-fraud-engine.md`. Este spec referencia-o como **documento
+   relacionado** e cobre apenas os controles de aplicação que o sustentam. Bases complementares:
+   `02-lead-engine` ("Sistema Anti-Fraude") e `07-reputation-engine` ("Detecção de Fraude"). A integração
+   dos controles de aplicação com o motor central (sinais de IP/dispositivo/múltiplas contas, manipulação
+   de ranking, abuso de bônus) deve ser detalhada na implementação.
 
 2. **`tenant_id` não existe no schema atual.** `01-projeto` exige "Multi Tenant Ready", mas
    `04-banco-de-dados` não define `tenant_id` em nenhuma tabela. Tratado aqui como **preparação**

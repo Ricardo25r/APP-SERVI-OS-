@@ -21,9 +21,10 @@ Status: Documento Oficial
 > **referenciamos** essas estruturas e propomos **extensões** no item *Modelo de Dados
 > (proposta complementar)*, sem reescrever o schema oficial.
 >
-> Dependência conhecida: o `anti-fraud-engine.md` ainda **não existe**. Onde a moderação
+> Dependência conhecida: o `anti-fraud-engine.md` agora **existe** em
+> `docs/19-anti-fraud-engine/anti-fraud-engine.md`. Onde a moderação
 > e a detecção de fraude do chat dependem desse motor, este documento apenas aponta a
-> integração esperada, **sem duplicar** regras de antifraude.
+> integração esperada (a detalhar na implementação), **sem duplicar** regras de antifraude.
 
 ---
 
@@ -79,8 +80,8 @@ créditos (isso é do Payment Engine). Ele é a camada de **conversa** que acont
 * Chamadas de voz ou vídeo.
 * Cálculo de reputação, score de matching, processamento de crédito/pagamento
   (responsabilidade de outros motores).
-* Regras detalhadas de **antifraude** (dependem do `anti-fraud-engine.md`, ainda
-  ausente).
+* Regras detalhadas de **antifraude** (dependem do `anti-fraud-engine.md`, disponível
+  em docs/19).
 * Chat em grupo / múltiplos profissionais por conversa (incompatível com o modelo
   MVP de **Lead Exclusivo** — ver Conflitos).
 
@@ -233,7 +234,7 @@ Observações de fronteira:
 
 * A moderação automática do chat **não substitui** o antifraude global. Sinais
   fortes (múltiplas contas, manipulação) devem ser encaminhados ao
-  **`anti-fraud-engine`** (ainda ausente) — aqui apenas registramos o sinal e
+  **`anti-fraud-engine`** (disponível em docs/19) — aqui apenas registramos o sinal e
   geramos `report`/auditoria, **sem duplicar** as regras de fraude.
 * Toda decisão de moderação é registrada (ver `message_moderations` no item 4) e
   auditada.
@@ -511,7 +512,7 @@ Métricas do Chat Engine (complementares às métricas de `02-lead-engine`,
 ## V3
 
 * **Moderação assistida por IA** (alinhado às trilhas de IA dos demais motores V3).
-* **Antifraude no chat** integrado ao `anti-fraud-engine` (quando existir).
+* **Antifraude no chat** integrado ao `anti-fraud-engine` (disponível em docs/19).
 * Respostas rápidas / modelos de mensagem.
 
 ## V4
@@ -523,11 +524,11 @@ Métricas do Chat Engine (complementares às métricas de `02-lead-engine`,
 
 # 10. Conflitos e Observações
 
-1. **Dependência ausente — `anti-fraud-engine.md`**: a moderação do chat (3.9) e a
-   detecção de "burla de plataforma" pressupõem um motor de antifraude que **ainda não
-   existe**. Este documento **não** define regras de antifraude; apenas aponta a
-   integração (gerar `report`/auditoria e encaminhar sinais). **Ação**: criar o
-   `anti-fraud-engine.md` e detalhar lá os algoritmos.
+1. **Dependência disponível — `anti-fraud-engine.md`**: a moderação do chat (3.9) e a
+   detecção de "burla de plataforma" pressupõem um motor de antifraude que **agora está
+   documentado** em `docs/19-anti-fraud-engine/anti-fraud-engine.md`. Este documento **não**
+   define regras de antifraude; apenas aponta a integração (gerar `report`/auditoria e
+   encaminhar sinais), a ser detalhada na implementação com base no docs/19.
 
 2. **Lead Compartilhado (V2) x "uma conversa por lead"**: o MVP é **Lead Exclusivo**
    (`lead_purchases.lead_id UNIQUE`), o que garante 1 profissional → 1 conversa. Na V2,

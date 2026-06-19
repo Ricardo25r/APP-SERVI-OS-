@@ -292,7 +292,7 @@ Ticket revela caso de outro motor
 7. **Pedido de exclusão de conta (LGPD)** — ticket `conta`; respeitar **Soft Delete** e a regra de que **transações financeiras e avaliações nunca são apagadas** (`04-banco-de-dados`). Anonimização, não remoção física de dados financeiros.
 8. **Spam / abuso de abertura de tickets** — rate limit por usuário (seção 6.2); tickets duplicados podem ser **mesclados** (`merged_into_ticket_id`).
 9. **Tentativa de manipular reputação via suporte** — suporte **não** edita `reputation_score`, `reviews` nem `reports.status`; pedidos desse tipo são negados e registrados.
-10. **Ausência do `anti-fraud-engine.md`** — ver seção 10 (dependência). Onde o suporte deveria acionar o motor antifraude (fraude ativa, múltiplas contas), o MVP escala para Supervisor + Moderação manualmente.
+10. **Disponibilidade do `anti-fraud-engine.md` (docs/19)** — ver seção 10 (dependência). Onde o suporte deve acionar o motor antifraude (fraude ativa, múltiplas contas), há agora o documento de referência em docs/19; no MVP, o suporte pode escalar para Supervisor + Moderação e encaminhar ao motor antifraude conforme integração a detalhar na implementação.
 
 ---
 
@@ -374,7 +374,7 @@ Painel sugerido (Supervisor): FRT/TTR por prioridade, % dentro do SLA, CSAT, rea
 | **V2** | SLA por **janela de horário comercial** refinada; macros/respostas prontas; automação de roteamento por categoria; alertas proativos de SLA. |
 | **V3** | **Chatbot/IA** de autoatendimento sobre a KB; sugestão automática de artigos e de categoria; classificação automática de prioridade. |
 | **V4** | Suporte **multicanal** (e-mail, WhatsApp Business, app móvel — alinhado ao roadmap mobile de `03-arquitetura`); base de conhecimento pública e SEO. |
-| **V5** | Integração com **anti-fraud-engine** (quando o documento existir) para abertura/encaminhamento automático de casos de fraude. |
+| **V5** | Integração com **anti-fraud-engine** (disponível em docs/19) para abertura/encaminhamento automático de casos de fraude. |
 
 ---
 
@@ -553,7 +553,7 @@ GET    /admin/support/metrics
 
 ## 10. Conflitos e Observações
 
-1. **Dependência ausente — `anti-fraud-engine.md`.** O documento referenciado como dependência **não existe** no repositório. Fluxos de fraude (fraude ativa, múltiplas contas, padrão anormal — sinais citados em `07-reputation-engine`) **não** podem acionar um motor antifraude formal no MVP. **Mitigação atual:** escalonamento manual para Supervisor + Moderação. **Ação:** quando `anti-fraud-engine.md` for publicado, integrar na V5 (seção 9) e revisar as seções 5.10 e 6.4.
+1. **Dependência disponível — `anti-fraud-engine.md` (docs/19).** O documento referenciado como dependência **existe** em `docs/19-anti-fraud-engine/anti-fraud-engine.md`. Fluxos de fraude (fraude ativa, múltiplas contas, padrão anormal — sinais citados em `07-reputation-engine`) já podem referenciar um motor antifraude formal. **Mitigação no MVP:** escalonamento manual para Supervisor + Moderação. **Ação:** integrar com o anti-fraud-engine na V5 (seção 9) e revisar as seções 5.10 e 6.4, detalhando a integração na implementação.
 
 2. **Novo número de documento (16).** A numeração oficial atual vai de **01 a 08** (`README.md`). Este documento foi criado em `16-support-center/` conforme solicitado. **Observação:** o `README.md` (índice) **não** lista os documentos 09–16; recomenda-se atualizar o índice para refletir o Support Center (não alterado por este documento para não contradizer a fonte da verdade).
 

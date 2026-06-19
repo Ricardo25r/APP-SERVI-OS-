@@ -54,7 +54,7 @@ O objetivo de negócio é **gerar confiança**, aumentar conversão de Leads e r
 
 * **Cobrança do Perfil Verificado (R$ 19,90, pagamento único)** → `05-payment-engine`
 * **Exibição do selo, peso na reputação e selos de confiabilidade (Bronze/Prata/Ouro/Diamante)** → `07-reputation-engine`
-* **Detecção de fraude transversal (multicontas, device fingerprint, padrões anômalos)** → `anti-fraud-engine` *(documento ausente — ver Conflitos e Observações)*
+* **Detecção de fraude transversal (multicontas, device fingerprint, padrões anômalos)** → `anti-fraud-engine` *(documento disponível em docs/19 — ver Conflitos e Observações)*
 * **Validação automática de telefone** → módulo de Autenticação / Payment Engine (o telefone validado é pré-requisito, não objeto deste engine)
 * **Painel Administrativo (estrutura geral)** → módulo administrativo (`03-arquitetura`); aqui descrevemos apenas a tela de moderação de documentos.
 
@@ -362,7 +362,7 @@ Para suportar este engine, **propõem-se** as seguintes extensões (sujeitas à 
 
 3. **Campos ausentes no schema oficial.** `verification_requests` não possui `rejection_reason`, `document_type`, `kyc_level`, `updated_at` nem campos de retenção. As regras deste engine (motivo de rejeição, tipos RG/CNH, níveis KYC, expurgo LGPD) dependem das extensões propostas em "Modelo de Dados".
 
-4. **`anti-fraud-engine.md` ausente (dependência).** Casos de `suspected_fraud` e `duplicate_identity` referenciam o motor anti-fraude, que ainda não está documentado. Enquanto não existir, o tratamento de fraude documental fica restrito ao bloqueio manual e ao encaminhamento via `reports`/`admin_actions`.
+4. **`anti-fraud-engine.md` disponível (dependência — docs/19).** Casos de `suspected_fraud` e `duplicate_identity` referenciam o motor anti-fraude, agora documentado em `docs/19-anti-fraud-engine/anti-fraud-engine.md`. O tratamento de fraude documental (bloqueio manual e encaminhamento via `reports`/`admin_actions`) pode ser complementado pela integração com o motor central, a detalhar na implementação.
 
 5. **Fronteira com o Payment Engine.** O pagamento do Perfil Verificado (R$ 19,90, único) e seu fluxo de cobrança são do `05-payment-engine` e **não** foram redefinidos aqui. Este engine inicia somente após `payment_orders` referente ao Perfil Verificado estar `paid`.
 

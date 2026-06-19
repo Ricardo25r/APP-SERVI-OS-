@@ -57,7 +57,7 @@ Os objetivos centrais do motor são:
 * Cálculo de score, ranking, reputação, XP — pertencem a Matching, Reputation e Gamification Engines.
 * Processamento de pagamento e webhooks financeiros — pertencem ao Payment Engine (este motor apenas recebe o evento já processado e notifica).
 * Chat em tempo real e persistência de mensagens — pertence ao Módulo de Chat (`messages`/`conversations`). O Notification Engine apenas notifica que **uma mensagem foi recebida**.
-* Decisão de **antifraude** — pertence ao `anti-fraud-engine.md` (ver seção 10, dependência ainda ausente). O Notification Engine **consome** sinais de antifraude (ex.: não notificar contas suspeitas) mas não os calcula.
+* Decisão de **antifraude** — pertence ao `anti-fraud-engine.md` (ver seção 10, dependência disponível em docs/19). O Notification Engine **consome** sinais de antifraude (ex.: não notificar contas suspeitas) mas não os calcula.
 
 ## 2.3 Posição na arquitetura
 
@@ -640,8 +640,8 @@ Painel Admin sugerido: volume por canal, entregabilidade, top eventos, taxa de s
 4. **WhatsApp marcado como futuro em todos os documentos.**
    `01-projeto/master-task.md` afirma "Sem WhatsApp inicialmente". Mantido como canal `unavailable` até V4 (seção 10). Sem conflito — apenas registrado.
 
-5. **Dependência: `anti-fraud-engine.md` ausente.**
-   As "Exclusões" (3.8) e o sinal de "contas suspeitas" dependem do Anti-Fraud Engine ainda não documentado. **Tratado como dependência**, não duplicado. Enquanto não existir, usar como proxy o `users.status` (`suspended`/`blocked`) e o estado de chargeback do Payment Engine.
+5. **Dependência: `anti-fraud-engine.md` disponível (docs/19).**
+   As "Exclusões" (3.8) e o sinal de "contas suspeitas" dependem do Anti-Fraud Engine, agora documentado em `docs/19-anti-fraud-engine/anti-fraud-engine.md`. **Tratado como dependência**, não duplicado; a integração deve ser detalhada na implementação. Como complemento/fallback, pode-se usar o `users.status` (`suspended`/`blocked`) e o estado de chargeback do Payment Engine.
 
 6. **Eventos não cobertos explicitamente pela fonte.**
    Eventos como `subscription_*`, `chargeback_received`, `password_reset_requested`, `welcome_onboarding`, `lead_expiring_soon`, `daily_digest`, `level_up`, `mission_completed`, `xp_milestone_reward` **derivam** logicamente de fluxos já descritos em Payment, Auth, Lead e Gamification Engines, mas não estão listados na seção "Sistema de Notificações" da arquitetura. **Observação:** são propostas de complemento coerentes com os motores existentes; o **núcleo MVP** permanece restrito aos seis eventos da arquitetura + pagamento/verificação do Payment Engine.

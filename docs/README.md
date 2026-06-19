@@ -30,6 +30,7 @@ Os documentos são organizados por tema.
 | 06 | [Matching Engine](06-matching-engine/matching-engine.md) | Distribuição de leads: elegibilidade, filtros, score, distribuição justa, fila, escassez, notificações e métricas. |
 | 07 | [Reputation Engine](07-reputation-engine/reputation-engine.md) | Motor de reputação: score 0–1000, componentes e pesos, selos, anti-manipulação, antifraude e impacto no matching. |
 | 08 | [Gamification Engine](08-gamification-engine/gamification-engine.md) | Motor de gamificação: XP, níveis, medalhas, missões, desafios, ranking, recompensas, temporadas e anti-abuso. |
+| 19 | [Anti-Fraud Engine](19-anti-fraud-engine/anti-fraud-engine.md) | Prevenção a fraudes: tipos de fraude, `fraud_score` (0–100), sinais de risco, níveis de bloqueio, proteção de créditos, auditoria. *(enviado por último — pasta 19)* |
 
 ### 🧩 Specs complementares (gerados a partir da fonte da verdade)
 
@@ -45,12 +46,6 @@ Os documentos são organizados por tema.
 | 16 | [Support Center](16-support-center/support-center-spec.md) | Central de ajuda: tickets, SLA, categorias, anexos, escalonamento, base de conhecimento, atendimento, métricas. |
 | 17 | [Security](17-security/security-spec.md) | Segurança: OWASP Top 10, IDOR, RBAC, JWT/refresh, rate limit, multi-tenant, soft delete, proteção financeira, LGPD. |
 | 18 | [Future AI Engine](18-future-ai-engine/future-ai-engine.md) | IA futura (V3+): assistentes, recomendações, previsão de conversão, ranking inteligente, antifraude por IA. |
-
-### ⚠️ Documento referenciado, porém ausente
-
-| # | Documento | Situação |
-|---|-----------|----------|
-| — | `anti-fraud-engine.md` | Citado como fonte da verdade em vários documentos, mas **nunca enviado**. Pendência registrada no [Checklist](00-CHECKLIST-EXECUCAO.md). |
 
 ---
 
@@ -77,7 +72,8 @@ docs/
 ├── 15-verification-engine/verification-engine.md
 ├── 16-support-center/support-center-spec.md
 ├── 17-security/security-spec.md
-└── 18-future-ai-engine/future-ai-engine.md
+├── 18-future-ai-engine/future-ai-engine.md
+└── 19-anti-fraud-engine/anti-fraud-engine.md
 ```
 
 ---
@@ -86,9 +82,9 @@ docs/
 
 | Etapa | Situação |
 |-------|----------|
-| Coleta de documentação | ✅ concluída (18 documentos) |
+| Coleta de documentação | ✅ concluída (19 documentos) |
 | Specs complementares | ✅ gerados (09–18) |
-| Documento `anti-fraud-engine.md` | ⛔ pendente (referenciado, não enviado) |
+| Documento `anti-fraud-engine.md` | ✅ recebido (doc 19) |
 | Desenho técnico / decisões de schema | 🟡 pendências mapeadas no checklist |
 | Implementação | ⛔ não iniciada |
 

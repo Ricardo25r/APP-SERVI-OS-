@@ -56,7 +56,7 @@ Objetivos específicos:
 * Cálculo de XP, níveis e medalhas → `08-gamification-engine`.
 * Compra de leads, créditos e premium → `02-lead-engine`, `05-payment-engine`.
 * Verificação de documentos / aprovação de selo verificado → `05-payment-engine`.
-* Regras de antifraude → **anti-fraud-engine.md (documento ausente — dependência)**.
+* Regras de antifraude → **anti-fraud-engine.md (docs/19 — dependência disponível, integração a detalhar na implementação)**.
 
 ## 2.3 Atores
 
@@ -271,7 +271,7 @@ Alinhado às exigências de segurança do `03-arquitetura`:
 * **Respeito ao Soft Delete:** registros com `deleted_at` nunca aparecem.
 * **RBAC:** filtros administrativos (ex.: buscar por status `suspended`) restritos a `admin`.
 * **Manipulação de ranking proibida:** pesos e score calculados exclusivamente no backend; usuário não pode alterar `sort` para forçar boost indevido nem injetar parâmetros de peso (regra coerente com a seção "Segurança" do `06-matching-engine`).
-* **Anti-scraping:** paginação limitada (`per_page` ≤ 50), rate limiting e detecção de padrões anômalos. Detecção avançada depende do **anti-fraud-engine.md (ausente)**.
+* **Anti-scraping:** paginação limitada (`per_page` ≤ 50), rate limiting e detecção de padrões anômalos. Detecção avançada depende do **anti-fraud-engine.md (disponível em docs/19)**.
 * **Caching seguro:** cache de busca pública não deve misturar contextos de usuários distintos quando houver dados personalizados (chaves segmentadas por contexto).
 
 ---
@@ -332,7 +332,7 @@ Esses dados alimentam o ajuste dos pesos de relevância e a estratégia de expan
 
 ## 10.1 Dependências Ausentes
 
-* **`anti-fraud-engine.md` não existe.** Regras de anti-scraping avançado, detecção de bots/contas suspeitas em busca e bloqueio de padrões anômalos dependem desse documento. Neste documento foram definidas apenas mitigações básicas (rate limiting, paginação limitada, sanitização). **Pendência a ser reconciliada quando o anti-fraud-engine for publicado.**
+* **`anti-fraud-engine.md` disponível (docs/19).** Regras de anti-scraping avançado, detecção de bots/contas suspeitas em busca e bloqueio de padrões anômalos dependem desse documento, agora publicado em `docs/19-anti-fraud-engine/anti-fraud-engine.md`. Neste documento foram definidas apenas mitigações básicas (rate limiting, paginação limitada, sanitização); a integração com o anti-fraud-engine deve ser detalhada na implementação.
 
 ## 10.2 Conflitos / Lacunas com a Fonte da Verdade
 

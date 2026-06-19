@@ -13,7 +13,7 @@ Status: Documento Oficial
 > Documentos relacionados (fonte da verdade):
 > `01-projeto/master-task.md`, `02-lead-engine/lead-engine.md`, `03-arquitetura/marketplace-architecture.md`, `04-banco-de-dados/database-schema.md`, `05-payment-engine/payment-engine.md`, `06-matching-engine/matching-engine.md`, `07-reputation-engine/reputation-engine.md`, `08-gamification-engine/gamification-engine.md`.
 >
-> Dependência externa ainda não documentada: `anti-fraud-engine.md` (a ser criado). Toda regra de detecção/scoring de fraude é de responsabilidade do Anti-Fraud Engine; este documento apenas consome seus sinais e descreve as ações administrativas correspondentes.
+> Dependência externa disponível: `anti-fraud-engine.md` (docs/19-anti-fraud-engine/anti-fraud-engine.md) — integração a detalhar na implementação. Toda regra de detecção/scoring de fraude é de responsabilidade do Anti-Fraud Engine; este documento apenas consome seus sinais e descreve as ações administrativas correspondentes.
 >
 > Este documento **complementa** a seção "Painel Administrativo" de `03-arquitetura/marketplace-architecture.md` e o "Painel Financeiro Admin" de `05-payment-engine/payment-engine.md`. Não reescreve arquitetura nem schema. Extensões ao banco aparecem exclusivamente na subseção "Modelo de Dados (proposta complementar)".
 

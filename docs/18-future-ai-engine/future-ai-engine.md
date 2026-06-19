@@ -22,9 +22,10 @@ Status: Documento Estratégico — Futuro
 > motores. Ele **não substitui nem contradiz** nenhum documento oficial 01–08. Onde há divergência
 > ou dependência pendente, o assunto é registrado em **"## 10. Conflitos e Observações"**.
 >
-> **Dependência crítica ausente:** o documento `anti-fraud-engine.md` é referenciado por este motor
-> (e citado em 02, 06 e 07) mas **ainda não existe** na pasta `docs/`. Os recursos de detecção de
-> fraude por IA aqui descritos pressupõem esse motor como base. Ver seção 10.
+> **Dependência crítica disponível:** o documento `anti-fraud-engine.md` é referenciado por este motor
+> (e citado em 02, 06 e 07) e **agora existe** em `docs/19-anti-fraud-engine/anti-fraud-engine.md`. Os
+> recursos de detecção de fraude por IA aqui descritos pressupõem esse motor como base; a integração
+> será detalhada na implementação. Ver seção 10.
 
 ---
 
@@ -89,7 +90,7 @@ documentos 01–08. Estão dentro do escopo:
 | Reputation Engine | `07-reputation-engine` | reputação baseada em IA (V3), reputação preditiva (V4) |
 | Gamification Engine | `08-gamification-engine` | gamificação com IA (V5) |
 | Payment Engine | `05-payment-engine` | precificação dinâmica de leads, suporte à monetização |
-| Anti-Fraud Engine | `anti-fraud-engine` (ausente) | detecção de fraude por IA |
+| Anti-Fraud Engine | `anti-fraud-engine` (docs/19) | detecção de fraude por IA |
 | Arquitetura | `03-arquitetura` | módulo de IA, APIs, RBAC, auditoria |
 
 ---
@@ -369,7 +370,7 @@ auditadas e reversíveis** (seção 7). As temporadas de 08 (reset a cada 90 dia
 ## 4.8 Detecção de Fraude por IA (integra com anti-fraud-engine)
 
 **Fase:** V3 (detecção assistida) → V4 (preditiva).
-**Dependência:** `anti-fraud-engine.md` (**ausente** — ver seção 10). Esta seção descreve a **camada de
+**Dependência:** `anti-fraud-engine.md` (**disponível** em docs/19 — ver seção 10). Esta seção descreve a **camada de
 IA** que se apoiará nesse motor; ela não define o motor anti-fraude em si.
 
 **Objetivo.** Detectar, com IA, os padrões de fraude/abuso já enumerados em 02, 07 e 08:
@@ -645,12 +646,12 @@ Alinhada a: `08` V5 (Gamificação com IA).
 
 ## 10.1 Dependência ausente — anti-fraud-engine
 
-* **OBS-01 (bloqueante para 4.8).** O documento `anti-fraud-engine.md` é **referenciado** por este motor
+* **OBS-01 (dependência de 4.8 disponível).** O documento `anti-fraud-engine.md` é **referenciado** por este motor
   e citado implicitamente em 02 ("Sistema Anti-Fraude"), 07 ("Detecção de Fraude") e 08 ("Sistema
-  Anti-Abuso"), mas **não existe** em `docs/`. A seção 4.8 descreve apenas a **camada de IA** que se
-  apoiará nesse motor. **Recomenda-se criar `anti-fraud-engine.md`** definindo: regras determinísticas
+  Anti-Abuso"), e **agora existe** em `docs/19-anti-fraud-engine/anti-fraud-engine.md`. A seção 4.8 descreve apenas a **camada de IA** que se
+  apoiará nesse motor. O `anti-fraud-engine.md` (docs/19) define: regras determinísticas
   de fraude, `fraud_risk_score`, fluxos de suspensão/bloqueio, integração com 05 (chargeback) e 07
-  (reputação). Até lá, 4.8 permanece dependente e parcialmente especificado.
+  (reputação). Com a dependência disponível, a especificação de 4.8 pode ser completada na implementação.
 
 ## 10.2 Divergências de roadmap entre documentos (não resolvidas aqui)
 
@@ -692,7 +693,7 @@ abaixo são **propostas** da camada de IA, **não** alterações aprovadas:
 | `ai_audit_logs` | Trilha de auditoria específica de IA, complementar a `audit_logs` (04) |
 | `ai_feedback` | Edições/recusas/overrides humanos (CE-07, AUD-04) como sinal de treino |
 | `ai_provider_config` | Configuração agnóstica de provedor (modelo, parâmetros, limites por ambiente — RN-14) |
-| `fraud_signals` | Sinais agregados para o anti-fraud-engine (depende de OBS-01) |
+| `fraud_signals` | Sinais agregados para o anti-fraud-engine (docs/19; ver OBS-01) |
 
 ## 10.4 Observações de consistência
 

@@ -32,6 +32,7 @@
 - [x] 06 — `matching-engine.md`
 - [x] 07 — `reputation-engine.md`
 - [x] 08 — `gamification-engine.md`
+- [x] 19 — `anti-fraud-engine.md` *(chegou por último; pasta 19)*
 
 ### Specs complementares (gerados)
 - [x] 09 — `admin-panel-spec.md`
@@ -45,10 +46,8 @@
 - [x] 17 — `security-spec.md`
 - [x] 18 — `future-ai-engine.md`
 
-### Pendência de documento
-- [ ] ⛔ **`anti-fraud-engine.md`** — citado como fonte da verdade em vários documentos, mas **nunca foi enviado**. Decidir:
-  - [ ] (a) Você envia o documento original, **ou**
-  - [ ] (b) Eu gero um `anti-fraud-engine.md` completo a partir das regras antifraude já espalhadas (lead/reputation/payment/referral/security).
+### Documento que faltava — ✅ RESOLVIDO
+- [x] ✅ **`anti-fraud-engine.md`** — recebido e salvo em `docs/19-anti-fraud-engine/anti-fraud-engine.md`. As notas de "dependência ausente" nos specs 09–18 foram atualizadas para "disponível (docs/19)".
 
 ---
 
@@ -113,6 +112,12 @@ Os agentes que escreveram os specs encontraram pontos onde a fonte da verdade **
 - [ ] Marcador de **comparecimento/contratação** (`lead_purchases.attended` ou tabela `service_completions`; opcional `leads.hired_at`) — exigido pela reputação (peso "comparecimento") e pelo analytics.
 - [ ] Fonte de **gasto de marketing** (`marketing_spend`) — para calcular CAC.
 
+**Antifraude** *(novos — exigidos pelo doc 19, anti-fraud-engine)*
+- [ ] `users.fraud_score` (0–100) + faixas de risco (baixo/médio/alto/crítico).
+- [ ] Sinais de dispositivo/rede: `device_fingerprint`, `device_id`, `browser_id`, `ip_address` (detectar múltiplas contas / auto-contratação / VPN-proxy).
+- [ ] Níveis de bloqueio antifraude (1 alerta → 2 limitação → 3 suspensão → 4 bloqueio → 5 banimento) — mapear para `users.status` + flags.
+- [ ] ⚠️ Conflito de nome: doc 19 usa `fraud_score`; doc 18 (future-ai) propôs `fraud_risk_score` — padronizar um único nome.
+
 **IA (futuro — V3+)**
 - [ ] Tabelas `ai_inferences`, `ai_models`, `ai_audit_logs`, `fraud_signals` etc. e campos de score — **não bloqueiam o MVP**.
 
@@ -162,8 +167,8 @@ Os agentes que escreveram os specs encontraram pontos onde a fonte da verdade **
 
 - [x] Documentação 100% organizada em `docs/` (18 documentos + este checklist).
 - [x] Conflitos e gaps mapeados (seção 2).
-- [ ] **Subir tudo para o GitHub** (commit + push).
-- [ ] Você decidir sobre o `anti-fraud-engine.md` ausente (seção 1).
+- [x] **Subir tudo para o GitHub** (commit + push) — feito (commit inicial + este).
+- [x] `anti-fraud-engine.md` recebido e integrado (doc 19) — lacuna resolvida.
 - [ ] Você revisar as **decisões pendentes** da seção 2 (principalmente 2.1 e 2.2).
 - [ ] Resolver setup da seção 3 (Python, gateway, Docker).
 - [ ] **Então** começamos a **Fase 1 — Infraestrutura** (eu monto o plano técnico detalhado da fase antes de codar).

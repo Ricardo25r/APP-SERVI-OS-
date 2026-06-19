@@ -50,7 +50,7 @@ Princípio mestre: **toda métrica aqui deve ser rastreável a uma tabela/campo 
 * Cálculo do **reputation_score** → `docs/07-reputation-engine/reputation-engine.md`.
 * Regras de **XP/níveis/medalhas** → `docs/08-gamification-engine/gamification-engine.md`.
 * **Modelagem física** das tabelas → `docs/04-banco-de-dados/database-schema.md`.
-* **Detecção de fraude** → `anti-fraud-engine.md` (**AUSENTE** — ver Seção 10, dependência aberta).
+* **Detecção de fraude** → `anti-fraud-engine.md` (**DISPONÍVEL** em docs/19 — ver Seção 10; integração a detalhar na implementação).
 
 > Este documento é **complementar**: consome dados produzidos pelos motores acima e referencia o schema; não os duplica nem os contradiz.
 
@@ -464,7 +464,7 @@ Alinhado aos roadmaps já existentes (Matching V1→V4, Reputation V1→V4, Gami
 # 10. Conflitos e Observações
 
 ## 10.1 Dependência ausente
-* **`anti-fraud-engine.md` AUSENTE.** Métricas que dependem de exclusão de fraude (auto contratação, múltiplas contas, avaliações falsas) e os casos especiais 6 e 7 ficam **parcialmente bloqueados** até a publicação desse documento. Lead/Reputation/Gamification citam anti-fraude, mas as regras detalhadas não existem.
+* **`anti-fraud-engine.md` DISPONÍVEL (docs/19).** Métricas que dependem de exclusão de fraude (auto contratação, múltiplas contas, avaliações falsas) e os casos especiais 6 e 7 dependiam desse documento, agora publicado em `docs/19-anti-fraud-engine/anti-fraud-engine.md`; a especificação dessas exclusões pode ser completada na implementação, consumindo as regras do docs/19. Lead/Reputation/Gamification já citavam anti-fraude, cujas regras detalhadas agora estão disponíveis.
 
 ## 10.2 Conflitos de schema entre documentos
 > Em todos, prevalece o **schema oficial** (`docs/04-banco-de-dados/database-schema.md`).
