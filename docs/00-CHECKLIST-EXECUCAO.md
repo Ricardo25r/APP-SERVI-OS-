@@ -7,7 +7,7 @@
 > - Repositório: https://github.com/Ricardo25r/APP-SERVI-OS-
 > - Pasta local: `C:\TrampoJa`
 > - Última atualização: **2026-06-18**
-> - Fase atual: **✅ Fases 1–7 CONCLUÍDAS e validadas** (+ Design System oficial aplicado). E2E no Postgres: créditos→lead→avaliação mútua→reputação. 67 testes; frontend builda. Próximo: Fase 8 — Chat.
+> - Fase atual: **✅ Fases 1–8 CONCLUÍDAS e validadas** (+ Design System oficial). E2E no Postgres: créditos→lead→compra→chat→avaliação→reputação. 73 testes; frontend builda. Próximo: Fase 9 — Gamificação.
 
 ---
 
@@ -186,7 +186,7 @@ Os agentes que escreveram os specs encontraram pontos onde a fonte da verdade **
   Pacotes de créditos, PIX, cartão, webhooks assinados, idempotência, reembolso em créditos.
 - [x] **Fase 7 — Avaliações + Reputação** — ✅ *avaliação mútua (1–5 + comentário) pós-compra; reputação (profissional 0–5 + total; contratante 0–1000); UI com estrelas + página /avaliacoes. Smoke E2E ok.*
   Avaliação mútua (1–5 + comentário), reputation score, selos.
-- [ ] **Fase 8 — Chat**
+- [x] **Fase 8 — Chat** — ✅ *conversa por lead, abertura automática na compra, mensagens (REST/polling), só participantes; UI /conversas + thread. Smoke E2E ok. Deferidos: anexos S3, bloqueios, moderação avançada, denúncias, WebSocket.*
   Conversa por lead, abertura automática, anexos, moderação, denúncias.
 - [ ] **Fase 9 — Gamificação**
   XP, níveis, medalhas, missões, ranking, recompensas (estrutura preparada).

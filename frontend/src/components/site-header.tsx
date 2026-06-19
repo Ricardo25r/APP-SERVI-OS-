@@ -25,11 +25,13 @@ const NAV_BY_ROLE: Record<UserRole, NavLink[]> = {
   customer: [
     { href: "/leads", label: "Minhas solicitações" },
     { href: "/leads/new", label: "Nova solicitação" },
+    { href: "/conversas", label: "Conversas" },
     { href: "/avaliacoes", label: "Avaliações" },
   ],
   professional: [
     { href: "/marketplace", label: "Oportunidades" },
     { href: "/credits", label: "Créditos" },
+    { href: "/conversas", label: "Conversas" },
     { href: "/avaliacoes", label: "Avaliações" },
     { href: "/profile", label: "Meu perfil" },
   ],
