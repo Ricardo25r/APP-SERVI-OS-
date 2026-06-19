@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from app.database.base import Base
 from app.models.category import Category
+from app.models.credit_package import CreditPackage
 from app.models.credit_transaction import CreditTransaction
 from app.models.credit_wallet import CreditWallet
 from app.models.customer_profile import CustomerProfile
@@ -22,6 +23,7 @@ from app.models.enums import (
     LeadStatus,
     LeadType,
     LeadUrgency,
+    PaymentOrderStatus,
     UserRole,
     UserStatus,
 )
@@ -33,6 +35,7 @@ from app.models.mixins import (
     TimestampMixin,
     UUIDPKMixin,
 )
+from app.models.payment_order import PaymentOrder
 from app.models.professional_category import ProfessionalCategory
 from app.models.professional_profile import ProfessionalProfile
 from app.models.refresh_token import RefreshToken
@@ -56,6 +59,8 @@ __all__ = [
     "CreditWallet",
     "CreditTransaction",
     "LeadPurchase",
+    "CreditPackage",
+    "PaymentOrder",
     # Enums
     "UserRole",
     "UserStatus",
@@ -65,4 +70,5 @@ __all__ = [
     "LeadUrgency",
     "LeadStatus",
     "CreditTransactionType",
+    "PaymentOrderStatus",
 ]

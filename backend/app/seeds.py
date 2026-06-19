@@ -1,11 +1,12 @@
-"""Seed das categorias iniciais (dono: backbone).
+"""Seeds idempotentes (dono: backbone).
 
-Insere o catálogo inicial de categorias com seus ``tier`` conforme o contrato
-(§2.5 / §5.1). Idempotente: não duplica categorias já presentes (chave: ``slug``).
+Insere o catálogo inicial de **categorias** (§2.5 / §5.1, chave ``slug``) e os
+**pacotes de créditos** da Fase 6 (§6, chave ``name``). Ambos são idempotentes:
+rodar 2× não duplica.
 
 Uso:
 
-    python -m app.seeds
+    python -m app.seeds        # roda categorias + pacotes
 
 Mapa categoria → tier (define o custo base do lead: simple=1, medium=3, premium=5):
 """
@@ -18,7 +19,7 @@ import logging
 from sqlalchemy import select
 
 from app.database.session import async_session_maker
-from app.models import Category, CategoryTier
+from app.models import Category, CategoryTier, CreditPackage
 
 logger = logging.getLogger("trampoja.seeds")
 
@@ -34,6 +35,15 @@ INITIAL_CATEGORIES: tuple[tuple[str, str, CategoryTier], ...] = (
     ("baba", "Babá", CategoryTier.premium),
     ("cuidador", "Cuidador", CategoryTier.premium),
     ("domestica", "Doméstica", CategoryTier.premium),
+)
+
+# (name, credits, price_cents) — §6 (preços em centavos de BRL).
+INITIAL_PACKAGES: tuple[tuple[str, int, int], ...] = (
+    ("Starter", 10, 1990),
+    ("Profissional", 50, 6990),
+    ("Avançado", 100, 11990),
+    ("Elite", 250, 24990),
+    ("Empresarial", 500, 44990),
 )
 
 
@@ -63,10 +73,47 @@ async def seed_categories() -> dict[str, int]:
     return {"created": created, "skipped": skipped}
 
 
+async def seed_packages() -> dict[str, int]:
+    """Insere os pacotes de créditos iniciais que ainda não existem (§6).
+
+    Idempotente — chave lógica ``name`` (que também é UNIQUE na tabela). Rodar
+    2× não duplica. Retorna ``{"created": n, "skipped": m}``.
+    """
+    created = 0
+    skipped = 0
+
+    async with async_session_maker() as session:
+        result = await session.execute(select(CreditPackage.name))
+        existing_names = set(result.scalars().all())
+
+        for name, credits, price_cents in INITIAL_PACKAGES:
+            if name in existing_names:
+                skipped += 1
+                continue
+            session.add(
+                CreditPackage(
+                    name=name,
+                    credits=credits,
+                    price_cents=price_cents,
+                    currency="BRL",
+                    active=True,
+                )
+            )
+            created += 1
+
+        if created:
+            await session.commit()
+
+    logger.info("Seed de pacotes concluído: %d criados, %d ignorados.", created, skipped)
+    return {"created": created, "skipped": skipped}
+
+
 async def _main() -> None:
     logging.basicConfig(level=logging.INFO)
-    summary = await seed_categories()
-    print(f"Categorias: {summary['created']} criadas, {summary['skipped']} ignoradas.")
+    cats = await seed_categories()
+    pkgs = await seed_packages()
+    print(f"Categorias: {cats['created']} criadas, {cats['skipped']} ignoradas.")
+    print(f"Pacotes: {pkgs['created']} criados, {pkgs['skipped']} ignorados.")
 
 
 if __name__ == "__main__":

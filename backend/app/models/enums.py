@@ -92,6 +92,24 @@ class CreditTransactionType(str, enum.Enum):
     adjustment = "adjustment"
 
 
+class PaymentOrderStatus(str, enum.Enum):
+    """Estado de um pedido de compra de créditos (Fase 6).
+
+    Postgres enum ``payment_order_status``. Transições documentadas (§2.3):
+    - ``pending``: criado, aguardando pagamento (estado inicial);
+    - ``paid``: confirmado pelo webhook; créditos já adicionados à carteira;
+    - ``failed``: provedor reportou falha/expiração da cobrança (não credita);
+    - ``refunded``: pedido ``paid`` estornado pelo admin (créditos devolvidos);
+    - ``cancelled``: cancelado antes de pagar (reservado; sem endpoint no MVP).
+    """
+
+    pending = "pending"
+    paid = "paid"
+    failed = "failed"
+    refunded = "refunded"
+    cancelled = "cancelled"
+
+
 __all__ = [
     "UserRole",
     "UserStatus",
@@ -101,4 +119,5 @@ __all__ = [
     "LeadUrgency",
     "LeadStatus",
     "CreditTransactionType",
+    "PaymentOrderStatus",
 ]

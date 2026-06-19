@@ -56,6 +56,19 @@ class Settings(BaseSettings):
     # CORS
     CORS_ORIGINS: str = "http://localhost:3000"
 
+    # Pagamentos / Fase 6
+    PAYMENT_PROVIDER: str = "dev"  # dev | mercadopago | stripe ...
+    # HMAC do webhook (NUNCA usar o default em produção).
+    PAYMENT_WEBHOOK_SECRET: str = "dev-webhook-secret"
+    PAYMENT_CURRENCY: str = "BRL"  # moeda padrão dos pacotes/pedidos
+    # Base da URL fake de checkout (modo dev).
+    PAYMENT_DEV_CHECKOUT_BASE: str = "http://localhost:3000/credits"
+    # Futuro (NÃO usados pelo DevPaymentProvider; documentados p/ provedores reais):
+    # MP_ACCESS_TOKEN: str = ""
+    # MP_WEBHOOK_SECRET: str = ""
+    # STRIPE_API_KEY: str = ""
+    # STRIPE_WEBHOOK_SECRET: str = ""
+
     @property
     def cors_origins_list(self) -> list[str]:
         """Lista de origens permitidas, derivada de `CORS_ORIGINS`.
