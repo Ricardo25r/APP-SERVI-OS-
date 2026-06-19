@@ -14,13 +14,8 @@
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { SectionHeader } from "@/components/ui/section-header";
 
 import { useCreateOrder, usePackages } from "../hooks";
 import type { CreditPackage, PaymentOrder } from "../types";
@@ -55,25 +50,14 @@ export function BuyCreditsSection({ onPaid, className }: BuyCreditsSectionProps)
 
   const packages = packagesQuery.data ?? [];
 
+  const description = isDevPaymentProvider()
+    ? "Escolha um pacote e pague via PIX. (Ambiente de testes: pagamento simulado.)"
+    : "Escolha um pacote e pague via PIX para adicionar créditos à sua carteira.";
+
   return (
     <Card className={className}>
-      <CardHeader>
-        <CardTitle className="text-xl">Comprar créditos</CardTitle>
-        <CardDescription>
-          Escolha um pacote e pague via PIX para adicionar créditos à sua
-          carteira.
-          {isDevPaymentProvider() && (
-            <>
-              {" "}
-              <span className="font-medium">
-                (Ambiente de testes: pagamento simulado.)
-              </span>
-            </>
-          )}
-        </CardDescription>
-      </CardHeader>
-
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 p-4 sm:p-6">
+        <SectionHeader title="Comprar créditos" description={description} />
         {packagesQuery.isLoading ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {[0, 1, 2].map((i) => (

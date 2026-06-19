@@ -1,14 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import { Check } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { IconChip } from "@/components/ui/icon-chip";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectOption } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 import type { Category, LeadType, LeadUrgency } from "@/types";
 
+import { categoryVisual } from "../category-icon";
 import { LEAD_TYPE_OPTIONS, LEAD_URGENCY_OPTIONS } from "../constants";
 
 /** Valores do formulário (string para campos controlados). */
@@ -25,7 +29,7 @@ export interface LeadFormValues {
 
 export interface LeadFormProps {
   mode: "create" | "edit";
-  /** Categorias para o select (modo create). */
+  /** Categorias para a seleção (modo create). */
   categories?: Category[];
   /** Valores iniciais (preenche no modo edit). */
   initialValues?: Partial<LeadFormValues>;
@@ -99,7 +103,7 @@ export function LeadForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+    <form onSubmit={handleSubmit} className="space-y-6" noValidate>
       {error ? (
         <div
           role="alert"
@@ -109,28 +113,53 @@ export function LeadForm({
         </div>
       ) : null}
 
+      {/* Categoria via grid de IconChips (somente na criação). */}
       {!isEdit ? (
-        <div className="space-y-1.5">
-          <Label htmlFor="category_id">Categoria</Label>
-          <Select
-            id="category_id"
-            value={values.category_id}
-            onChange={(e) => setField("category_id", e.target.value)}
+        <fieldset className="space-y-2">
+          <legend className="mb-2 text-sm font-medium leading-none">
+            Categoria
+          </legend>
+          <div
+            role="radiogroup"
+            aria-label="Categoria"
             aria-invalid={Boolean(fieldErrors.category_id)}
+            className="grid grid-cols-2 gap-2 sm:grid-cols-3"
           >
-            <SelectOption value="" disabled>
-              Selecione uma categoria
-            </SelectOption>
-            {categories.map((c) => (
-              <SelectOption key={c.id} value={c.id}>
-                {c.name}
-              </SelectOption>
-            ))}
-          </Select>
+            {categories.map((c) => {
+              const visual = categoryVisual({ slug: c.slug, name: c.name });
+              const selected = values.category_id === c.id;
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  onClick={() => setField("category_id", c.id)}
+                  className={cn(
+                    "relative flex flex-col items-center gap-2 rounded-xl border bg-card p-3 text-center transition-colors",
+                    "hover:border-primary/40 hover:bg-primary/5",
+                    selected
+                      ? "border-primary bg-primary/5 ring-1 ring-primary"
+                      : "border-border"
+                  )}
+                >
+                  {selected ? (
+                    <span className="absolute right-1.5 top-1.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                      <Check className="h-3 w-3" aria-hidden />
+                    </span>
+                  ) : null}
+                  <IconChip icon={visual.icon} color={visual.color} size="md" />
+                  <span className="line-clamp-2 text-xs font-medium leading-tight text-foreground">
+                    {c.name}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
           {fieldErrors.category_id ? (
             <p className="text-xs text-destructive">{fieldErrors.category_id}</p>
           ) : null}
-        </div>
+        </fieldset>
       ) : null}
 
       <div className="space-y-1.5">
@@ -240,7 +269,11 @@ export function LeadForm({
       </div>
 
       <div className="flex flex-wrap gap-2 pt-2">
-        <Button type="submit" disabled={submitting}>
+        <Button
+          type="submit"
+          disabled={submitting}
+          className="bg-brand text-brand-foreground hover:bg-brand/90"
+        >
           {submitting ? "Salvando..." : submitLabel}
         </Button>
         {onCancel ? (

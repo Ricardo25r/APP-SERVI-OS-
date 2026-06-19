@@ -24,7 +24,7 @@ import { useAuthStore } from "@/store/auth";
 import { apiPost } from "@/services/api";
 import type { AuthResponse } from "@/types";
 import {
-  AuthCard,
+  AuthLayout,
   FieldError,
   FormError,
   homePathForRole,
@@ -100,13 +100,13 @@ export default function LoginPage() {
   }
 
   return (
-    <AuthCard
+    <AuthLayout
       title="Entrar"
       description="Acesse sua conta do FazTudo"
       footer={
         <p className="text-sm text-muted-foreground">
           Ainda não tem conta?{" "}
-          <Link href="/register" className="font-medium text-primary hover:underline">
+          <Link href="/register" className="font-semibold text-primary hover:underline">
             Cadastre-se
           </Link>
         </p>
@@ -130,7 +130,15 @@ export default function LoginPage() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password">Senha</Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="password">Senha</Label>
+            <Link
+              href="/recuperar-senha"
+              className="text-xs font-medium text-primary hover:underline"
+            >
+              Esqueceu a senha?
+            </Link>
+          </div>
           <Input
             id="password"
             type="password"
@@ -143,10 +151,15 @@ export default function LoginPage() {
           <FieldError id="password-error" message={errors.password?.message} />
         </div>
 
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
+        <Button
+          type="submit"
+          size="lg"
+          className="w-full bg-brand text-brand-foreground hover:bg-brand/90"
+          disabled={isSubmitting}
+        >
           {isSubmitting ? "Entrando..." : "Entrar"}
         </Button>
       </form>
-    </AuthCard>
+    </AuthLayout>
   );
 }

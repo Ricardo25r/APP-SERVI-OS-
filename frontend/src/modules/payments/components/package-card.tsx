@@ -1,17 +1,19 @@
 /**
- * `PackageCard` — card de um pacote de créditos no catálogo.
+ * `PackageCard` — card de um pacote de créditos no catálogo (tela 05 — Comprar
+ * créditos).
  *
  * Mostra nome, quantidade de créditos e preço formatado em BRL (a partir de
- * `price_cents`), com um botão "Comprar". Apresentacional: a ação de compra é
- * delegada via `onBuy`. `loading` reflete a mutation de criação do pedido em
- * andamento para este pacote.
+ * `price_cents`), com um botão "Comprar" laranja (CTA). Apresentacional: a ação
+ * de compra é delegada via `onBuy`. `loading` reflete a mutation de criação do
+ * pedido em andamento para este pacote.
  */
 "use client";
 
-import { Loader2 } from "lucide-react";
+import { Coins, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { IconChip } from "@/components/ui/icon-chip";
 
 import type { CreditPackage } from "../types";
 import { formatBRLFromCents } from "../utils";
@@ -33,30 +35,34 @@ export function PackageCard({
 }: PackageCardProps) {
   return (
     <Card className="flex flex-col">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg">{pkg.name}</CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-1 flex-col justify-between gap-4">
-        <div>
-          <p className="text-3xl font-bold tabular-nums">
-            {pkg.credits}
-            <span className="ml-1.5 text-sm font-medium text-muted-foreground">
-              créditos
-            </span>
-          </p>
-          <p className="mt-1 text-xl font-semibold text-primary tabular-nums">
-            {formatBRLFromCents(pkg.price_cents, pkg.currency)}
-          </p>
+      <CardContent className="flex flex-1 flex-col gap-4 p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-foreground">
+              {pkg.name}
+            </p>
+            <p className="mt-1 text-2xl font-bold tracking-tight tabular-nums">
+              {pkg.credits}
+              <span className="ml-1.5 text-sm font-medium text-muted-foreground">
+                créditos
+              </span>
+            </p>
+          </div>
+          <IconChip icon={Coins} color="orange" size="md" aria-hidden />
         </div>
+
+        <p className="text-lg font-bold tabular-nums text-primary">
+          {formatBRLFromCents(pkg.price_cents, pkg.currency)}
+        </p>
 
         <Button
           type="button"
-          className="w-full"
+          className="mt-auto w-full gap-2 bg-brand text-brand-foreground hover:bg-brand/90"
           onClick={() => onBuy(pkg)}
           disabled={loading || disabled}
         >
           {loading && (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />
+            <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
           )}
           Comprar
         </Button>

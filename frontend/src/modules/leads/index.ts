@@ -3,6 +3,7 @@
 export * from "./api";
 export * from "./constants";
 export * from "./utils";
+export { categoryVisual } from "./category-icon";
 export { LeadCard } from "./components/lead-card";
 export { LeadForm } from "./components/lead-form";
 export type { LeadFormValues } from "./components/lead-form";

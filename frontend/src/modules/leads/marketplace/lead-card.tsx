@@ -1,10 +1,12 @@
 /**
- * `LeadCard` — um cartão de oportunidade no MARKETPLACE do profissional.
+ * `LeadCard` — um cartão de oportunidade no MARKETPLACE do profissional
+ * (telas 03/04 — Home Profissional / Detalhes do lead).
  *
- * Mostra título, categoria, cidade/bairro, urgência e custo em créditos (Badge).
- * Botão "Comprar lead (N créditos)" dispara `onBuy`. Ao comprar com sucesso,
- * o contato liberado é exibido inline (card verde) — controlado pelo pai via
- * `purchasedContact`. NUNCA expõe contato antes da compra.
+ * Mostra `IconChip` da categoria, título, cidade/UF, urgência e o custo em
+ * créditos em destaque (badge). Botão "Comprar lead (N créditos)" laranja (CTA)
+ * dispara `onBuy`. Ao comprar com sucesso, o contato liberado é exibido inline
+ * (card verde) — controlado pelo pai via `purchasedContact`. NUNCA expõe o
+ * contato antes da compra.
  *
  * Estados de erro por-card (402/403/409) são exibidos inline; quando for 402
  * (saldo insuficiente) mostramos um CTA para `/credits`.
@@ -12,16 +14,13 @@
 "use client";
 
 import Link from "next/link";
+import { Briefcase, Coins, Loader2, MapPin } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { IconChip } from "@/components/ui/icon-chip";
+import { cn } from "@/lib/utils";
 import type { Lead, LeadContact } from "@/types";
 
 import { ContactCard } from "./contact-card";
@@ -62,42 +61,51 @@ export function LeadCard({
 
   return (
     <Card className="flex flex-col">
-      <CardHeader className="gap-2">
+      <CardContent className="flex flex-1 flex-col gap-3 p-4">
+        {/* Cabeçalho: IconChip da categoria + título/categoria. */}
+        <div className="flex items-start gap-3">
+          <IconChip icon={Briefcase} color="blue" size="md" aria-hidden />
+          <div className="min-w-0 flex-1">
+            <h3 className="truncate text-base font-bold tracking-tight">
+              {lead.title}
+            </h3>
+            {lead.category?.name && (
+              <p className="truncate text-xs font-medium text-muted-foreground">
+                {lead.category.name}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Pílulas: urgência + tipo exclusivo. */}
         <div className="flex flex-wrap items-center gap-2">
-          {lead.category?.name && (
-            <Badge variant="secondary">{lead.category.name}</Badge>
-          )}
           <Badge variant={urgency.variant}>{urgency.label}</Badge>
           {lead.lead_type === "one_time" && (
             <Badge variant="outline">Exclusivo</Badge>
           )}
         </div>
-        <CardTitle className="text-lg">{lead.title}</CardTitle>
-      </CardHeader>
 
-      <CardContent className="flex-1 space-y-2">
-        <p className="line-clamp-3 text-sm text-muted-foreground">
+        <p className="line-clamp-2 text-sm text-muted-foreground">
           {lead.description}
         </p>
-        <dl className="space-y-1 text-sm">
+
+        {/* Metadados: local + data. */}
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
           {locationParts.length > 0 && (
-            <div className="flex gap-1">
-              <dt className="text-muted-foreground">Local:</dt>
-              <dd>{locationParts.join(", ")}</dd>
-            </div>
+            <span className="inline-flex items-center gap-1.5">
+              <MapPin className="h-3.5 w-3.5" aria-hidden />
+              {locationParts.join(", ")}
+            </span>
           )}
-          <div className="flex gap-1">
-            <dt className="text-muted-foreground">Publicado em:</dt>
-            <dd>{formatDate(lead.created_at)}</dd>
-          </div>
-        </dl>
+          <span>Publicado em {formatDate(lead.created_at)}</span>
+        </div>
 
         {purchasedContact && (
-          <ContactCard contact={purchasedContact} className="mt-3" />
+          <ContactCard contact={purchasedContact} className="mt-1" />
         )}
 
         {error && !alreadyPurchased && (
-          <div className="mt-3 rounded-md border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
+          <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
             <p>{error.message}</p>
             {error.offerCredits && (
               <Link
@@ -109,32 +117,41 @@ export function LeadCard({
             )}
           </div>
         )}
-      </CardContent>
 
-      <CardFooter className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Custo:</span>
-          <Badge variant={canAfford ? "default" : "destructive"}>
-            {lead.credits_cost} créditos
-          </Badge>
-        </div>
-
-        {alreadyPurchased ? (
-          <Button variant="outline" disabled>
-            Lead comprado
-          </Button>
-        ) : (
-          <Button
-            onClick={() => onBuy(lead)}
-            disabled={buying || !canAfford}
-            title={!canAfford ? "Saldo insuficiente" : undefined}
+        {/* Rodapé: custo em destaque + CTA. */}
+        <div className="mt-auto flex items-center justify-between gap-3 border-t border-border pt-3">
+          <span
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-sm font-bold tabular-nums",
+              canAfford
+                ? "bg-brand/10 text-brand"
+                : "bg-destructive/10 text-destructive"
+            )}
           >
-            {buying
-              ? "Comprando..."
-              : `Comprar lead (${lead.credits_cost} créditos)`}
-          </Button>
-        )}
-      </CardFooter>
+            <Coins className="h-4 w-4" aria-hidden />
+            {lead.credits_cost} créditos
+          </span>
+
+          {alreadyPurchased ? (
+            <Button variant="outline" size="sm" disabled>
+              Lead comprado
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              className="gap-1.5 bg-brand text-brand-foreground hover:bg-brand/90"
+              onClick={() => onBuy(lead)}
+              disabled={buying || !canAfford}
+              title={!canAfford ? "Saldo insuficiente" : undefined}
+            >
+              {buying && (
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+              )}
+              {buying ? "Comprando..." : `Comprar lead (${lead.credits_cost})`}
+            </Button>
+          )}
+        </div>
+      </CardContent>
     </Card>
   );
 }

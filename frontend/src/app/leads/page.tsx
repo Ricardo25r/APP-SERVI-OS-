@@ -6,22 +6,34 @@
  * ver/editar (enquanto aberta) e cancelar (com confirmação).
  */
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Plus, RefreshCw } from "lucide-react";
+import { ClipboardList, Plus, RefreshCw } from "lucide-react";
 
+import { AppHeader } from "@/components/app-shell/app-header";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
 import { useRequireAuth } from "@/hooks/use-auth";
-import type { Lead } from "@/types";
+import type { Lead, LeadStatus } from "@/types";
 
 import {
   cancelLead,
   ConfirmDialog,
   describeApiError,
   fetchMyLeads,
+  leadStatusLabel,
   LeadCard,
 } from "@/modules/leads";
+
+/** Filtros disponíveis (segmented). */
+const STATUS_FILTERS: { value: "all" | LeadStatus; label: string }[] = [
+  { value: "all", label: "Todas" },
+  { value: "open", label: leadStatusLabel("open") },
+  { value: "purchased", label: leadStatusLabel("purchased") },
+  { value: "closed", label: leadStatusLabel("closed") },
+  { value: "cancelled", label: leadStatusLabel("cancelled") },
+];
 
 export default function LeadsPage() {
   const auth = useRequireAuth("customer");
@@ -29,6 +41,7 @@ export default function LeadsPage() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<"all" | LeadStatus>("all");
 
   // Estado do diálogo de cancelamento.
   const [toCancel, setToCancel] = useState<Lead | null>(null);
@@ -53,6 +66,12 @@ export default function LeadsPage() {
     if (!auth.hasHydrated || !auth.isAuthenticated || !auth.isCustomer) return;
     void load();
   }, [auth.hasHydrated, auth.isAuthenticated, auth.isCustomer, load]);
+
+  const filtered = useMemo(
+    () =>
+      filter === "all" ? leads : leads.filter((l) => l.status === filter),
+    [leads, filter]
+  );
 
   async function handleConfirmCancel() {
     if (!toCancel) return;
@@ -83,70 +102,139 @@ export default function LeadsPage() {
   }
 
   return (
-    <main className="mx-auto max-w-5xl px-6 py-10">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Minhas solicitações
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Gerencie as solicitações de serviço que você publicou.
-          </p>
-        </div>
-        <Link href="/leads/new" className={cn(buttonVariants(), "gap-1.5")}>
-          <Plus className="h-4 w-4" aria-hidden />
-          Nova solicitação
-        </Link>
-      </div>
+    <>
+      {/* Header azul interno (mobile) — no desktop usa o SiteHeader. */}
+      <AppHeader
+        mode="title"
+        title="Solicitações"
+        backHref="/"
+        className="lg:hidden"
+        action={
+          <Link
+            href="/leads/new"
+            aria-label="Nova solicitação"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full text-primary-foreground/90 transition-colors hover:bg-primary-foreground/10"
+          >
+            <Plus className="h-5 w-5" aria-hidden />
+          </Link>
+        }
+      />
 
-      <div className="mt-8">
-        {loading ? (
-          <div className="grid gap-4 sm:grid-cols-2">
-            {[0, 1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="h-44 animate-pulse rounded-lg border bg-muted/40"
-              />
-            ))}
-          </div>
-        ) : error ? (
-          <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-center">
-            <p className="text-sm text-destructive">{error}</p>
-            <Button
-              variant="outline"
-              size="sm"
-              className="mt-4 gap-1.5"
-              onClick={() => void load()}
-            >
-              <RefreshCw className="h-3.5 w-3.5" aria-hidden />
-              Tentar novamente
-            </Button>
-          </div>
-        ) : leads.length === 0 ? (
-          <div className="rounded-lg border border-dashed p-10 text-center">
-            <p className="text-base font-medium">
-              Você ainda não tem solicitações.
-            </p>
+      <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-10">
+        {/* Título + CTA (desktop). */}
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+              Suas solicitações
+            </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Crie sua primeira solicitação para receber propostas de
-              profissionais.
+              Gerencie as solicitações de serviço que você publicou.
             </p>
-            <Link
-              href="/leads/new"
-              className={cn(buttonVariants(), "mt-4 gap-1.5")}
-            >
-              <Plus className="h-4 w-4" aria-hidden />
-              Nova solicitação
-            </Link>
           </div>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
-            {leads.map((lead) => (
-              <LeadCard key={lead.id} lead={lead} onCancel={setToCancel} />
-            ))}
+          <Link
+            href="/leads/new"
+            className={cn(
+              buttonVariants(),
+              "gap-1.5 bg-brand text-brand-foreground hover:bg-brand/90"
+            )}
+          >
+            <Plus className="h-4 w-4" aria-hidden />
+            Nova solicitação
+          </Link>
+        </div>
+
+        {/* Filtro segmented por status. */}
+        {!loading && !error && leads.length > 0 ? (
+          <div className="mt-6 -mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+            <div className="inline-flex gap-1 rounded-full bg-muted p-1">
+              {STATUS_FILTERS.map((f) => {
+                const active = filter === f.value;
+                return (
+                  <button
+                    key={f.value}
+                    type="button"
+                    onClick={() => setFilter(f.value)}
+                    aria-pressed={active}
+                    className={cn(
+                      "whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
+                      active
+                        ? "bg-card text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {f.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        )}
-      </div>
+        ) : null}
+
+        <div className="mt-6">
+          {loading ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {[0, 1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="h-48 animate-pulse rounded-lg border bg-muted/40"
+                />
+              ))}
+            </div>
+          ) : error ? (
+            <div className="rounded-xl border border-destructive/50 bg-destructive/10 p-6 text-center">
+              <p className="text-sm text-destructive">{error}</p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-4 gap-1.5"
+                onClick={() => void load()}
+              >
+                <RefreshCw className="h-3.5 w-3.5" aria-hidden />
+                Tentar novamente
+              </Button>
+            </div>
+          ) : leads.length === 0 ? (
+            <EmptyState
+              icon={ClipboardList}
+              title="Você ainda não tem solicitações."
+              description="Crie sua primeira solicitação para receber propostas de profissionais."
+              action={
+                <Link
+                  href="/leads/new"
+                  className={cn(
+                    buttonVariants(),
+                    "gap-1.5 bg-brand text-brand-foreground hover:bg-brand/90"
+                  )}
+                >
+                  <Plus className="h-4 w-4" aria-hidden />
+                  Nova solicitação
+                </Link>
+              }
+            />
+          ) : filtered.length === 0 ? (
+            <EmptyState
+              icon={ClipboardList}
+              title="Nenhuma solicitação neste filtro."
+              description="Tente selecionar outro status acima."
+              action={
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setFilter("all")}
+                >
+                  Ver todas
+                </Button>
+              }
+            />
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {filtered.map((lead) => (
+                <LeadCard key={lead.id} lead={lead} onCancel={setToCancel} />
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
 
       <ConfirmDialog
         open={Boolean(toCancel)}
@@ -168,6 +256,6 @@ export default function LeadsPage() {
           setCancelError(null);
         }}
       />
-    </main>
+    </>
   );
 }

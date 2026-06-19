@@ -8,8 +8,20 @@
  * - `messageFromError`: mensagem amigável (PT-BR) de erros da API.
  */
 
+import {
+  ArrowDownLeft,
+  ArrowUpRight,
+  Gift,
+  RotateCcw,
+  ShoppingCart,
+  SlidersHorizontal,
+  type LucideIcon,
+} from "lucide-react";
+
 import { ApiError } from "@/services/api";
 import type { CreditTransaction, CreditTransactionType } from "@/types";
+
+type IconChipColor = "default" | "blue" | "orange" | "green" | "muted";
 
 /** Formata uma data ISO em `dd/mm/aaaa HH:MM` (PT-BR). */
 export function formatDateTime(iso: string): string {
@@ -49,6 +61,10 @@ interface TransactionMeta {
   variant: BadgeVariant;
   /** Se o valor é um crédito (entra na carteira) ou débito (sai). */
   isCredit: boolean;
+  /** Ícone lucide do `IconChip` da linha. */
+  icon: LucideIcon;
+  /** Cor do `IconChip` (verde p/ entrada, laranja/azul p/ tipos específicos). */
+  iconColor: IconChipColor;
 }
 
 /**
@@ -61,25 +77,83 @@ export function creditTransactionMeta(
 ): TransactionMeta {
   const byType: Record<
     CreditTransactionType,
-    Omit<TransactionMeta, "isCredit"> & { isCredit?: boolean }
+    Omit<TransactionMeta, "isCredit" | "iconColor"> & {
+      isCredit?: boolean;
+      iconColor?: IconChipColor;
+    }
   > = {
-    purchase: { label: "Compra de créditos", variant: "success", isCredit: true },
-    bonus: { label: "Bônus", variant: "success", isCredit: true },
-    refund: { label: "Reembolso", variant: "secondary", isCredit: true },
-    spend: { label: "Compra de lead", variant: "destructive", isCredit: false },
-    adjustment: { label: "Ajuste", variant: "outline" },
+    purchase: {
+      label: "Compra de créditos",
+      variant: "success",
+      isCredit: true,
+      icon: ShoppingCart,
+      iconColor: "green",
+    },
+    bonus: {
+      label: "Bônus",
+      variant: "success",
+      isCredit: true,
+      icon: Gift,
+      iconColor: "green",
+    },
+    refund: {
+      label: "Reembolso",
+      variant: "secondary",
+      isCredit: true,
+      icon: RotateCcw,
+      iconColor: "green",
+    },
+    spend: {
+      label: "Compra de lead",
+      variant: "destructive",
+      isCredit: false,
+      icon: ArrowUpRight,
+      iconColor: "orange",
+    },
+    adjustment: {
+      label: "Ajuste",
+      variant: "outline",
+      icon: SlidersHorizontal,
+    },
   };
 
   const meta = byType[tx.transaction_type] ?? {
     label: tx.transaction_type,
     variant: "outline" as const,
+    icon: ArrowDownLeft,
   };
 
   // Para "adjustment" (ou tipos desconhecidos) inferimos o sinal pelo amount.
   const isCredit =
     meta.isCredit ?? (typeof tx.amount === "number" ? tx.amount >= 0 : true);
 
-  return { label: meta.label, variant: meta.variant, isCredit };
+  // Sem cor explícita: verde para entradas, vermelho (destructive) para saídas.
+  const iconColor: IconChipColor =
+    meta.iconColor ?? (isCredit ? "green" : "orange");
+
+  return {
+    label: meta.label,
+    variant: meta.variant,
+    isCredit,
+    icon: meta.icon,
+    iconColor,
+  };
+}
+
+/** Agrega o histórico em totais de créditos comprados (+) e usados (-). */
+export function summarizeTransactions(
+  transactions: CreditTransaction[]
+): { purchased: number; used: number } {
+  return transactions.reduce(
+    (acc, tx) => {
+      const { isCredit } = creditTransactionMeta(tx);
+      const magnitude = Math.abs(tx.amount);
+      if (isCredit) acc.purchased += magnitude;
+      else acc.used += magnitude;
+      return acc;
+    },
+    { purchased: 0, used: 0 }
+  );
 }
 
 /** Valor da transação com sinal explícito (+N / -N). */

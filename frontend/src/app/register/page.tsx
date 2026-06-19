@@ -21,14 +21,14 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectOption } from "@/components/ui/select";
 import { useAuthStore } from "@/store/auth";
 import { apiPost } from "@/services/api";
 import type { AuthResponse, UserRole } from "@/types";
 import {
-  AuthCard,
+  AuthLayout,
   FieldError,
   FormError,
+  RoleSelector,
   homePathForRole,
   messageFromError,
   toSession,
@@ -84,6 +84,8 @@ export default function RegisterPage() {
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<RegisterValues>({
     resolver: registerResolver,
@@ -95,6 +97,11 @@ export default function RegisterPage() {
       role: "customer",
     },
   });
+
+  // Mantém o campo `role` registrado para validação/submit; o seletor visual
+  // (RoleSelector) apenas atualiza esse valor.
+  register("role");
+  const selectedRole = watch("role");
 
   async function onSubmit(values: RegisterValues) {
     setFormError(null);
@@ -124,13 +131,13 @@ export default function RegisterPage() {
   }
 
   return (
-    <AuthCard
+    <AuthLayout
       title="Criar conta"
       description="Cadastre-se no FazTudo"
       footer={
         <p className="text-sm text-muted-foreground">
           Já tem conta?{" "}
-          <Link href="/login" className="font-medium text-primary hover:underline">
+          <Link href="/login" className="font-semibold text-primary hover:underline">
             Entrar
           </Link>
         </p>
@@ -197,27 +204,36 @@ export default function RegisterPage() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="role">Tipo de conta</Label>
-          <Select
-            id="role"
-            aria-invalid={Boolean(errors.role)}
-            aria-describedby={errors.role ? "role-error" : undefined}
-            {...register("role")}
+          <span
+            id="role-label"
+            className="text-sm font-medium leading-none"
           >
-            <SelectOption value="customer">
-              Contratante — quero contratar serviços
-            </SelectOption>
-            <SelectOption value="professional">
-              Profissional — quero oferecer serviços
-            </SelectOption>
-          </Select>
+            Tipo de conta
+          </span>
+          <RoleSelector
+            value={selectedRole}
+            onChange={(role) =>
+              setValue("role", role, {
+                shouldValidate: true,
+                shouldDirty: true,
+              })
+            }
+            labelledById="role-label"
+            invalid={Boolean(errors.role)}
+            describedById={errors.role ? "role-error" : undefined}
+          />
           <FieldError id="role-error" message={errors.role?.message} />
         </div>
 
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
+        <Button
+          type="submit"
+          size="lg"
+          className="w-full bg-brand text-brand-foreground hover:bg-brand/90"
+          disabled={isSubmitting}
+        >
           {isSubmitting ? "Criando conta..." : "Criar conta"}
         </Button>
       </form>
-    </AuthCard>
+    </AuthLayout>
   );
 }

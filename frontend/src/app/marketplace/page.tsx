@@ -1,5 +1,5 @@
 /**
- * MARKETPLACE do profissional — `/marketplace`.
+ * MARKETPLACE do profissional — `/marketplace` (telas 03/04).
  *
  * Lista as oportunidades ELEGÍVEIS (`GET /leads/` como professional: mesma
  * categoria/cidade do perfil, status open) e permite COMPRAR um lead
@@ -15,8 +15,13 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { RefreshCw, SearchX, Wallet } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { BalanceCard } from "@/components/ui/balance-card";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { SectionHeader } from "@/components/ui/section-header";
+import { cn } from "@/lib/utils";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { apiGet, apiPost } from "@/services/api";
 import type {
@@ -27,7 +32,6 @@ import type {
   Paginated,
 } from "@/types";
 
-import { BalanceCard } from "@/modules/credits/balance-card";
 import { LeadCard } from "@/modules/leads/marketplace/lead-card";
 import {
   loadErrorMessage,
@@ -117,35 +121,59 @@ export default function MarketplacePage() {
   // Enquanto a auth não hidratou, evita flicker.
   if (!auth.hasHydrated || auth.role !== "professional") {
     return (
-      <main className="mx-auto max-w-5xl px-6 py-10">
+      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
         <p className="text-sm text-muted-foreground">Carregando...</p>
       </main>
     );
   }
 
   return (
-    <main className="mx-auto max-w-5xl px-6 py-10">
-      <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Marketplace</h1>
-          <p className="mt-1 text-muted-foreground">
-            Oportunidades elegíveis para o seu perfil. Compre o lead para
-            liberar o contato do contratante.
-          </p>
-        </div>
-        <Link
-          href="/purchases"
-          className="text-sm font-medium text-primary underline-offset-4 hover:underline"
-        >
-          Minhas compras
-        </Link>
+    <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
+      <header className="mb-6">
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+          Oportunidades
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Compre o lead para liberar o contato do contratante.
+        </p>
       </header>
 
+      {/* Saldo no topo com link para a carteira. */}
       <BalanceCard
-        balance={balance}
-        loading={balanceLoading}
-        showCreditsLink
         className="mb-8"
+        label="Seu saldo"
+        value={
+          balanceLoading ? (
+            <span className="inline-block h-8 w-24 animate-pulse rounded bg-primary-foreground/20 align-middle" />
+          ) : (
+            <span className="tabular-nums">
+              {balance ?? 0}
+              <span className="ml-1.5 text-base font-semibold text-primary-foreground/80">
+                créditos
+              </span>
+            </span>
+          )
+        }
+        caption="Use seus créditos para comprar leads"
+        actions={
+          <Link
+            href="/credits"
+            className={cn(
+              buttonVariants({ variant: "secondary", size: "sm" }),
+              "gap-1.5"
+            )}
+          >
+            <Wallet className="h-4 w-4" aria-hidden />
+            Ver carteira
+          </Link>
+        }
+      />
+
+      <SectionHeader
+        title="Leads disponíveis"
+        actionLabel="Minhas compras"
+        actionHref="/purchases"
+        className="mb-4"
       />
 
       {loading ? (
@@ -153,29 +181,37 @@ export default function MarketplacePage() {
           {[0, 1, 2, 3].map((i) => (
             <div
               key={i}
-              className="h-56 animate-pulse rounded-lg border bg-muted/40"
+              className="h-56 animate-pulse rounded-xl border bg-muted/40"
             />
           ))}
         </div>
       ) : loadError ? (
-        <div className="rounded-md border border-destructive/40 bg-destructive/5 p-4 text-sm text-destructive">
-          <p>{loadError}</p>
+        <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-6 text-center">
+          <p className="text-sm text-destructive">{loadError}</p>
           <Button
             variant="outline"
             size="sm"
-            className="mt-3"
+            className="mt-4 gap-1.5"
             onClick={() => void loadLeads()}
           >
+            <RefreshCw className="h-3.5 w-3.5" aria-hidden />
             Tentar novamente
           </Button>
         </div>
       ) : leads.length === 0 ? (
-        <div className="rounded-lg border border-dashed p-10 text-center">
-          <p className="text-sm text-muted-foreground">
-            Nenhuma oportunidade elegível no momento. Verifique se as
-            categorias e a cidade do seu perfil estão atualizadas.
-          </p>
-        </div>
+        <EmptyState
+          icon={SearchX}
+          title="Nenhuma oportunidade no momento"
+          description="Verifique se as categorias e a cidade do seu perfil estão atualizadas para receber mais leads elegíveis."
+          action={
+            <Link
+              href="/profile"
+              className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+            >
+              Atualizar perfil
+            </Link>
+          }
+        />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
           {leads.map((lead) => (
