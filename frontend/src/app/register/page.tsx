@@ -10,11 +10,16 @@
  *
  * Usa React Hook Form com validação Zod (resolver manual para não introduzir
  * dependências novas — `@hookform/resolvers` não está no projeto).
+ *
+ * O tipo de conta pode vir pré-selecionado pela Escolha de Perfil (Tela 10)
+ * via query string `?role=<customer|professional>` (lida com `useSearchParams`).
+ * Por isso o conteúdo fica em `RegisterForm`, envolto em `<Suspense>` na export
+ * default (requisito do Next.js 14 para `useSearchParams`).
  */
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm, type FieldErrors, type Resolver } from "react-hook-form";
 import { z } from "zod";
 
@@ -74,12 +79,21 @@ const registerResolver: Resolver<RegisterValues> = async (values) => {
   return { values: {}, errors: errors as FieldErrors<RegisterValues> };
 };
 
-export default function RegisterPage() {
+/** Lê o `?role=` da Escolha de Perfil; só aceita os papéis do cadastro. */
+function roleFromParam(value: string | null): RegisterValues["role"] {
+  return value === "professional" || value === "customer" ? value : "customer";
+}
+
+function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { hasHydrated } = useRedirectAuthenticated();
   const setAuth = useAuthStore((s) => s.setAuth);
 
   const [formError, setFormError] = useState<string | null>(null);
+
+  // Pré-seleciona o tipo de conta conforme a Tela 10 (Escolha de Perfil).
+  const initialRole = roleFromParam(searchParams.get("role"));
 
   const {
     register,
@@ -94,7 +108,7 @@ export default function RegisterPage() {
       email: "",
       phone: "",
       password: "",
-      role: "customer",
+      role: initialRole,
     },
   });
 
@@ -235,5 +249,24 @@ export default function RegisterPage() {
         </Button>
       </form>
     </AuthLayout>
+  );
+}
+
+/**
+ * `useSearchParams` exige um limite de Suspense no Next.js 14 (caso contrário a
+ * página inteira é forçada a render dinâmico no build). Envolvemos o formulário
+ * para preservar a otimização e evitar o erro de build.
+ */
+export default function RegisterPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen items-center justify-center px-4">
+          <p className="text-sm text-muted-foreground">Carregando...</p>
+        </main>
+      }
+    >
+      <RegisterForm />
+    </Suspense>
   );
 }
