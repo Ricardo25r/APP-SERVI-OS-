@@ -92,6 +92,20 @@ class CreditTransactionType(str, enum.Enum):
     adjustment = "adjustment"
 
 
+class ConversationStatus(str, enum.Enum):
+    """Estado de uma conversa do chat (Fase 8). Postgres enum ``conversation_status``.
+
+    Valores oficiais do schema (doc 04 — CONVERSATIONS): a conversa é aberta
+    automaticamente na compra do lead (``active``) e arquivada no encerramento do
+    ciclo (``archived``). Bloqueio/moderação **não** criam novos estados
+    (ver ``docs/11-chat-engine`` §3.4). O encerramento (``archived``) é deferido
+    para a Fase 10 (não há endpoint no MVP — ver observações).
+    """
+
+    active = "active"
+    archived = "archived"
+
+
 class PaymentOrderStatus(str, enum.Enum):
     """Estado de um pedido de compra de créditos (Fase 6).
 
@@ -119,5 +133,6 @@ __all__ = [
     "LeadUrgency",
     "LeadStatus",
     "CreditTransactionType",
+    "ConversationStatus",
     "PaymentOrderStatus",
 ]

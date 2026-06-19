@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from app.database.base import Base
 from app.models.category import Category
+from app.models.conversation import Conversation
 from app.models.credit_package import CreditPackage
 from app.models.credit_transaction import CreditTransaction
 from app.models.credit_wallet import CreditWallet
@@ -19,6 +20,7 @@ from app.models.customer_profile import CustomerProfile
 from app.models.enums import (
     AvailabilityStatus,
     CategoryTier,
+    ConversationStatus,
     CreditTransactionType,
     LeadStatus,
     LeadType,
@@ -29,6 +31,7 @@ from app.models.enums import (
 )
 from app.models.lead import Lead
 from app.models.lead_purchase import LeadPurchase
+from app.models.message import Message
 from app.models.mixins import (
     CreatedAtMixin,
     SoftDeleteMixin,
@@ -63,6 +66,8 @@ __all__ = [
     "CreditPackage",
     "PaymentOrder",
     "Review",
+    "Conversation",
+    "Message",
     # Enums
     "UserRole",
     "UserStatus",
@@ -72,5 +77,6 @@ __all__ = [
     "LeadUrgency",
     "LeadStatus",
     "CreditTransactionType",
+    "ConversationStatus",
     "PaymentOrderStatus",
 ]

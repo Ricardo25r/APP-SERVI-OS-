@@ -55,6 +55,7 @@ from app.schemas.lead_purchases import (
     WalletBalance,
 )
 from app.schemas.leads import LeadContact, LeadRead
+from app.services.chat import ChatService
 from app.services.credits import CreditService
 from app.services.leads import LeadService
 
@@ -145,6 +146,19 @@ class LeadPurchaseService:
             # (6) Lead → purchased.
             lead.status = LeadStatus.purchased
             await self.repo.flush()
+
+            # (6.1) Abertura automática da conversa (Fase 8 — chat-engine §3.2).
+            # A compra é o evento de "contato liberado": criamos a Conversation
+            # (customer = dono do lead; professional = usuário comprador) NA MESMA
+            # transação da compra. ``get_or_create_for_lead`` é idempotente
+            # (UNIQUE lead_id) e **não** commita — o commit único abaixo cobre
+            # compra + conversa. Falhas aqui revertem tudo (except externo), sem
+            # deixar crédito debitado sem chat (e vice-versa).
+            await ChatService(self.db).get_or_create_for_lead(
+                lead_id=lead.id,
+                customer_id=lead.customer_id,
+                professional_id=current_user.id,
+            )
 
             # (7) Commit único.
             await self.db.commit()
