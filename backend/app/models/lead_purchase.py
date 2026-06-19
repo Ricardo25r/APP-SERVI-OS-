@@ -1,0 +1,67 @@
+"""Modelo ``lead_purchases`` (Fase 5 — feature ``lead_purchases``).
+
+Compra de lead (Lead Exclusivo). Append-only. ``lead_id`` UNIQUE — o primeiro
+profissional que comprar leva o lead. Ver §2.10 do contrato.
+"""
+
+from __future__ import annotations
+
+import uuid
+from datetime import datetime
+from typing import TYPE_CHECKING
+
+from sqlalchemy import DateTime, ForeignKey, Index, Integer, func
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.database.base import Base
+from app.models.mixins import CreatedAtMixin, UUIDPKMixin
+
+if TYPE_CHECKING:
+    from app.models.lead import Lead
+    from app.models.professional_profile import ProfessionalProfile
+
+__all__ = ["LeadPurchase"]
+
+
+class LeadPurchase(UUIDPKMixin, CreatedAtMixin, Base):
+    """Compra exclusiva de um lead por um profissional."""
+
+    __tablename__ = "lead_purchases"
+
+    lead_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("leads.id", ondelete="RESTRICT"),
+        nullable=False,
+        unique=True,  # Lead Exclusivo (§1.6 / §2.10).
+    )
+    professional_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("professional_profiles.id", ondelete="RESTRICT"),
+        nullable=False,
+        index=True,
+    )
+    credits_used: Mapped[int] = mapped_column(Integer, nullable=False)
+    purchased_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+
+    lead: Mapped[Lead] = relationship("Lead", back_populates="purchase")
+    professional: Mapped[ProfessionalProfile] = relationship(
+        "ProfessionalProfile", back_populates="purchases"
+    )
+
+    __table_args__ = (
+        # Histórico de compras do profissional.
+        Index(
+            "ix_lead_purchases_professional_purchased",
+            "professional_id",
+            "purchased_at",
+        ),
+    )
+
+    def __repr__(self) -> str:  # pragma: no cover - debug helper
+        return (
+            f"<LeadPurchase id={self.id!s} lead_id={self.lead_id!s} "
+            f"professional_id={self.professional_id!s}>"
+        )

@@ -16,6 +16,8 @@ dependencies = [
     "pydantic-settings>=2.6,<3.0",
     "pyjwt>=2.10,<3.0",
     "passlib[bcrypt]>=1.7.4,<2.0",
+    # passlib 1.7.x é incompatível com bcrypt >= 4.1 (auto-teste de backend).
+    "bcrypt>=4.0,<4.1",
     "redis>=5.2,<6.0",
     "boto3>=1.35,<2.0",
     "python-multipart>=0.0.12,<0.1",
@@ -48,6 +50,12 @@ ignore = []
 [tool.ruff.lint.per-file-ignores]
 "alembic/env.py" = ["E402"]
 "__init__.py" = ["F401"]
+# B008: Depends()/Header() em defaults é o padrão idiomático do FastAPI.
+# UP042: enums (str, Enum) são exigidos pelo contrato (§3.8) — não usar StrEnum.
+"app/core/deps.py" = ["B008"]
+"app/api/**/routes.py" = ["B008"]
+"app/models/enums.py" = ["UP042"]
+"app/models/*.py" = ["UP042"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

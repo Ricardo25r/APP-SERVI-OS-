@@ -11,6 +11,40 @@
 
 ---
 
+## 🌙 Status da noite — 2026-06-19 (build das Fases 2-5 interrompido por LIMITE DE SESSÃO)
+
+> O build autônomo das Fases 2-5 começou, mas a sessão **bateu no limite (reset 00:20)** no meio da fan-out do backend. **Nada está quebrado** (`py_compile` do backend = OK; o app ainda sobe). O trabalho em andamento está no branch **`feat/fases-2-5-wip`** (não no `main`, que segue na Fase 1 validada e funcionando).
+
+**Contrato:** `docs/fases/contrato-fases-2-5.md` (modelo de dados das 11 tabelas + endpoints + convenções). ✅
+
+**O que JÁ está pronto (no branch wip):**
+- ✅ **Backbone backend:** todos os models (`app/models/*.py`), enums, mixins, `core/deps.py` (get_current_user, require_roles), `core/security.py` (hash de senha + JWT access/refresh + reset), agregador de rotas resiliente, `seeds.py` (categorias). Compila e importa limpo.
+- ✅ **Feature Leads (Fase 4):** `api/leads/routes.py` + `schemas/leads.py` + `services/leads.py` + `repositories/leads.py` + `tests/test_leads.py` (11 testes passando, via SQLite em memória).
+
+**O que está PARCIAL:**
+- 🟡 **Auth (Fase 2):** existem `schemas/auth.py`, `services/auth.py`, `repositories/auth.py` — **falta criar `app/api/auth/routes.py`** (register/login/refresh/logout/me/password-reset).
+- 🟡 **Categorias (Fase 3):** existem `schemas/categories.py`, `services/categories.py`, `repositories/categories.py` — **falta `app/api/categories/routes.py`**.
+
+**O que FALTA por completo:**
+- ❌ **Perfis/users (Fase 3):** criar `schemas/users.py`, `services/users.py`, `repositories/users.py`, `app/api/users/routes.py` (customer/professional profile + categorias do profissional + criação da wallet).
+- ❌ **Créditos + Compra/Matching (Fase 5):** criar `schemas/credits.py`, `schemas/lead_purchases.py`, `services/credits.py`, `services/lead_purchases.py`, `repositories/credits.py`, `repositories/lead_purchases.py`, `app/api/credits/routes.py`, `app/api/lead_purchases/routes.py`.
+- ❌ **Frontend das Fases 2-5** (telas de cadastro/login/perfil/leads/marketplace/créditos) — nem começou.
+- ❌ **Migration Alembic** das tabelas 2-5.
+
+**PLANO DE RETOMADA (após reset 00:20) — em ordem:**
+1. `git checkout feat/fases-2-5-wip` (continuar de onde parou).
+2. Completar backend: `auth/routes.py`, `categories/routes.py`, feature `users` (perfis) e feature `credits`+`lead_purchases` (1 agente por feature faltante).
+3. Pequenos consertos pendentes:
+   - adicionar `aiosqlite` às dev-deps (o `test_leads.py` usa SQLite em memória).
+   - `bcrypt` foi pinado para 4.x no `requirements.txt`/`pyproject.toml` → **rebuild da imagem backend** (`docker compose --profile full build backend`) para alinhar (container atual tem bcrypt 5).
+4. Gerar e aplicar migration **DENTRO do container** (host→5432 é bloqueado):
+   `docker exec trampoja-backend alembic revision --autogenerate -m "fases 2-5"` e depois `... alembic upgrade head`. Rodar `python -m app.seeds` para popular categorias.
+5. Verificar: restart backend, smoke test dos endpoints (register→login→criar perfil→criar lead→conceder créditos→comprar lead), `pytest`, `ruff`.
+6. Frontend: fan-out das telas (auth, perfil, leads, marketplace/créditos), `npm run build`.
+7. Commit por fase, abrir PR do branch para `main` (ou merge) quando 2-5 estiverem verdes; marcar as fases no checklist.
+
+---
+
 ## 🧭 Como trabalhamos (regras combinadas)
 
 - [x] Documentação organizada em `docs/` antes de qualquer código.

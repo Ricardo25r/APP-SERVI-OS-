@@ -15,6 +15,7 @@ from starlette.responses import Response
 
 from app.api import api_router
 from app.core.config import settings
+from app.core.exceptions import register_exception_handlers
 from app.core.logging import setup_logging
 
 setup_logging()
@@ -26,6 +27,9 @@ app = FastAPI(
     version="0.1.0",
     debug=settings.APP_DEBUG,
 )
+
+# Handlers globais para as exceções de domínio (§3.9).
+register_exception_handlers(app)
 
 # CORS — origens lidas de CORS_ORIGINS (contrato Fase 1).
 app.add_middleware(
