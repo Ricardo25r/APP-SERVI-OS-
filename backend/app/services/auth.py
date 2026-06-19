@@ -21,7 +21,7 @@ Regras-chave:
 from __future__ import annotations
 
 import uuid
-from datetime import UTC, datetime, timezone
+from datetime import UTC, datetime
 
 import jwt
 from sqlalchemy import select
@@ -43,7 +43,6 @@ from app.models import (
     CustomerProfile,
     ProfessionalProfile,
     User,
-    UserRole,
     UserStatus,
 )
 from app.repositories.auth import RefreshTokenRepository, UserRepository
@@ -67,7 +66,7 @@ _ACCESS_TTL_SECONDS = settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
 def _aware(dt: datetime) -> datetime:
     """Garante datetime tz-aware (UTC) — Postgres devolve aware; SQLite naive."""
     if dt.tzinfo is None:
-        return dt.replace(tzinfo=timezone.utc)
+        return dt.replace(tzinfo=UTC)
     return dt
 
 

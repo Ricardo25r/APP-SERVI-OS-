@@ -1,0 +1,249 @@
+"""Service da feature ``lead_purchases`` (Fase 5) — matching MVP + compra atômica.
+
+Concentra a regra de negócio (§3.5): a **compra exclusiva** de um lead por um
+profissional (Lead Exclusivo — §1.6 / §5.4) e a reutilização do **matching MVP**
+de elegibilidade (§5.3) que já existe em ``repositories/leads.py``.
+
+------------------------------------------------------------------------------
+Atomicidade da compra (§5.4) — um único ``commit``:
+------------------------------------------------------------------------------
+1. Carrega o lead ``FOR UPDATE`` (lock condicional ao dialeto) e revalida
+   ``status == open`` → senão ``409``.
+2. Verifica elegibilidade (§5.3 itens 1–5) via ``LeadRepository`` → senão ``403``.
+3. Carrega a wallet ``SELECT ... FOR UPDATE`` e checa saldo via o débito do
+   :class:`CreditService` (``apply_movement`` levanta ``402`` se faltar saldo).
+4. Insere a ``LeadPurchase`` (``flush``). O **``UNIQUE(lead_id)``** é a garantia
+   real de exclusividade: se dois profissionais competirem, o segundo
+   ``flush`` viola o unique → ``IntegrityError`` → **rollback** (sem débito
+   confirmado) → ``409``.
+5. Debita os créditos (``spend``, ``amount = -credits_cost``) com
+   ``reference_id = purchase.id`` (rastreabilidade — §2.9).
+6. Marca ``lead.status = purchased``.
+7. ``commit``. Resposta libera o **contato** do customer (§5.6).
+
+A ordem **insert-then-debit** garante a regra de ouro: um conflito de unique
+**nunca** deixa crédito debitado — capturamos o ``IntegrityError`` no insert,
+antes de qualquer ``commit``, e fazemos ``rollback`` da transação inteira.
+"""
+
+from __future__ import annotations
+
+import uuid
+
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.exceptions import (
+    ConflictError,
+    NotFoundError,
+    PermissionDeniedError,
+)
+from app.models import (
+    CreditTransactionType,
+    Lead,
+    LeadPurchase,
+    LeadStatus,
+    User,
+    UserRole,
+)
+from app.repositories.credits import supports_for_update
+from app.repositories.lead_purchases import LeadPurchaseRepository
+from app.repositories.leads import LeadRepository
+from app.schemas.lead_purchases import (
+    LeadPurchaseRead,
+    LeadPurchaseResult,
+    WalletBalance,
+)
+from app.schemas.leads import LeadContact, LeadRead
+from app.services.credits import CreditService
+from app.services.leads import LeadService
+
+__all__ = ["LeadPurchaseService"]
+
+
+class LeadPurchaseService:
+    """Orquestra a compra atômica e o histórico de compras do profissional."""
+
+    def __init__(self, db: AsyncSession) -> None:
+        self.db = db
+        self.repo = LeadPurchaseRepository(db)
+        self.lead_repo = LeadRepository(db)
+        self.credit_service = CreditService(db)
+        # Reaproveita o montador de ``LeadRead`` da feature leads (visibilidade
+        # de contato correta — §5.6), sem duplicar a lógica.
+        self._lead_view = LeadService(db)
+
+    # ------------------------------------------------------------------ #
+    # Compra atômica (professional)
+    # ------------------------------------------------------------------ #
+    async def purchase(
+        self, current_user: User, lead_id: uuid.UUID
+    ) -> LeadPurchaseResult:
+        """Compra exclusiva de um lead (§5.4). Transação única e atômica.
+
+        Erros do contrato (§4): ``404`` lead inexistente / perfil ausente,
+        ``409`` lead indisponível ou já comprado, ``403`` profissional não
+        elegível, ``402`` saldo insuficiente.
+        """
+        if current_user.role != UserRole.professional:
+            raise PermissionDeniedError("Apenas profissionais compram leads.")
+
+        profile = await self.lead_repo.get_professional_profile(current_user.id)
+        if profile is None:
+            raise NotFoundError("Perfil profissional não encontrado.")
+
+        use_lock = supports_for_update(self.db)
+
+        try:
+            # (1) Lead FOR UPDATE + revalidação de status.
+            lead = await self.repo.get_open_lead_for_update(
+                lead_id, for_update=use_lock
+            )
+            if lead is None:
+                raise NotFoundError("Lead não encontrado.")
+            if lead.status != LeadStatus.open:
+                raise ConflictError("Lead indisponível para compra.")
+
+            # (2) Elegibilidade (matching MVP §5.3 itens 1–5) — reutiliza a
+            # query existente em repositories/leads.py.
+            eligible = await self.lead_repo.is_professional_eligible(profile, lead)
+            if not eligible:
+                raise PermissionDeniedError(
+                    "Você não é elegível para comprar este lead."
+                )
+
+            # (3) Wallet FOR UPDATE (lock condicional ao dialeto).
+            wallet = await self.credit_service.get_or_create_wallet(
+                profile.id, for_update=use_lock
+            )
+
+            # (4) Insere a compra ANTES de confirmar o débito. O UNIQUE(lead_id)
+            # garante exclusividade: um conflito aqui aborta tudo sem debitar.
+            purchase = LeadPurchase(
+                lead_id=lead.id,
+                professional_id=profile.id,
+                credits_used=lead.credits_cost,
+            )
+            self.repo.add(purchase)
+            try:
+                await self.repo.flush()
+            except IntegrityError as exc:
+                # UNIQUE(lead_id) violado → outro profissional comprou primeiro.
+                await self.db.rollback()
+                raise ConflictError("Lead já foi comprado.") from exc
+
+            # (5) Débito (spend) — saldo insuficiente levanta 402 aqui (antes do
+            # commit; rollback no except externo desfaz a compra inserida).
+            await self.credit_service.apply_movement(
+                wallet,
+                amount=-lead.credits_cost,
+                transaction_type=CreditTransactionType.spend,
+                description=f"Compra do lead {lead.id}",
+                reference_id=purchase.id,
+            )
+
+            # (6) Lead → purchased.
+            lead.status = LeadStatus.purchased
+            await self.repo.flush()
+
+            # (7) Commit único.
+            await self.db.commit()
+        except ConflictError:
+            raise
+        except Exception:
+            # Qualquer falha (402, integridade tardia, etc.) reverte tudo: nunca
+            # deixa crédito debitado sem compra nem compra sem débito.
+            await self.db.rollback()
+            raise
+
+        # Monta a resposta com o lead recarregado pós-commit (contato liberado —
+        # §5.6). ``expunge`` o lead antigo da identity map garante que o reload
+        # re-popule ``purchase`` com a compra recém-criada (em vez de reaproveitar
+        # o objeto cujo ``purchase`` foi eager-carregado como None antes do insert),
+        # sem disparar lazy-load fora do contexto async (que ``expire`` causaria).
+        self.db.expunge(lead)
+        refreshed = await self.repo.get_with_relations(lead.id)
+        assert refreshed is not None
+        lead_read = self._lead_view._to_read(
+            refreshed, viewer=current_user, include_contact=True
+        )
+        contact = lead_read.contact
+        purchase_read = self._to_purchase_read(
+            purchase, lead_read=lead_read, contact=contact
+        )
+        return LeadPurchaseResult(
+            purchase=purchase_read,
+            lead=lead_read,
+            wallet=WalletBalance(balance=wallet.balance),
+        )
+
+    # ------------------------------------------------------------------ #
+    # Histórico / detalhe
+    # ------------------------------------------------------------------ #
+    async def list_for_user(
+        self, current_user: User, *, page: int = 1, page_size: int = 20
+    ) -> tuple[list[LeadPurchaseRead], int]:
+        """Compras do profissional autenticado (paginado, com contato — §4)."""
+        profile = await self.lead_repo.get_professional_profile(current_user.id)
+        if profile is None:
+            return [], 0
+
+        limit = page_size
+        offset = (page - 1) * page_size
+        purchases, total = await self.repo.list_for_professional(
+            profile.id, limit=limit, offset=offset
+        )
+        items = [self._purchase_with_lead(p, current_user) for p in purchases]
+        return items, total
+
+    async def get(
+        self, current_user: User, purchase_id: uuid.UUID
+    ) -> LeadPurchaseRead:
+        """Detalhe de uma compra do profissional dono (com contato — §4)."""
+        profile = await self.lead_repo.get_professional_profile(current_user.id)
+        if profile is None:
+            raise NotFoundError("Perfil profissional não encontrado.")
+
+        purchase = await self.repo.get_purchase_by_id(purchase_id)
+        if purchase is None:
+            raise NotFoundError("Compra não encontrada.")
+        if purchase.professional_id != profile.id:
+            raise PermissionDeniedError("Você não é o dono desta compra.")
+
+        return self._purchase_with_lead(purchase, current_user)
+
+    # ------------------------------------------------------------------ #
+    # Helpers internos
+    # ------------------------------------------------------------------ #
+    def _purchase_with_lead(
+        self, purchase: LeadPurchase, viewer: User
+    ) -> LeadPurchaseRead:
+        """Monta ``LeadPurchaseRead`` com o lead + contato liberado (comprador)."""
+        lead: Lead | None = purchase.lead
+        lead_read = (
+            self._lead_view._to_read(lead, viewer=viewer, include_contact=True)
+            if lead is not None
+            else None
+        )
+        contact = lead_read.contact if lead_read is not None else None
+        return self._to_purchase_read(
+            purchase, lead_read=lead_read, contact=contact
+        )
+
+    @staticmethod
+    def _to_purchase_read(
+        purchase: LeadPurchase,
+        *,
+        lead_read: LeadRead | None,
+        contact: LeadContact | None,
+    ) -> LeadPurchaseRead:
+        return LeadPurchaseRead(
+            id=purchase.id,
+            lead_id=purchase.lead_id,
+            professional_id=purchase.professional_id,
+            credits_used=purchase.credits_used,
+            purchased_at=purchase.purchased_at,
+            created_at=purchase.created_at,
+            lead=lead_read,
+            contact=contact,
+        )

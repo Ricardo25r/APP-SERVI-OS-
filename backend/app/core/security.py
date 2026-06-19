@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import hashlib
+import uuid
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
@@ -47,6 +48,11 @@ def _create_token(
         "iat": now,
         "exp": now + expires_delta,
         "type": token_type,
+        # ``jti`` (nonce único por emissão): garante que dois tokens emitidos no
+        # mesmo segundo para o mesmo sujeito sejam distintos. Sem ele, ``iat``/``exp``
+        # têm precisão de segundo e refresh tokens emitidos em sequência (ex.:
+        # register seguido de login) colidiriam no UNIQUE ``refresh_tokens.token_hash``.
+        "jti": uuid.uuid4().hex,
     }
     if extra_claims:
         to_encode.update(extra_claims)
