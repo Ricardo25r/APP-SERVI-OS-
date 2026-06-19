@@ -212,6 +212,8 @@ class UserProfileService:
             state=profile.state,
             service_radius_km=profile.service_radius_km,
             availability_status=profile.availability_status,
+            rating=float(profile.rating),
+            total_reviews=profile.total_reviews,
             categories=self._categories_out(profile.categories),
         )
 
@@ -290,6 +292,8 @@ class UserProfileService:
             state=profile.state,
             service_radius_km=profile.service_radius_km,
             availability_status=profile.availability_status,
+            rating=float(profile.rating),
+            total_reviews=profile.total_reviews,
             categories=self._categories_out(profile.categories),
             balance=balance,
         )

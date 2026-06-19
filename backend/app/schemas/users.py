@@ -170,6 +170,7 @@ class ProfessionalProfileOut(BaseModel):
     """Resposta do perfil profissional (visão do próprio dono).
 
     Inclui ``categories[]`` e o ``balance`` da carteira (visível ao dono).
+    A reputação (``rating``/``total_reviews``) é exposta também ao dono (Fase 7).
     """
 
     model_config = ConfigDict(from_attributes=True)
@@ -182,6 +183,10 @@ class ProfessionalProfileOut(BaseModel):
     state: str | None
     service_radius_km: int
     availability_status: AvailabilityStatus
+
+    # Reputação (Fase 7) — populada a partir de professional_profiles.
+    rating: float = Field(default=0.0, ge=0, le=5)
+    total_reviews: int = Field(default=0, ge=0)
 
     # Campos compostos montados no service.
     categories: list[CategoryRefOut] = Field(default_factory=list)
@@ -192,6 +197,8 @@ class ProfessionalProfilePublicOut(BaseModel):
     """Perfil público do profissional (``GET /users/{user_id}/professional-profile``).
 
     Sem dados sensíveis (não expõe saldo da carteira nem dados do usuário).
+    Expõe a reputação (``rating``/``total_reviews``) para a UI mostrar estrelas
+    (Fase 7).
     """
 
     model_config = ConfigDict(from_attributes=True)
@@ -204,4 +211,9 @@ class ProfessionalProfilePublicOut(BaseModel):
     state: str | None
     service_radius_km: int
     availability_status: AvailabilityStatus
+
+    # Reputação (Fase 7) — populada a partir de professional_profiles.
+    rating: float = Field(default=0.0, ge=0, le=5)
+    total_reviews: int = Field(default=0, ge=0)
+
     categories: list[CategoryRefOut] = Field(default_factory=list)

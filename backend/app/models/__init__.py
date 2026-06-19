@@ -39,6 +39,7 @@ from app.models.payment_order import PaymentOrder
 from app.models.professional_category import ProfessionalCategory
 from app.models.professional_profile import ProfessionalProfile
 from app.models.refresh_token import RefreshToken
+from app.models.review import Review
 from app.models.user import User
 
 __all__ = [
@@ -61,6 +62,7 @@ __all__ = [
     "LeadPurchase",
     "CreditPackage",
     "PaymentOrder",
+    "Review",
     # Enums
     "UserRole",
     "UserStatus",
