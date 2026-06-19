@@ -39,6 +39,10 @@ interface ProfileOption {
   cardClassName: string;
   /** Cor tonal do badge de ícone. */
   badgeClassName: string;
+  /** Box que posiciona/enquadra o mascote no palco. */
+  mascoteWrapper: string;
+  /** object-fit/position da imagem do mascote. */
+  mascoteImg: string;
 }
 
 const OPTIONS: ProfileOption[] = [
@@ -47,11 +51,14 @@ const OPTIONS: ProfileOption[] = [
     title: "Contratar profissionais",
     description:
       "Quero encontrar profissionais qualificados para realizar serviços.",
-    mascote: "/brand/mascote-tudo.png",
-    mascoteAlt: "Profissional com tablet representando contratação de serviços",
+    mascote: "/brand/mascote-contratante.png",
+    mascoteAlt: "Pessoa usando o celular para contratar profissionais",
     badgeIcon: Home,
     cardClassName: "bg-primary/5",
     badgeClassName: "text-primary",
+    // Imagem já é busto (cabeça→cintura): ancora embaixo e mostra inteira.
+    mascoteWrapper: "absolute inset-x-0 bottom-0 top-3",
+    mascoteImg: "object-contain object-bottom",
   },
   {
     value: "professional",
@@ -62,6 +69,9 @@ const OPTIONS: ProfileOption[] = [
     badgeIcon: Briefcase,
     cardClassName: "bg-success/5",
     badgeClassName: "text-success",
+    // Imagem é corpo inteiro: caixa alta + object-top recorta em busto.
+    mascoteWrapper: "absolute left-1/2 top-3 h-[22rem] w-44 -translate-x-1/2",
+    mascoteImg: "object-contain object-top",
   },
 ];
 
@@ -131,13 +141,13 @@ export default function EscolhaPerfilPage() {
                     option.cardClassName
                   )}
                 >
-                  <div className="absolute left-1/2 top-3 h-[22rem] w-40 -translate-x-1/2">
+                  <div className={option.mascoteWrapper}>
                     <Image
                       src={option.mascote}
                       alt={option.mascoteAlt}
                       fill
-                      sizes="160px"
-                      className="object-contain object-top"
+                      sizes="200px"
+                      className={option.mascoteImg}
                       priority
                     />
                   </div>
