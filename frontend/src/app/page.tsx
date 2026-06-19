@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { API_URL } from "@/services/api";
 
@@ -41,9 +42,17 @@ export default function HomePage() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 text-center">
+      <Image
+        src="/brand/logo-faztudo-full.png"
+        width={320}
+        height={320}
+        alt="FazTudo"
+        priority
+        className="h-auto w-48 sm:w-64"
+      />
       <h1 className="text-5xl font-extrabold tracking-tight sm:text-6xl">
         <span className="text-primary">Faz</span>
-        <span className="text-brand">Tudo</span>
+        <span className="italic text-brand">Tudo</span>
       </h1>
       <p className="max-w-md text-lg text-muted-foreground">
         Marketplace de prestadores de serviços locais

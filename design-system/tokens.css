@@ -1,0 +1,75 @@
+/* ============================================================
+   FazTudo — Design Tokens (FONTE OFICIAL)
+   Extraído de "FazTudo-Design-System.html". Esta é a verdade
+   da marca. O app mapeia estes valores em
+   frontend/src/app/globals.css (HSL para shadcn) — mas NENHUM
+   componente deve usar cor fora destes tokens.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600;1,700;1,800&display=swap');
+
+:root {
+  /* ---------- Azul (escala) — confiança ---------- */
+  --ft-blue-50:  #EAF2FC;
+  --ft-blue-100: #CFE0F7;
+  --ft-blue-200: #A6C5EF;
+  --ft-blue-300: #6E9FE3;
+  --ft-blue-400: #3D6FC2;
+  --ft-blue-500: #0D47A1;  /* Azul Royal — PRIMÁRIA */
+  --ft-blue-600: #0A3A86;
+  --ft-blue-700: #0A357D;
+  --ft-blue-800: #0A357D;  /* Azul Marinho — texto forte / superfícies */
+  --ft-blue-900: #082A5E;  /* Surface mais profunda */
+
+  /* ---------- Laranja (escala) — ação ---------- */
+  --ft-orange-50:  #FFF3E9;
+  --ft-orange-100: #FFE2C9;
+  --ft-orange-200: #FFC793;
+  --ft-orange-300: #FFA864;
+  --ft-orange-400: #FF8A33;
+  --ft-orange-500: #FF6D00;  /* Laranja — ACENTO / CTA */
+  --ft-orange-600: #E55F00;
+  --ft-orange-700: #C25200;
+  --ft-orange-800: #8F3A00;
+
+  /* ---------- Neutros ---------- */
+  --ft-bg:         #F5F7FA;  /* Fundo de página (tema claro padrão) */
+  --ft-white:      #FFFFFF;  /* Cards/superfícies */
+  --ft-border:     #E8EDF3;  /* Bordas suaves */
+  --ft-text:       #36424F;  /* Texto forte */
+  --ft-text-body:  #4D5A6B;  /* Corpo */
+  --ft-text-muted: #6B7888;  /* Secundário */
+  --ft-text-subtle:#9AA7B8;  /* Legendas/hints */
+
+  /* ---------- Semânticos ---------- */
+  --ft-primary:    var(--ft-blue-500);
+  --ft-navy:       var(--ft-blue-800);
+  --ft-surface:    var(--ft-blue-900);
+  --ft-accent:     var(--ft-orange-500);
+  --ft-accent-hover: var(--ft-orange-400);
+  --ft-accent-press: var(--ft-orange-600);
+  --ft-on-accent:  var(--ft-white);
+  --ft-on-primary: var(--ft-white);
+
+  /* ---------- Tipografia ---------- */
+  --ft-font:    'Montserrat', 'Helvetica Neue', Arial, sans-serif;
+  --ft-display: 'Montserrat', 'Helvetica Neue', Arial, sans-serif;
+
+  /* ---------- Raio / espaçamento (grade 4px) ---------- */
+  --ft-r-sm: 8px; --ft-r-md: 12px; --ft-r-lg: 18px; --ft-r-pill: 999px;
+}
+
+/*
+  MAPEAMENTO PARA O APP (shadcn usa HSL em globals.css):
+    --primary           = #0D47A1 → hsl(217 85% 34%)
+    --primary-foreground= #FFFFFF → hsl(0 0% 100%)
+    --brand             = #FF6D00 → hsl(26 100% 50%)
+    --brand-foreground  = #FFFFFF → hsl(0 0% 100%)
+    --background        = #F5F7FA → hsl(216 33% 97%)
+    --foreground        = #36424F → hsl(212 19% 26%)
+    --muted-foreground  = #6B7888 → hsl(214 12% 48%)
+    --border / --input  = #E8EDF3 → hsl(214 30% 92%)
+    --ring              = #0D47A1 → hsl(217 85% 34%)
+  Escalas (azul/laranja) expostas no tailwind.config.ts como cores `blue`/`orange` (hex acima).
+  REGRA: nunca cor hardcoded — sempre token.
+*/

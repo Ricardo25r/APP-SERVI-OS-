@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600;1,700;1,800&family=Plus+Jakarta+Sans:wght@600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;}
+  body{margin:0;background:#F5F7FA;}
+  @keyframes glowpulse{0%,100%{opacity:.55;}50%{opacity:.9;}}
+</style>
+</helmet>
+
+<div style="{{ rootStyle }}">
+
+  <!-- ===================== COVER ===================== -->
+  <header style="position:relative;overflow:hidden;background:linear-gradient(135deg,#0D47A1 0%,var(--ft-surface,#082A5E) 60%,#0A357D 100%);padding:72px 40px 80px;">
+    <div style="position:absolute;top:-180px;left:50%;transform:translateX(-50%);width:760px;height:520px;background:radial-gradient(closest-side,rgba(255,109,0,.30),rgba(255,109,0,0) 70%);animation:glowpulse 5s ease-in-out infinite;pointer-events:none;"></div>
+    <div style="position:absolute;top:-120px;left:8%;width:520px;height:420px;background:radial-gradient(closest-side,rgba(13,71,161,.45),rgba(13,71,161,0) 70%);pointer-events:none;"></div>
+    <div style="position:relative;max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:32px;flex-wrap:wrap;">
+      <div style="max-width:560px;">
+        <div style="display:inline-flex;align-items:center;gap:10px;padding:8px 14px;border:1px solid rgba(255,255,255,.18);border-radius:999px;background:rgba(255,255,255,.06);backdrop-filter:none;">
+          <span style="width:8px;height:8px;border-radius:50%;background:var(--ft-accent,#FF6D00);box-shadow:0 0 10px var(--ft-accent,#FF6D00);"></span>
+          <span style="font:800 12px/1 'Montserrat',sans-serif;letter-spacing:.2em;color:#CFE0F7;text-transform:uppercase;">Sistema de Design · v1.0</span>
+        </div>
+        <h1 style="font:800 64px/0.98 var(--ft-display,'Montserrat'),sans-serif;letter-spacing:-.03em;margin:24px 0 0;color:#fff;">Faz<span style="color:var(--ft-accent,#FF6D00);font-style:italic;">Tudo</span></h1>
+        <p style="font:600 21px/1.5 'Montserrat',sans-serif;color:#CFE0F7;margin:18px 0 0;max-width:440px;">Guia de marca e biblioteca de interface para o app que conecta pessoas a <span style="color:#FF8A33;font-weight:800;">profissionais de confiança</span>.</p>
+        <div style="display:flex;gap:28px;margin-top:34px;flex-wrap:wrap;">
+          <div><div style="font:800 24px/1 var(--ft-display,'Montserrat'),sans-serif;color:#fff;">3</div><div style="font:700 12px/1.3 'Montserrat';letter-spacing:.08em;text-transform:uppercase;color:#6E9FE3;margin-top:6px;">Cores núcleo</div></div>
+          <div style="width:1px;background:rgba(255,255,255,.14);"></div>
+          <div><div style="font:800 24px/1 var(--ft-display,'Montserrat'),sans-serif;color:#fff;">1</div><div style="font:700 12px/1.3 'Montserrat';letter-spacing:.08em;text-transform:uppercase;color:#6E9FE3;margin-top:6px;">Tipografia</div></div>
+          <div style="width:1px;background:rgba(255,255,255,.14);"></div>
+          <div><div style="font:800 24px/1 var(--ft-display,'Montserrat'),sans-serif;color:#fff;">10</div><div style="font:700 12px/1.3 'Montserrat';letter-spacing:.08em;text-transform:uppercase;color:#6E9FE3;margin-top:6px;">Seções</div></div>
+        </div>
+      </div>
+      <div style="flex:1;min-width:320px;display:flex;justify-content:center;">
+        <div style="display:flex;align-items:flex-end;justify-content:center;"><img src="assets/mascote-faz.png" alt="FAZ" style="height:360px;width:auto;margin-right:-34px;filter:drop-shadow(0 24px 48px rgba(0,0,0,.4));"><img src="assets/mascote-tudo.png" alt="TUDO" style="height:336px;width:auto;filter:drop-shadow(0 24px 48px rgba(0,0,0,.4));"></div>
+      </div>
+    </div>
+  </header>
+
+  <main style="max-width:1100px;margin:0 auto;padding:0 32px 110px;">
+
+    <!-- ===================== 01 LOGO ===================== -->
+    <section style="margin-top:76px;">
+      <div style="font:800 13px/1 'Montserrat',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--ft-accent,#FF6D00);">01 — Marca</div>
+      <h2 style="font:700 34px/1.1 var(--ft-display,'Montserrat'),sans-serif;letter-spacing:-.02em;margin:12px 0 0;">O logotipo</h2>
+      <p style="font:400 17px/1.6 'Montserrat',sans-serif;color:#4D5A6B;max-width:640px;margin:12px 0 0;">A marca é composta pelo símbolo (casa + aperto de mãos), o logotipo <b>FazTudo</b> e a assinatura. Mantenha um respiro mínimo igual à altura da casa do símbolo. Em fundos escuros, apoie o logo sobre um respiro claro.</p>
+
+      <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:18px;margin-top:28px;">
+        <div style="background:#fff;border:1px solid #E8EDF3;border-radius:18px;padding:40px;display:flex;align-items:center;justify-content:center;min-height:240px;">
+          <img src="assets/symbol.png" alt="" style="height:96px;width:auto;">
+          <img src="assets/wordmark.png" alt="FazTudo" style="height:84px;width:auto;margin-left:18px;">
+        </div>
+        <div style="background:linear-gradient(135deg,#0D47A1,var(--ft-surface,#082A5E));border-radius:18px;padding:40px;display:flex;align-items:center;justify-content:center;min-height:240px;">
+          <div style="background:#fff;border-radius:14px;padding:22px 28px;display:flex;align-items:center;gap:14px;box-shadow:0 14px 40px rgba(0,0,0,.3);">
+            <img src="assets/symbol.png" alt="" style="height:54px;width:auto;">
+            <img src="assets/wordmark.png" alt="FazTudo" style="height:44px;width:auto;">
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:18px;">
+        <div style="background:#fff;border:1px solid #E8EDF3;border-radius:18px;padding:28px;text-align:center;">
+          <img src="assets/symbol.png" alt="" style="height:80px;width:auto;">
+          <div style="font:700 14px 'Montserrat';margin-top:18px;">Símbolo</div>
+          <div style="font:400 13px 'Montserrat';color:#6B7888;margin-top:4px;">Ícone do app, favicon, redes</div>
+        </div>
+        <div style="background:#fff;border:1px solid #E8EDF3;border-radius:18px;padding:28px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+          <img src="assets/wordmark.png" alt="FazTudo" style="height:54px;width:auto;">
+          <div style="font:700 14px 'Montserrat';margin-top:22px;">Logotipo</div>
+          <div style="font:400 13px 'Montserrat';color:#6B7888;margin-top:4px;">Cabeçalhos e assinaturas</div>
+        </div>
+        <div style="background:var(--ft-surface,#082A5E);border-radius:18px;padding:28px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+          <div style="display:flex;gap:6px;align-items:center;">
+            <span style="width:14px;height:14px;border-radius:4px;background:#0D47A1;"></span>
+            <span style="width:14px;height:14px;border-radius:4px;background:#0A357D;"></span>
+            <span style="width:14px;height:14px;border-radius:4px;background:var(--ft-accent,#FF6D00);"></span>
+          </div>
+          <div style="font:700 14px 'Montserrat';margin-top:22px;color:#fff;">Respiro mínimo</div>
+          <div style="font:400 13px 'Montserrat';color:#9AA7B8;margin-top:4px;">Nunca comprima ou distorça</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 02 CORES ===================== -->
+    <section style="margin-top:80px;">
+      <div style="font:800 13px/1 'Montserrat',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--ft-accent,#FF6D00);">02 — Cores</div>
+      <h2 style="font:700 34px/1.1 var(--ft-display,'Montserrat'),sans-serif;letter-spacing:-.02em;margin:12px 0 0;">Paleta</h2>
+      <p style="font:400 17px/1.6 'Montserrat',sans-serif;color:#4D5A6B;max-width:640px;margin:12px 0 0;">Azul royal conduz a confiança, o azul marinho aprofunda e ancora, e o laranja é a energia que chama para a ação. Use laranja com parcimônia — ele perde força quando vira fundo.</p>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:28px;">
+        <div style="border-radius:18px;overflow:hidden;background:#0D47A1;color:#fff;padding:24px;min-height:150px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 10px 30px rgba(13,71,161,.25);">
+          <div style="font:800 18px var(--ft-display,'Montserrat');">Azul Royal</div>
+          <div><div style="font:800 16px 'Montserrat';">#0D47A1</div><div style="font:600 12px 'Montserrat';opacity:.8;letter-spacing:.04em;">Primária · confiança</div></div>
+        </div>
+        <div style="border-radius:18px;overflow:hidden;background:#0A357D;color:#fff;padding:24px;min-height:150px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 10px 30px rgba(10,53,125,.3);">
+          <div style="font:800 18px var(--ft-display,'Montserrat');">Azul Marinho</div>
+          <div><div style="font:800 16px 'Montserrat';">#0A357D</div><div style="font:600 12px 'Montserrat';opacity:.8;letter-spacing:.04em;">Texto forte · superfícies</div></div>
+        </div>
+        <div style="border-radius:18px;overflow:hidden;background:var(--ft-accent,#FF6D00);color:#fff;padding:24px;min-height:150px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 10px 30px rgba(255,109,0,.3);">
+          <div style="font:800 18px var(--ft-display,'Montserrat');">Laranja</div>
+          <div><div style="font:800 16px 'Montserrat';">var(--ft-accent,#FF6D00)</div><div style="font:600 12px 'Montserrat';opacity:.9;letter-spacing:.04em;">Acento · ação</div></div>
+        </div>
+      </div>
+
+      <!-- SCALE: AZUL -->
+      <div style="background:#fff;border:1px solid #E8EDF3;border-radius:18px;padding:24px;margin-top:18px;">
+        <div style="font:700 14px 'Montserrat';color:#36424F;margin-bottom:14px;">Azul · escala</div>
+        <div style="display:flex;gap:8px;">
+          <div style="flex:1;"><div style="height:64px;border-radius:8px;background:#EAF2FC;box-shadow:inset 0 0 0 1px rgba(0,0,0,.05);"></div><div style="font:800 11px 'Montserrat';margin-top:8px;">50</div><div style="font:600 10px 'Montserrat';color:#9AA7B8;">#EAF2FC</div></div>
+          <div style="flex:1;"><div style="height:64px;border-radius:8px;background:#CFE0F7;"></div><div style="font:800 11px 'Montserrat';margin-top:8px;">100</div><div style="font:600 10px 'Montserrat';color:#9AA7B8;">#CFE0F7</div></div>
+          <div style="flex:1;"><div style="height:64px;border-radius:8px;background:#A6C5EF;"></div><div style="font:800 11px 'Montserrat';margin-top:8px;">200</div><div style="font:600 10px 'Montserrat';color:#9AA7B8;">#A6C5EF</div></div>
+          <div style="flex:1;"><div style="height:64px;border-radius:8px;background:#6E9FE3;"></div><div style="font:800 11px 'Montserrat';margin-top:8px;">300</div><div style="font:600 10px 'Montserrat';color:#9AA7B8;">#6E9FE3</div></div>
+          <div style="flex:1;"><div style="height:64px;border-radius:8px;background:#3D6FC2;"></div><div style="font:800 11px 'Montserrat';margin-top:8px;">400</div><div style="font:600 10px 'Montserrat';color:#9AA7B8;">#3D6FC2</div></div>
+          <div style="flex:1;"><div style="height:64px;border-radius:8px;background:#0D47A1;"></div><div style="font:800 11px 'Montserrat';margin-top:8px;color:#0D47A1;">500</div><div style="font:600 10px 'Montserrat';color:#9AA7B8;">#0D47A1</div></div>
+          <div style="flex:1;"><div style="height:64px;border-radius:8px;background:#0A3A86;"></div><div style="font:800 11px 'Montserrat';margin-top:8px;">600</div><div style="font:600 10px 'Montserrat';color:#9AA7B8;">#0A3A86</div></div>
+          <div style="flex:1;"><div style="height:64px;border-radius:8px;background:#0D47A1;"></div><div style="font:800 11px 'Montserrat';margin-top:8px;">700</div><div style="font:600 10px 'Montserrat';color:#9AA7B8;">#0D47A1</div></div>
+          <div style="flex:1;"><div style="height:64px;border-radius:8px;background:#0A357D;"></div><div style="font:800 11px 'Montserrat';margin-top:8px;">800</div><div style="font:600 10px 'Montserrat';color:#9AA7B8;">#0A357D</div></div>
+          <div style="flex:1;"><div style="height:64px;border-radius:8px;background:var(--ft-surface,#082A5E);"></div><div style="font:800 11px 'Montserrat';margin-top:8px;">900</div><div style="font:600 10px 'Montserrat';color:#9AA7B8;">var(--ft-surface,#082A5E)</div></div>
+        </div>
+      </div>
+
+      <!-- SCALE: LARANJA -->
+      <div style="background:#fff;border:1px solid #E8EDF3;border-radius:18px;padding:24px;margin-top:14px;">
+        <div style="font:700 14px 'Montserrat';color:#36424F;margin-bottom:14px;">Laranja · escala</div>
+        <div style="display:flex;gap:8px;">
+          <div style="flex:1;"><div style="height:64px;border-radius:8px;background:#FFF3E9;box-shadow:inset 0 0 0 1px rgba(0,0,0,.05);"></div><div style="font:800 11px 'Montserrat';margin-top:8px;">50</div><div style="font:600 10px 'Montserrat';color:#9AA7B8;">#FFF3E9</div></div>
+          <div style="flex:1;"><div style="height:64px;border-radius:8px;background:#FFE2C9;"></div><div style="font:800 11px 'Montserrat';margin-top:8px;">100</div><div style="font:600 10px 'Montserrat';color:#9AA7B8;">#FFE2C9</div></div>
+          <div style="flex:1;"><div style="height:64px;border-radius:8px;background:#FFC793;"></div><div style="font:800 11px 'Montserrat';margin-top:8px;">200</div><div style="font:600 10px 'Montserrat';color:#9AA7B8;">#FFC793</div></div>
+          <div style="flex:1;"><div style="height:64px;border-radius:8px;background:#FFA864;"></div><div style="font:800 11px 'Montserrat';margin-top:8px;">300</div><div style="font:600 10px 'Montserrat';color:#9AA7B8;">#FFA864</div></div>
+          <div style="flex:1;"><div style="height:64px;border-radius:8px;background:#FF8A33;"></div><div style="font:800 11px 'Montserrat';margin-top:8px;">400</div><div style="font:600 10px 'Montserrat';color:#9AA7B8;">#FF8A33</div></div>
+          <div style="flex:1;"><div style="height:64px;border-radius:8px;background:var(--ft-accent,#FF6D00);"></div><div style="font:800 11px 'Montserrat';margin-top:8px;color:var(--ft-accent,#FF6D00);">500</div><div style="font:600 10px 'Montserrat';color:#9AA7B8;">var(--ft-accent,#FF6D00)</div></div>
+          <div style="flex:1;"><div style="height:64px;border-radius:8px;background:#E55F00;"></div><div style="font:800 11px 'Montserrat';margin-top:8px;">600</div><div style="font:600 10px 'Montserrat';color:#9AA7B8;">#E55F00</div></div>
+          <div style="flex:1;"><div style="height:64px;border-radius:8px;background:#C25200;"></div><div style="font:800 11px 'Montserrat';margin-top:8px;">700</div><div style="font:600 10px 'Montserrat';color:#9AA7B8;">#C25200</div></div>
+          <div style="flex:1;"><div style="height:64px;border-radius:8px;background:#8F3A00;"></div><div style="font:800 11px 'Montserrat';margin-top:8px;">800</div><div style="font:600 10px 'Montserrat';color:#9AA7B8;">#8F3A00</div></div>
+        </div>
+      </div>
+
+      <!-- SCALE: NEUTROS + SEMANTIC -->
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-top:14px;">
+        <div style="background:#fff;border:1px solid #E8EDF3;border-radius:18px;padding:24px;">
+          <div style="font:700 14px 'Montserrat';color:#36424F;margin-bottom:14px;">Neutros</div>
+          <div style="display:flex;gap:6px;">
+            <div style="flex:1;"><div style="height:54px;border-radius:8px;background:#FFFFFF;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08);"></div><div style="font:800 10px 'Montserrat';margin-top:6px;">0</div></div>
+            <div style="flex:1;"><div style="height:54px;border-radius:8px;background:#F5F7FA;"></div><div style="font:800 10px 'Montserrat';margin-top:6px;">50</div></div>
+            <div style="flex:1;"><div style="height:54px;border-radius:8px;background:#EDF1F6;"></div><div style="font:800 10px 'Montserrat';margin-top:6px;">100</div></div>
+            <div style="flex:1;"><div style="height:54px;border-radius:8px;background:#DEE5EE;"></div><div style="font:800 10px 'Montserrat';margin-top:6px;">200</div></div>
+            <div style="flex:1;"><div style="height:54px;border-radius:8px;background:#C6D0DD;"></div><div style="font:800 10px 'Montserrat';margin-top:6px;">300</div></div>
+            <div style="flex:1;"><div style="height:54px;border-radius:8px;background:#9AA7B8;"></div><div style="font:800 10px 'Montserrat';margin-top:6px;">400</div></div>
+            <div style="flex:1;"><div style="height:54px;border-radius:8px;background:#6B7888;"></div><div style="font:800 10px 'Montserrat';margin-top:6px;color:#fff;position:relative;top:-32px;text-align:center;">500</div></div>
+            <div style="flex:1;"><div style="height:54px;border-radius:8px;background:#4D5A6B;"></div><div style="font:800 10px 'Montserrat';margin-top:6px;color:#fff;position:relative;top:-32px;text-align:center;">600</div></div>
+            <div style="flex:1;"><div style="height:54px;border-radius:8px;background:#36424F;"></div><div style="font:800 10px 'Montserrat';margin-top:6px;color:#fff;position:relative;top:-32px;text-align:center;">700</div></div>
+            <div style="flex:1;"><div style="height:54px;border-radius:8px;background:#141C26;"></div><div style="font:800 10px 'Montserrat';margin-top:6px;color:#fff;position:relative;top:-32px;text-align:center;">900</div></div>
+          </div>
+        </div>
+        <div style="background:#fff;border:1px solid #E8EDF3;border-radius:18px;padding:24px;">
+          <div style="font:700 14px 'Montserrat';color:#36424F;margin-bottom:14px;">Semânticas</div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;align-items:center;gap:10px;"><span style="width:34px;height:34px;border-radius:8px;background:#18A957;"></span><div><div style="font:700 13px 'Montserrat';">Sucesso</div><div style="font:600 11px 'Montserrat';color:#9AA7B8;">#18A957</div></div></div>
+            <div style="display:flex;align-items:center;gap:10px;"><span style="width:34px;height:34px;border-radius:8px;background:#F5A524;"></span><div><div style="font:700 13px 'Montserrat';">Atenção</div><div style="font:600 11px 'Montserrat';color:#9AA7B8;">#F5A524</div></div></div>
+            <div style="display:flex;align-items:center;gap:10px;"><span style="width:34px;height:34px;border-radius:8px;background:#E5484D;"></span><div><div style="font:700 13px 'Montserrat';">Erro</div><div style="font:600 11px 'Montserrat';color:#9AA7B8;">#E5484D</div></div></div>
+            <div style="display:flex;align-items:center;gap:10px;"><span style="width:34px;height:34px;border-radius:8px;background:#0D47A1;"></span><div><div style="font:700 13px 'Montserrat';">Info</div><div style="font:600 11px 'Montserrat';color:#9AA7B8;">#0D47A1</div></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 03 DEGRADÊS ===================== -->
+    <section style="margin-top:80px;">
+      <div style="font:800 13px/1 'Montserrat',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--ft-accent,#FF6D00);">03 — Degradês</div>
+      <h2 style="font:700 34px/1.1 var(--ft-display,'Montserrat'),sans-serif;letter-spacing:-.02em;margin:12px 0 0;">Gradientes</h2>
+      <p style="font:400 17px/1.6 'Montserrat',sans-serif;color:#4D5A6B;max-width:640px;margin:12px 0 0;">Quatro gradientes oficiais. O <b>Duo Marca</b> (azul→laranja) ecoa o telhado do símbolo e é o destaque principal.</p>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:26px;">
+        <div style="border-radius:18px;overflow:hidden;border:1px solid #E8EDF3;">
+          <div style="height:130px;background:linear-gradient(120deg,#0D47A1 0%,#0D47A1 45%,var(--ft-accent,#FF6D00) 100%);"></div>
+          <div style="background:#fff;padding:16px 18px;"><div style="font:700 15px var(--ft-display,'Montserrat');">Duo Marca</div><div style="font:600 12px 'Montserrat';color:#6B7888;margin-top:4px;">linear-gradient(120deg, #0D47A1, #0D47A1 45%, var(--ft-accent,#FF6D00))</div></div>
+        </div>
+        <div style="border-radius:18px;overflow:hidden;border:1px solid #E8EDF3;">
+          <div style="height:130px;background:linear-gradient(135deg,#0D47A1,var(--ft-surface,#082A5E));"></div>
+          <div style="background:#fff;padding:16px 18px;"><div style="font:700 15px var(--ft-display,'Montserrat');">Azul Profundo</div><div style="font:600 12px 'Montserrat';color:#6B7888;margin-top:4px;">linear-gradient(135deg, #0D47A1, var(--ft-surface,#082A5E))</div></div>
+        </div>
+        <div style="border-radius:18px;overflow:hidden;border:1px solid #E8EDF3;">
+          <div style="height:130px;background:linear-gradient(135deg,#FF8A33,#E55F00);"></div>
+          <div style="background:#fff;padding:16px 18px;"><div style="font:700 15px var(--ft-display,'Montserrat');">Laranja Quente</div><div style="font:600 12px 'Montserrat';color:#6B7888;margin-top:4px;">linear-gradient(135deg, #FF8A33, #E55F00)</div></div>
+        </div>
+        <div style="border-radius:18px;overflow:hidden;border:1px solid #E8EDF3;">
+          <div style="height:130px;background:radial-gradient(120% 120% at 50% 0%,#0D47A1,var(--ft-surface,#082A5E) 70%);"></div>
+          <div style="background:#fff;padding:16px 18px;"><div style="font:700 15px var(--ft-display,'Montserrat');">Brilho Topo</div><div style="font:600 12px 'Montserrat';color:#6B7888;margin-top:4px;">radial-gradient(120% 120% at 50% 0%, #0D47A1, var(--ft-surface,#082A5E))</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 04 TIPOGRAFIA ===================== -->
+    <section style="margin-top:80px;">
+      <div style="font:800 13px/1 'Montserrat',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--ft-accent,#FF6D00);">04 — Tipografia</div>
+      <h2 style="font:700 34px/1.1 var(--ft-display,'Montserrat'),sans-serif;letter-spacing:-.02em;margin:12px 0 0;">Fontes</h2>
+      <p style="font:400 17px/1.6 'Montserrat',sans-serif;color:#4D5A6B;max-width:640px;margin:12px 0 0;"><b>Montserrat</b> é a fonte única da marca — geométrica, forte e legível à distância, ecoando o peso da logomarca. Use os pesos 400 a 800; o <b>itálico</b> reproduz o gesto inclinado do logotipo FazTudo.</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:26px;">
+        <div style="background:var(--ft-surface,#082A5E);border-radius:18px;padding:30px;color:#fff;">
+          <div style="font:800 90px/1 var(--ft-display,'Montserrat'),sans-serif;">Aa</div>
+          <div style="font:800 22px var(--ft-display,'Montserrat');margin-top:18px;">Montserrat</div>
+          <div style="font:600 14px 'Montserrat';color:#9AA7B8;margin-top:4px;">Títulos & Display · 600 / 700 / 800 + itálico</div>
+          <div style="font:700 18px var(--ft-display,'Montserrat');margin-top:14px;letter-spacing:.02em;">ABCDEFGÇ abcdefgç 0123456789</div>
+        </div>
+        <div style="background:#fff;border:1px solid #E8EDF3;border-radius:18px;padding:30px;">
+          <div style="font:800 90px/1 'Montserrat',sans-serif;color:#0E1620;font-style:italic;">Aa</div>
+          <div style="font:800 22px 'Montserrat';margin-top:18px;font-style:italic;">Montserrat <span style="font-style:normal;font-weight:600;color:#FF6D00;">Itálico</span></div>
+          <div style="font:600 14px 'Montserrat';color:#6B7888;margin-top:4px;">Corpo & Interface · 400 / 600 / 700</div>
+          <div style="font:600 18px 'Montserrat';margin-top:14px;color:#36424F;font-style:italic;">ABCDEFGÇ abcdefgç 0123456789</div>
+        </div>
+      </div>
+
+      <div style="background:#fff;border:1px solid #E8EDF3;border-radius:18px;padding:14px 30px;margin-top:14px;">
+        <div style="display:flex;align-items:baseline;gap:20px;padding:16px 0;border-bottom:1px solid #EDF1F6;"><span style="font:600 12px 'Montserrat';color:#9AA7B8;width:120px;flex:none;">Display · 56/800</span><span style="font:800 56px/1 var(--ft-display,'Montserrat');letter-spacing:-.03em;">Faz acontecer</span></div>
+        <div style="display:flex;align-items:baseline;gap:20px;padding:16px 0;border-bottom:1px solid #EDF1F6;"><span style="font:600 12px 'Montserrat';color:#9AA7B8;width:120px;flex:none;">H1 · 40/700</span><span style="font:700 40px/1 var(--ft-display,'Montserrat');letter-spacing:-.02em;">Profissionais perto de você</span></div>
+        <div style="display:flex;align-items:baseline;gap:20px;padding:16px 0;border-bottom:1px solid #EDF1F6;"><span style="font:600 12px 'Montserrat';color:#9AA7B8;width:120px;flex:none;">H2 · 28/700</span><span style="font:700 28px/1 var(--ft-display,'Montserrat');">Serviços em destaque</span></div>
+        <div style="display:flex;align-items:baseline;gap:20px;padding:16px 0;border-bottom:1px solid #EDF1F6;"><span style="font:600 12px 'Montserrat';color:#9AA7B8;width:120px;flex:none;">H3 · 22/700</span><span style="font:700 22px/1 var(--ft-display,'Montserrat');">Avaliações verificadas</span></div>
+        <div style="display:flex;align-items:baseline;gap:20px;padding:16px 0;border-bottom:1px solid #EDF1F6;"><span style="font:600 12px 'Montserrat';color:#9AA7B8;width:120px;flex:none;">Corpo · 16/400</span><span style="font:400 16px/1.5 'Montserrat';color:#36424F;">Contrate eletricistas, encanadores e diaristas avaliados pela comunidade.</span></div>
+        <div style="display:flex;align-items:baseline;gap:20px;padding:16px 0;"><span style="font:600 12px 'Montserrat';color:#9AA7B8;width:120px;flex:none;">Rótulo · 12/800</span><span style="font:800 12px/1 'Montserrat';letter-spacing:.16em;text-transform:uppercase;color:#0D47A1;">Solicitar orçamento</span></div>
+      </div>
+    </section>
+
+    <!-- ===================== 05 BOTÕES ===================== -->
+    <section style="margin-top:80px;">
+      <div style="font:800 13px/1 'Montserrat',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--ft-accent,#FF6D00);">05 — Botões</div>
+      <h2 style="font:700 34px/1.1 var(--ft-display,'Montserrat'),sans-serif;letter-spacing:-.02em;margin:12px 0 0;">Botões</h2>
+      <p style="font:400 17px/1.6 'Montserrat',sans-serif;color:#4D5A6B;max-width:640px;margin:12px 0 0;">Laranja é a ação principal (contratar, solicitar). Azul é a ação secundária e de navegação. Cantos arredondados de 12px, peso 800. Ao passar o mouse: escurece e ganha leve elevação. Pressionado: desce 1px.</p>
+
+      <div style="background:#fff;border:1px solid #E8EDF3;border-radius:18px;padding:30px;margin-top:26px;">
+        <div style="font:700 13px 'Montserrat';color:#9AA7B8;letter-spacing:.08em;text-transform:uppercase;">Variações</div>
+        <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-top:16px;">
+          <button style="font:800 15px 'Montserrat';color:#fff;background:var(--ft-accent,#FF6D00);border:none;border-radius:12px;padding:14px 26px;cursor:pointer;box-shadow:0 6px 18px rgba(255,109,0,.32);transition:all .18s ease;" style-hover="background:#E55F00;transform:translateY(-2px);box-shadow:0 10px 24px rgba(255,109,0,.4);" style-active="transform:translateY(0);box-shadow:0 3px 10px rgba(255,109,0,.3);">Contratar agora</button>
+          <button style="font:800 15px 'Montserrat';color:#fff;background:#0D47A1;border:none;border-radius:12px;padding:14px 26px;cursor:pointer;box-shadow:0 6px 18px rgba(13,71,161,.28);transition:all .18s ease;" style-hover="background:#0A3A86;transform:translateY(-2px);" style-active="transform:translateY(0);">Ver perfil</button>
+          <button style="font:800 15px 'Montserrat';color:#0D47A1;background:#fff;border:2px solid #0D47A1;border-radius:12px;padding:12px 24px;cursor:pointer;transition:all .18s ease;" style-hover="background:#EAF2FC;" style-active="transform:translateY(1px);">Outline</button>
+          <button style="font:800 15px 'Montserrat';color:#0D47A1;background:transparent;border:none;border-radius:12px;padding:14px 18px;cursor:pointer;transition:all .18s ease;" style-hover="background:#EAF2FC;">Fantasma</button>
+          <button style="font:800 15px 'Montserrat';color:#fff;background:#18A957;border:none;border-radius:12px;padding:14px 26px;cursor:pointer;box-shadow:0 6px 18px rgba(24,169,87,.28);transition:all .18s ease;" style-hover="filter:brightness(.94);transform:translateY(-2px);">WhatsApp</button>
+        </div>
+
+        <div style="font:700 13px 'Montserrat';color:#9AA7B8;letter-spacing:.08em;text-transform:uppercase;margin-top:30px;">Tamanhos</div>
+        <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-top:16px;">
+          <button style="font:800 17px 'Montserrat';color:#fff;background:var(--ft-accent,#FF6D00);border:none;border-radius:14px;padding:18px 34px;cursor:pointer;box-shadow:0 6px 18px rgba(255,109,0,.3);transition:all .18s ease;" style-hover="background:#E55F00;">Grande</button>
+          <button style="font:800 15px 'Montserrat';color:#fff;background:var(--ft-accent,#FF6D00);border:none;border-radius:12px;padding:13px 24px;cursor:pointer;box-shadow:0 5px 14px rgba(255,109,0,.28);transition:all .18s ease;" style-hover="background:#E55F00;">Médio</button>
+          <button style="font:800 13px 'Montserrat';color:#fff;background:var(--ft-accent,#FF6D00);border:none;border-radius:10px;padding:9px 16px;cursor:pointer;transition:all .18s ease;" style-hover="background:#E55F00;">Pequeno</button>
+        </div>
+
+        <div style="font:700 13px 'Montserrat';color:#9AA7B8;letter-spacing:.08em;text-transform:uppercase;margin-top:30px;">Com ícone, ícone e estados</div>
+        <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-top:16px;">
+          <button style="display:inline-flex;align-items:center;gap:10px;font:800 15px 'Montserrat';color:#fff;background:var(--ft-accent,#FF6D00);border:none;border-radius:12px;padding:13px 22px;cursor:pointer;box-shadow:0 6px 18px rgba(255,109,0,.3);transition:all .18s ease;" style-hover="background:#E55F00;transform:translateY(-2px);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Solicitar orçamento</button>
+          <button aria-label="favoritar" style="display:inline-flex;align-items:center;justify-content:center;width:50px;height:50px;background:#EAF2FC;border:none;border-radius:12px;cursor:pointer;transition:all .18s ease;" style-hover="background:#CFE0F7;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0D47A1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg></button>
+          <button style="display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;background:var(--ft-accent,#FF6D00);border:none;border-radius:50%;cursor:pointer;box-shadow:0 8px 22px rgba(255,109,0,.4);transition:all .18s ease;" style-hover="background:#E55F00;transform:translateY(-2px);"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></button>
+          <button disabled style="font:800 15px 'Montserrat';color:#fff;background:var(--ft-accent,#FF6D00);border:none;border-radius:12px;padding:14px 26px;opacity:.35;cursor:not-allowed;">Desativado</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 06 CAMPOS ===================== -->
+    <section style="margin-top:80px;">
+      <div style="font:800 13px/1 'Montserrat',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--ft-accent,#FF6D00);">06 — Campos</div>
+      <h2 style="font:700 34px/1.1 var(--ft-display,'Montserrat'),sans-serif;letter-spacing:-.02em;margin:12px 0 0;">Formulários</h2>
+      <p style="font:400 17px/1.6 'Montserrat',sans-serif;color:#4D5A6B;max-width:640px;margin:12px 0 0;">Bordas neutras de 1.5px que ganham azul royal e um anel suave ao focar. Campos confortáveis (altura 52px) para o toque no celular.</p>
+
+      <div style="background:#fff;border:1px solid #E8EDF3;border-radius:18px;padding:30px;margin-top:26px;display:grid;grid-template-columns:1fr 1fr;gap:26px 30px;">
+        <div>
+          <label style="font:700 13px 'Montserrat';color:#36424F;display:block;margin-bottom:8px;">Nome completo</label>
+          <input type="text" placeholder="Como podemos te chamar?" style="width:100%;font:600 15px 'Montserrat';color:#0E1620;background:#fff;border:1.5px solid #DEE5EE;border-radius:12px;padding:15px 16px;outline:none;transition:all .15s ease;" style-focus="border-color:#0D47A1;box-shadow:0 0 0 4px rgba(13,71,161,.14);">
+        </div>
+        <div>
+          <label style="font:700 13px 'Montserrat';color:#36424F;display:block;margin-bottom:8px;">Buscar serviço</label>
+          <div style="position:relative;">
+            <svg style="position:absolute;left:15px;top:50%;transform:translateY(-50%);" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9AA7B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="text" placeholder="Encanador, pintor, diarista..." style="width:100%;font:600 15px 'Montserrat';color:#0E1620;background:#fff;border:1.5px solid #DEE5EE;border-radius:12px;padding:15px 16px 15px 44px;outline:none;transition:all .15s ease;" style-focus="border-color:#0D47A1;box-shadow:0 0 0 4px rgba(13,71,161,.14);">
+          </div>
+        </div>
+        <div>
+          <label style="font:700 13px 'Montserrat';color:#0D47A1;display:block;margin-bottom:8px;">E-mail · foco</label>
+          <input type="text" value="ana.silva@email.com" style="width:100%;font:600 15px 'Montserrat';color:#0E1620;background:#fff;border:1.5px solid #0D47A1;border-radius:12px;padding:15px 16px;outline:none;box-shadow:0 0 0 4px rgba(13,71,161,.14);">
+        </div>
+        <div>
+          <label style="font:700 13px 'Montserrat';color:#E5484D;display:block;margin-bottom:8px;">Telefone · erro</label>
+          <input type="text" value="(11) 9999" style="width:100%;font:600 15px 'Montserrat';color:#0E1620;background:#fff;border:1.5px solid #E5484D;border-radius:12px;padding:15px 16px;outline:none;box-shadow:0 0 0 4px rgba(229,72,77,.12);">
+          <div style="display:flex;align-items:center;gap:6px;margin-top:8px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#E5484D" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span style="font:600 12px 'Montserrat';color:#E5484D;">Número incompleto</span></div>
+        </div>
+        <div>
+          <label style="font:700 13px 'Montserrat';color:#36424F;display:block;margin-bottom:8px;">Categoria</label>
+          <div style="position:relative;">
+            <select style="appearance:none;width:100%;font:600 15px 'Montserrat';color:#0E1620;background:#fff;border:1.5px solid #DEE5EE;border-radius:12px;padding:15px 16px;outline:none;cursor:pointer;transition:all .15s ease;" style-focus="border-color:#0D47A1;box-shadow:0 0 0 4px rgba(13,71,161,.14);"><option>Limpeza</option><option>Elétrica</option><option>Encanamento</option></select>
+            <svg style="position:absolute;right:15px;top:50%;transform:translateY(-50%);pointer-events:none;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B7888" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+        </div>
+        <div>
+          <label style="font:700 13px 'Montserrat';color:#36424F;display:block;margin-bottom:8px;">Descreva o serviço</label>
+          <textarea placeholder="Conte o que você precisa..." style="width:100%;height:54px;resize:none;font:600 15px 'Montserrat';color:#0E1620;background:#fff;border:1.5px solid #DEE5EE;border-radius:12px;padding:15px 16px;outline:none;transition:all .15s ease;" style-focus="border-color:#0D47A1;box-shadow:0 0 0 4px rgba(13,71,161,.14);"></textarea>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:30px;align-items:center;flex-wrap:wrap;background:#fff;border:1px solid #E8EDF3;border-radius:18px;padding:24px 30px;margin-top:14px;">
+        <label style="display:inline-flex;align-items:center;gap:10px;cursor:pointer;"><span style="width:22px;height:22px;border-radius:6px;background:var(--ft-accent,#FF6D00);display:inline-flex;align-items:center;justify-content:center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span style="font:600 15px 'Montserrat';color:#36424F;">Aceito os termos</span></label>
+        <label style="display:inline-flex;align-items:center;gap:10px;cursor:pointer;"><span style="width:22px;height:22px;border-radius:6px;border:1.5px solid #C6D0DD;"></span><span style="font:600 15px 'Montserrat';color:#6B7888;">Receber novidades</span></label>
+        <div style="display:inline-flex;align-items:center;gap:10px;"><span style="width:46px;height:26px;border-radius:999px;background:#0D47A1;position:relative;display:inline-block;"><span style="position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;background:#fff;"></span></span><span style="font:600 15px 'Montserrat';color:#36424F;">Notificações ativas</span></div>
+        <label style="display:inline-flex;align-items:center;gap:10px;cursor:pointer;"><span style="width:22px;height:22px;border-radius:50%;border:2px solid #0D47A1;display:inline-flex;align-items:center;justify-content:center;"><span style="width:11px;height:11px;border-radius:50%;background:#0D47A1;"></span></span><span style="font:600 15px 'Montserrat';color:#36424F;">Cliente</span></label>
+      </div>
+    </section>
+
+    <!-- ===================== 07 ÍCONES ===================== -->
+    <section style="margin-top:80px;">
+      <div style="font:800 13px/1 'Montserrat',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--ft-accent,#FF6D00);">07 — Símbolos</div>
+      <h2 style="font:700 34px/1.1 var(--ft-display,'Montserrat'),sans-serif;letter-spacing:-.02em;margin:12px 0 0;">Ícones &amp; categorias</h2>
+      <p style="font:400 17px/1.6 'Montserrat',sans-serif;color:#4D5A6B;max-width:640px;margin:12px 0 0;">Traço de 2px com terminais arredondados — técnico, mas amigável. As categorias de serviço usam um azulejo azul-claro com um pingo laranja de acento.</p>
+
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:26px;">
+        <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px;">
+          <div style="position:relative;width:56px;height:56px;border-radius:14px;background:#EAF2FC;display:flex;align-items:center;justify-content:center;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0D47A1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg><span style="position:absolute;top:-3px;right:-3px;width:12px;height:12px;border-radius:50%;background:var(--ft-accent,#FF6D00);border:2.5px solid #fff;"></span></div>
+          <div><div style="font:700 16px 'Montserrat';">Encanamento</div><div style="font:400 13px 'Montserrat';color:#6B7888;margin-top:2px;">Vazamentos e torneiras</div></div>
+        </div>
+        <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px;">
+          <div style="position:relative;width:56px;height:56px;border-radius:14px;background:#EAF2FC;display:flex;align-items:center;justify-content:center;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0D47A1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg><span style="position:absolute;top:-3px;right:-3px;width:12px;height:12px;border-radius:50%;background:var(--ft-accent,#FF6D00);border:2.5px solid #fff;"></span></div>
+          <div><div style="font:700 16px 'Montserrat';">Elétrica</div><div style="font:400 13px 'Montserrat';color:#6B7888;margin-top:2px;">Tomadas e instalações</div></div>
+        </div>
+        <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px;">
+          <div style="position:relative;width:56px;height:56px;border-radius:14px;background:#EAF2FC;display:flex;align-items:center;justify-content:center;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0D47A1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/></svg><span style="position:absolute;top:-3px;right:-3px;width:12px;height:12px;border-radius:50%;background:var(--ft-accent,#FF6D00);border:2.5px solid #fff;"></span></div>
+          <div><div style="font:700 16px 'Montserrat';">Limpeza</div><div style="font:400 13px 'Montserrat';color:#6B7888;margin-top:2px;">Diaristas e faxina</div></div>
+        </div>
+        <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px;">
+          <div style="position:relative;width:56px;height:56px;border-radius:14px;background:#EAF2FC;display:flex;align-items:center;justify-content:center;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0D47A1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="13" height="6" rx="1.5"/><path d="M16 6h3a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-7a2 2 0 0 0-2 2v1"/><rect x="9" y="15" width="4" height="6" rx="1"/></svg><span style="position:absolute;top:-3px;right:-3px;width:12px;height:12px;border-radius:50%;background:var(--ft-accent,#FF6D00);border:2.5px solid #fff;"></span></div>
+          <div><div style="font:700 16px 'Montserrat';">Pintura</div><div style="font:400 13px 'Montserrat';color:#6B7888;margin-top:2px;">Paredes e fachadas</div></div>
+        </div>
+        <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px;">
+          <div style="position:relative;width:56px;height:56px;border-radius:14px;background:#EAF2FC;display:flex;align-items:center;justify-content:center;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0D47A1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 12-8.5 8.5a2.12 2.12 0 1 1-3-3L12 9"/><path d="M17.64 15 22 10.64"/><path d="M20.91 11.7a1.78 1.78 0 0 0 0-2.52l-5.73-5.73a1.78 1.78 0 0 0-2.52 0L9 7l8 8z"/></svg><span style="position:absolute;top:-3px;right:-3px;width:12px;height:12px;border-radius:50%;background:var(--ft-accent,#FF6D00);border:2.5px solid #fff;"></span></div>
+          <div><div style="font:700 16px 'Montserrat';">Montagem</div><div style="font:400 13px 'Montserrat';color:#6B7888;margin-top:2px;">Móveis e reparos</div></div>
+        </div>
+        <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px;">
+          <div style="position:relative;width:56px;height:56px;border-radius:14px;background:#EAF2FC;display:flex;align-items:center;justify-content:center;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0D47A1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20h10"/><path d="M10 20c5.5-2.5.8-6.4 3-10"/><path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z"/><path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4 1-4.9 2z"/></svg><span style="position:absolute;top:-3px;right:-3px;width:12px;height:12px;border-radius:50%;background:var(--ft-accent,#FF6D00);border:2.5px solid #fff;"></span></div>
+          <div><div style="font:700 16px 'Montserrat';">Jardinagem</div><div style="font:400 13px 'Montserrat';color:#6B7888;margin-top:2px;">Poda e paisagismo</div></div>
+        </div>
+        <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px;">
+          <div style="position:relative;width:56px;height:56px;border-radius:14px;background:#EAF2FC;display:flex;align-items:center;justify-content:center;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0D47A1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-2.82 1.18V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span style="position:absolute;top:-3px;right:-3px;width:12px;height:12px;border-radius:50%;background:var(--ft-accent,#FF6D00);border:2.5px solid #fff;"></span></div>
+          <div><div style="font:700 16px 'Montserrat';">Reparos gerais</div><div style="font:400 13px 'Montserrat';color:#6B7888;margin-top:2px;">Pequenos consertos</div></div>
+        </div>
+        <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px;">
+          <div style="position:relative;width:56px;height:56px;border-radius:14px;background:#EAF2FC;display:flex;align-items:center;justify-content:center;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0D47A1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.8 19.6A2 2 0 1 0 14 16H2"/><path d="M17.5 8a2.5 2.5 0 1 1 2 4H2"/><path d="M9.8 4.4A2 2 0 1 1 11 8H2"/></svg><span style="position:absolute;top:-3px;right:-3px;width:12px;height:12px;border-radius:50%;background:var(--ft-accent,#FF6D00);border:2.5px solid #fff;"></span></div>
+          <div><div style="font:700 16px 'Montserrat';">Ar-condicionado</div><div style="font:400 13px 'Montserrat';color:#6B7888;margin-top:2px;">Instalação e limpeza</div></div>
+        </div>
+      </div>
+
+      <div style="background:var(--ft-surface,#082A5E);border-radius:18px;padding:26px 30px;margin-top:18px;">
+        <div style="font:700 13px 'Montserrat';color:#6E9FE3;letter-spacing:.08em;text-transform:uppercase;margin-bottom:18px;">Ícones de interface</div>
+        <div style="display:flex;flex-wrap:wrap;gap:26px;">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FF8A33" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17.3 6 21l1.5-6.8L2.3 9l6.9-.7z"/></svg>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 08 COMPONENTES ===================== -->
+    <section style="margin-top:80px;">
+      <div style="font:800 13px/1 'Montserrat',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--ft-accent,#FF6D00);">08 — Componentes</div>
+      <h2 style="font:700 34px/1.1 var(--ft-display,'Montserrat'),sans-serif;letter-spacing:-.02em;margin:12px 0 0;">Blocos de interface</h2>
+      <p style="font:400 17px/1.6 'Montserrat',sans-serif;color:#4D5A6B;max-width:640px;margin:12px 0 0;">O card de profissional é o coração do app: foto, avaliação, selo de verificado e ação direta de contratar.</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:26px;">
+        <!-- PRO CARD -->
+        <div style="background:#fff;border:1px solid #E8EDF3;border-radius:20px;padding:20px;box-shadow:0 8px 26px rgba(10,42,110,.06);display:flex;flex-direction:column;gap:16px;">
+          <div style="display:flex;align-items:center;gap:14px;">
+            <div style="width:60px;height:60px;border-radius:16px;background:linear-gradient(135deg,#0D47A1,#0A357D);display:flex;align-items:center;justify-content:center;font:800 22px var(--ft-display,'Montserrat');color:#fff;flex:none;">CR</div>
+            <div style="flex:1;min-width:0;">
+              <div style="display:flex;align-items:center;gap:6px;"><span style="font:800 17px var(--ft-display,'Montserrat');color:#0E1620;">Carlos Reis</span><svg width="17" height="17" viewBox="0 0 24 24" fill="#0D47A1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2s7 1 7 8-7 12-7 12-7-5-7-12 7-8 7-8z" fill="none" stroke="#0D47A1"/><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="#0D47A1" stroke="none"/><path d="M9 12l2 2 4-4" stroke="#fff"/></svg></div>
+              <div style="font:600 13px 'Montserrat';color:#6B7888;margin-top:2px;">Eletricista · 8 anos de experiência</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="display:flex;gap:2px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="#FF8A33"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17.3 6 21l1.5-6.8L2.3 9l6.9-.7z"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="#FF8A33"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17.3 6 21l1.5-6.8L2.3 9l6.9-.7z"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="#FF8A33"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17.3 6 21l1.5-6.8L2.3 9l6.9-.7z"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="#FF8A33"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17.3 6 21l1.5-6.8L2.3 9l6.9-.7z"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="#FF8A33"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17.3 6 21l1.5-6.8L2.3 9l6.9-.7z"/></svg>
+            </div>
+            <span style="font:800 14px 'Montserrat';color:#0E1620;">4,9</span><span style="font:600 13px 'Montserrat';color:#9AA7B8;">(214 avaliações)</span>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <span style="font:700 12px 'Montserrat';color:#18A957;background:#E7F6EE;padding:6px 12px;border-radius:999px;">Disponível hoje</span>
+            <span style="font:700 12px 'Montserrat';color:#0D47A1;background:#EAF2FC;padding:6px 12px;border-radius:999px;">2,3 km</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid #EDF1F6;padding-top:16px;">
+            <div><div style="font:600 11px 'Montserrat';color:#9AA7B8;">a partir de</div><div style="font:800 20px var(--ft-display,'Montserrat');color:#0E1620;">R$ 90<span style="font:600 13px 'Montserrat';color:#9AA7B8;">/visita</span></div></div>
+            <button style="font:800 14px 'Montserrat';color:#fff;background:var(--ft-accent,#FF6D00);border:none;border-radius:12px;padding:12px 22px;cursor:pointer;box-shadow:0 5px 14px rgba(255,109,0,.3);transition:all .18s ease;" style-hover="background:#E55F00;transform:translateY(-2px);">Contratar</button>
+          </div>
+        </div>
+
+        <!-- RIGHT COLUMN: small components -->
+        <div style="display:flex;flex-direction:column;gap:18px;">
+          <div style="background:#fff;border:1px solid #E8EDF3;border-radius:20px;padding:20px;">
+            <div style="font:700 12px 'Montserrat';color:#9AA7B8;letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;">Selos &amp; badges</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <span style="display:inline-flex;align-items:center;gap:6px;font:800 12px 'Montserrat';color:#fff;background:#0D47A1;padding:7px 13px;border-radius:999px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Verificado</span>
+              <span style="font:800 12px 'Montserrat';color:#fff;background:var(--ft-accent,#FF6D00);padding:7px 13px;border-radius:999px;">Top FazTudo</span>
+              <span style="font:800 12px 'Montserrat';color:#18A957;background:#E7F6EE;padding:7px 13px;border-radius:999px;">Disponível</span>
+              <span style="font:800 12px 'Montserrat';color:#6B7888;background:#EDF1F6;padding:7px 13px;border-radius:999px;">Novo</span>
+            </div>
+          </div>
+          <div style="background:#fff;border:1px solid #E8EDF3;border-radius:20px;padding:20px;">
+            <div style="font:700 12px 'Montserrat';color:#9AA7B8;letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;">Chips de filtro</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <span style="font:700 13px 'Montserrat';color:#fff;background:#0A357D;padding:9px 16px;border-radius:999px;">Todos</span>
+              <span style="font:700 13px 'Montserrat';color:#36424F;background:#fff;border:1.5px solid #DEE5EE;padding:8px 15px;border-radius:999px;">Mais perto</span>
+              <span style="font:700 13px 'Montserrat';color:#36424F;background:#fff;border:1.5px solid #DEE5EE;padding:8px 15px;border-radius:999px;">Melhor nota</span>
+              <span style="font:700 13px 'Montserrat';color:#36424F;background:#fff;border:1.5px solid #DEE5EE;padding:8px 15px;border-radius:999px;">Menor preço</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:14px;">
+            <div style="flex:1;background:linear-gradient(135deg,#0D47A1,var(--ft-surface,#082A5E));border-radius:20px;padding:20px;color:#fff;"><div style="font:800 30px var(--ft-display,'Montserrat');">+12 mil</div><div style="font:600 13px 'Montserrat';color:#9FC0EB;margin-top:4px;">profissionais ativos</div></div>
+            <div style="flex:1;background:#fff;border:1px solid #E8EDF3;border-radius:20px;padding:20px;"><div style="font:800 30px var(--ft-display,'Montserrat');color:var(--ft-accent,#FF6D00);">4,8</div><div style="font:600 13px 'Montserrat';color:#6B7888;margin-top:4px;">nota média da rede</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 09 APP ===================== -->
+    <section style="margin-top:80px;">
+      <div style="font:800 13px/1 'Montserrat',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--ft-accent,#FF6D00);">09 — Aplicação</div>
+      <h2 style="font:700 34px/1.1 var(--ft-display,'Montserrat'),sans-serif;letter-spacing:-.02em;margin:12px 0 0;">Tudo junto: o app</h2>
+      <p style="font:400 17px/1.6 'Montserrat',sans-serif;color:#4D5A6B;max-width:640px;margin:12px 0 0;">A tela inicial reúne busca, categorias, destaque e a lista de profissionais — interface clara sobre fundo neutro, com o laranja guiando a ação.</p>
+
+      <div style="display:grid;grid-template-columns:300px 1fr;gap:40px;margin-top:30px;align-items:start;">
+        <!-- PHONE -->
+        <div style="width:300px;background:#0E1620;border-radius:42px;padding:12px;box-shadow:0 30px 70px rgba(8,42,94,.3);">
+          <div style="background:#F5F7FA;border-radius:32px;overflow:hidden;">
+            <!-- status -->
+            <div style="background:linear-gradient(135deg,#0D47A1,var(--ft-surface,#082A5E));padding:14px 20px 18px;color:#fff;">
+              <div style="display:flex;justify-content:space-between;font:800 12px 'Montserrat';opacity:.9;"><span>9:41</span><span>5G ▪ 100%</span></div>
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:14px;">
+                <div><div style="font:600 12px 'Montserrat';color:#9FC0EB;display:flex;align-items:center;gap:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9FC0EB" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>São Paulo, SP</div><div style="font:800 18px var(--ft-display,'Montserrat');margin-top:3px;">Olá, Ana 👋</div></div>
+                <div style="width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+              </div>
+              <div style="background:#fff;border-radius:12px;display:flex;align-items:center;gap:8px;padding:11px 14px;margin-top:14px;">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#9AA7B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                <span style="font:600 13px 'Montserrat';color:#9AA7B8;">Do que você precisa hoje?</span>
+              </div>
+            </div>
+            <!-- body -->
+            <div style="padding:18px 16px 0;">
+              <div style="display:flex;justify-content:space-between;">
+                <div style="text-align:center;"><div style="width:50px;height:50px;border-radius:15px;background:#EAF2FC;display:flex;align-items:center;justify-content:center;margin:0 auto;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0D47A1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></div><div style="font:700 10px 'Montserrat';margin-top:6px;color:#36424F;">Elétrica</div></div>
+                <div style="text-align:center;"><div style="width:50px;height:50px;border-radius:15px;background:#EAF2FC;display:flex;align-items:center;justify-content:center;margin:0 auto;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0D47A1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div><div style="font:700 10px 'Montserrat';margin-top:6px;color:#36424F;">Encanar</div></div>
+                <div style="text-align:center;"><div style="width:50px;height:50px;border-radius:15px;background:#EAF2FC;display:flex;align-items:center;justify-content:center;margin:0 auto;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0D47A1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/></svg></div><div style="font:700 10px 'Montserrat';margin-top:6px;color:#36424F;">Limpeza</div></div>
+                <div style="text-align:center;"><div style="width:50px;height:50px;border-radius:15px;background:var(--ft-accent,#FF6D00);display:flex;align-items:center;justify-content:center;margin:0 auto;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg></div><div style="font:700 10px 'Montserrat';margin-top:6px;color:#36424F;">Mais</div></div>
+              </div>
+              <!-- promo -->
+              <div style="margin-top:18px;border-radius:18px;overflow:hidden;background:linear-gradient(120deg,#0D47A1 0%,#0D47A1 45%,var(--ft-accent,#FF6D00) 130%);padding:18px;color:#fff;position:relative;">
+                <div style="font:800 16px var(--ft-display,'Montserrat');line-height:1.15;max-width:160px;">Primeira visita com 20% OFF</div>
+                <div style="font:600 11px 'Montserrat';opacity:.9;margin-top:6px;">Use o cupom FAZ20</div>
+                <div style="position:absolute;right:-10px;bottom:-10px;width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,.12);"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:20px;">
+                <div style="font:800 15px var(--ft-display,'Montserrat');color:#0E1620;">Perto de você</div>
+                <div style="font:800 12px 'Montserrat';color:#0D47A1;">Ver todos</div>
+              </div>
+              <!-- pro mini cards -->
+              <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px;padding-bottom:8px;">
+                <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:12px;display:flex;align-items:center;gap:12px;">
+                  <div style="width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,#0D47A1,#0A357D);display:flex;align-items:center;justify-content:center;font:800 16px var(--ft-display,'Montserrat');color:#fff;flex:none;">CR</div>
+                  <div style="flex:1;min-width:0;"><div style="font:800 14px 'Montserrat';color:#0E1620;display:flex;align-items:center;gap:4px;">Carlos R. <svg width="13" height="13" viewBox="0 0 24 24" fill="#0D47A1"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div style="font:600 11px 'Montserrat';color:#6B7888;">Eletricista · 2,3 km</div></div>
+                  <div style="text-align:right;"><div style="font:800 12px 'Montserrat';color:var(--ft-accent,#FF6D00);">★ 4,9</div><div style="font:800 13px var(--ft-display,'Montserrat');color:#0E1620;">R$ 90</div></div>
+                </div>
+                <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:12px;display:flex;align-items:center;gap:12px;">
+                  <div style="width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,#FF8A33,#E55F00);display:flex;align-items:center;justify-content:center;font:800 16px var(--ft-display,'Montserrat');color:#fff;flex:none;">MS</div>
+                  <div style="flex:1;min-width:0;"><div style="font:800 14px 'Montserrat';color:#0E1620;display:flex;align-items:center;gap:4px;">Marina S. <svg width="13" height="13" viewBox="0 0 24 24" fill="#0D47A1"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div style="font:600 11px 'Montserrat';color:#6B7888;">Diarista · 1,1 km</div></div>
+                  <div style="text-align:right;"><div style="font:800 12px 'Montserrat';color:var(--ft-accent,#FF6D00);">★ 5,0</div><div style="font:800 13px var(--ft-display,'Montserrat');color:#0E1620;">R$ 130</div></div>
+                </div>
+              </div>
+            </div>
+            <!-- bottom nav -->
+            <div style="display:flex;justify-content:space-around;align-items:center;background:#fff;border-top:1px solid #EDF1F6;padding:12px 0 16px;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0D47A1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9AA7B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9AA7B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9AA7B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- callouts -->
+        <div style="display:flex;flex-direction:column;gap:14px;padding-top:8px;">
+          <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:20px;"><div style="font:800 16px var(--ft-display,'Montserrat');color:#0E1620;">Hierarquia clara</div><p style="font:400 14px/1.6 'Montserrat';color:#6B7888;margin:8px 0 0;">Fundo neutro #F5F7FA, cards brancos, e o laranja reservado só para a ação principal e ofertas.</p></div>
+          <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:20px;"><div style="font:800 16px var(--ft-display,'Montserrat');color:#0E1620;">Cabeçalho imersivo</div><p style="font:400 14px/1.6 'Montserrat';color:#6B7888;margin:8px 0 0;">O gradiente Azul Profundo no topo dá identidade e destaca a busca, que "flutua" sobre ele.</p></div>
+          <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:20px;"><div style="font:800 16px var(--ft-display,'Montserrat');color:#0E1620;">Confiança em primeiro lugar</div><p style="font:400 14px/1.6 'Montserrat';color:#6B7888;margin:8px 0 0;">Selo de verificado, nota e distância aparecem antes do preço — coerente com "profissionais de confiança".</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 10 MARCA APLICADA ===================== -->
+    <section style="margin-top:80px;">
+      <div style="font:800 13px/1 'Montserrat',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--ft-accent,#FF6D00);">10 — Marca aplicada</div>
+      <h2 style="font:700 34px/1.1 var(--ft-display,'Montserrat'),sans-serif;letter-spacing:-.02em;margin:12px 0 0;">Peças de marca</h2>
+      <p style="font:400 17px/1.6 'Montserrat',sans-serif;color:#4D5A6B;max-width:640px;margin:12px 0 0;">Cartão de visita, perfil e capa de WhatsApp, post de Instagram e capa de Facebook — todos construídos com os mesmos tokens.</p>
+
+      <!-- CARTÃO -->
+      <div style="font:700 13px 'Montserrat';color:#9AA7B8;letter-spacing:.08em;text-transform:uppercase;margin:34px 0 14px;">Cartão de visita · 90 × 50 mm</div>
+      <div style="display:flex;gap:24px;flex-wrap:wrap;">
+        <!-- FRENTE -->
+        <div style="width:504px;height:288px;border-radius:16px;overflow:hidden;box-shadow:0 18px 44px rgba(8,42,94,.22);position:relative;">
+          <div style="position:absolute;top:0;left:0;width:1050px;height:600px;transform:scale(.48);transform-origin:top left;background:linear-gradient(135deg,#0D47A1 0%,var(--ft-surface,#082A5E) 70%);">
+            <div style="position:absolute;top:-160px;left:50%;transform:translateX(-50%);width:700px;height:420px;background:radial-gradient(closest-side,rgba(255,109,0,.32),rgba(255,109,0,0) 70%);"></div>
+            <div style="position:relative;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 70px;">
+              <div style="background:#fff;border-radius:22px;padding:30px 40px;display:flex;align-items:center;gap:22px;box-shadow:0 20px 50px rgba(0,0,0,.35);">
+                <img src="assets/symbol.png" alt="" style="height:104px;width:auto;">
+                <img src="assets/wordmark.png" alt="FazTudo" style="height:78px;width:auto;">
+              </div>
+              <div style="font:700 30px 'Montserrat';color:#CFE0F7;letter-spacing:.04em;margin-top:34px;">Encontre profissionais de confiança</div>
+            </div>
+            <div style="position:absolute;bottom:0;left:0;right:0;height:18px;background:linear-gradient(90deg,#0D47A1,var(--ft-accent,#FF6D00));"></div>
+          </div>
+        </div>
+        <!-- VERSO -->
+        <div style="width:504px;height:288px;border-radius:16px;overflow:hidden;box-shadow:0 18px 44px rgba(8,42,94,.16);position:relative;">
+          <div style="position:absolute;top:0;left:0;width:1050px;height:600px;transform:scale(.48);transform-origin:top left;background:#fff;">
+            <div style="position:absolute;top:0;left:0;width:14px;height:100%;background:linear-gradient(#0D47A1,var(--ft-accent,#FF6D00));"></div>
+            <div style="padding:56px 60px 56px 74px;height:100%;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;">
+              <div style="display:flex;align-items:center;gap:16px;">
+                <img src="assets/symbol.png" alt="" style="height:74px;width:auto;">
+                <img src="assets/wordmark.png" alt="FazTudo" style="height:48px;width:auto;">
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+                <div>
+                  <div style="font:800 38px var(--ft-display,'Montserrat');color:#0E1620;letter-spacing:-.01em;">Ana Souza</div>
+                  <div style="font:700 22px 'Montserrat';color:var(--ft-accent,#FF6D00);margin-top:4px;">Atendimento ao cliente</div>
+                  <div style="display:flex;flex-direction:column;gap:14px;margin-top:30px;">
+                    <div style="display:flex;align-items:center;gap:14px;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0D47A1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span style="font:600 24px 'Montserrat';color:#36424F;">(11) 4002-8922</span></div>
+                    <div style="display:flex;align-items:center;gap:14px;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#18A957" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg><span style="font:600 24px 'Montserrat';color:#36424F;">(11) 98888-7777</span></div>
+                    <div style="display:flex;align-items:center;gap:14px;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0D47A1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span style="font:600 24px 'Montserrat';color:#36424F;">www.faztudo.app</span></div>
+                  </div>
+                </div>
+                <div style="width:170px;height:170px;border-radius:18px;background:#fff;border:3px solid #EDF1F6;display:flex;align-items:center;justify-content:center;flex:none;">
+                  <svg width="130" height="130" viewBox="0 0 100 100" fill="#0A357D"><rect x="0" y="0" width="28" height="28" rx="4"/><rect x="8" y="8" width="12" height="12" fill="#fff"/><rect x="72" y="0" width="28" height="28" rx="4"/><rect x="80" y="8" width="12" height="12" fill="#fff"/><rect x="0" y="72" width="28" height="28" rx="4"/><rect x="8" y="80" width="12" height="12" fill="#fff"/><rect x="40" y="6" width="8" height="8"/><rect x="54" y="6" width="8" height="8"/><rect x="40" y="20" width="8" height="8"/><rect x="6" y="40" width="8" height="8"/><rect x="20" y="40" width="8" height="8"/><rect x="40" y="40" width="8" height="8" fill="var(--ft-accent,#FF6D00)"/><rect x="54" y="40" width="8" height="8"/><rect x="74" y="40" width="8" height="8"/><rect x="88" y="40" width="8" height="8"/><rect x="40" y="54" width="8" height="8"/><rect x="6" y="54" width="8" height="8"/><rect x="74" y="54" width="8" height="8"/><rect x="40" y="74" width="8" height="8"/><rect x="54" y="74" width="8" height="8"/><rect x="74" y="74" width="8" height="8"/><rect x="88" y="88" width="8" height="8"/><rect x="54" y="88" width="8" height="8"/></svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WHATSAPP -->
+      <div style="font:700 13px 'Montserrat';color:#9AA7B8;letter-spacing:.08em;text-transform:uppercase;margin:40px 0 14px;">WhatsApp · perfil &amp; status de divulgação</div>
+      <div style="display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start;">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+          <div style="width:150px;height:150px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#0D47A1,var(--ft-surface,#082A5E));display:flex;align-items:center;justify-content:center;box-shadow:0 12px 30px rgba(8,42,94,.25);">
+            <img src="assets/symbol.png" alt="" style="height:104px;width:auto;filter:drop-shadow(0 2px 6px rgba(0,0,0,.2));">
+          </div>
+          <div style="font:700 12px 'Montserrat';color:#6B7888;">Foto de perfil</div>
+        </div>
+        <!-- STATUS 1080x1920 -->
+        <div style="display:flex;flex-direction:column;gap:12px;align-items:center;">
+          <div style="width:216px;height:384px;border-radius:24px;overflow:hidden;box-shadow:0 18px 44px rgba(8,42,94,.22);position:relative;">
+            <div style="position:absolute;top:0;left:0;width:1080px;height:1920px;transform:scale(.2);transform-origin:top left;background:linear-gradient(160deg,#0D47A1 0%,var(--ft-surface,#082A5E) 65%);">
+              <div style="position:absolute;top:-200px;left:50%;transform:translateX(-50%);width:1100px;height:760px;background:radial-gradient(closest-side,rgba(255,109,0,.3),rgba(255,109,0,0) 70%);"></div>
+              <div style="position:relative;height:100%;display:flex;flex-direction:column;align-items:center;padding:120px 90px 0;box-sizing:border-box;">
+                <div style="background:#fff;border-radius:30px;padding:26px 40px;display:flex;align-items:center;gap:22px;">
+                  <img src="assets/symbol.png" alt="" style="height:90px;width:auto;"><img src="assets/wordmark.png" alt="FazTudo" style="height:64px;width:auto;">
+                </div>
+                <div style="font:800 96px/1.05 var(--ft-display,'Montserrat');color:#fff;text-align:center;margin-top:90px;letter-spacing:-.02em;">Precisa de um <span style="color:#FF8A33;">profissional</span>?</div>
+                <div style="font:600 44px 'Montserrat';color:#CFE0F7;text-align:center;margin-top:34px;">Eletricista, encanador, diarista e muito mais — perto de você.</div>
+                <div style="display:flex;align-items:flex-end;justify-content:center;margin-top:50px;"><img src="assets/mascote-faz.png" alt="" style="height:640px;width:auto;margin-right:-48px;"><img src="assets/mascote-tudo.png" alt="" style="height:600px;width:auto;"></div>
+                <div style="position:absolute;bottom:130px;left:90px;right:90px;background:var(--ft-accent,#FF6D00);border-radius:26px;padding:40px;text-align:center;font:800 50px var(--ft-display,'Montserrat');color:#fff;box-shadow:0 16px 40px rgba(255,109,0,.4);">Baixe o app FazTudo</div>
+              </div>
+            </div>
+          </div>
+          <div style="font:700 12px 'Montserrat';color:#6B7888;">Status / Stories 1080 × 1920</div>
+        </div>
+
+        <!-- INSTAGRAM -->
+        <div style="display:flex;flex-direction:column;gap:12px;align-items:center;">
+          <div style="width:360px;height:360px;border-radius:16px;overflow:hidden;box-shadow:0 18px 44px rgba(8,42,94,.18);position:relative;">
+            <div style="position:absolute;top:0;left:0;width:1080px;height:1080px;transform:scale(.3333);transform-origin:top left;background:linear-gradient(135deg,#0D47A1 0%,var(--ft-surface,#082A5E) 100%);">
+              <div style="position:absolute;top:-160px;right:-120px;width:760px;height:560px;background:radial-gradient(closest-side,rgba(255,109,0,.34),rgba(255,109,0,0) 70%);"></div>
+              <div style="position:relative;padding:80px;box-sizing:border-box;height:100%;">
+                <div style="background:#fff;border-radius:18px;padding:18px 26px;display:inline-flex;align-items:center;gap:18px;"><img src="assets/symbol.png" alt="" style="height:72px;width:auto;"><img src="assets/wordmark.png" alt="" style="height:52px;width:auto;"></div>
+                <div style="font:800 110px/1.02 var(--ft-display,'Montserrat');color:#fff;margin-top:50px;letter-spacing:-.02em;max-width:760px;">Profissionais de <span style="color:#FF8A33;">confiança</span></div>
+                <div style="font:600 46px 'Montserrat';color:#CFE0F7;margin-top:30px;max-width:620px;">Avaliados, verificados e prontos para resolver.</div>
+                <div style="position:absolute;left:80px;bottom:80px;display:flex;align-items:center;gap:24px;">
+                  <span style="background:var(--ft-accent,#FF6D00);color:#fff;font:800 42px var(--ft-display,'Montserrat');padding:28px 46px;border-radius:22px;">Contrate agora</span>
+                  <span style="font:800 40px 'Montserrat';color:#fff;">@faztudo.app</span>
+                </div>
+                <div style="position:absolute;right:-30px;bottom:-20px;display:flex;align-items:flex-end;"><img src="assets/mascote-faz.png" alt="" style="height:540px;width:auto;margin-right:-34px;"><img src="assets/mascote-tudo.png" alt="" style="height:505px;width:auto;"></div>
+              </div>
+            </div>
+          </div>
+          <div style="font:700 12px 'Montserrat';color:#6B7888;">Post Instagram 1080 × 1080</div>
+        </div>
+      </div>
+
+      <!-- FACEBOOK -->
+      <div style="font:700 13px 'Montserrat';color:#9AA7B8;letter-spacing:.08em;text-transform:uppercase;margin:40px 0 14px;">Capa de Facebook · 820 × 312</div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div style="width:656px;height:250px;max-width:100%;border-radius:16px;overflow:hidden;box-shadow:0 18px 44px rgba(8,42,94,.18);position:relative;">
+          <div style="position:absolute;top:0;left:0;width:820px;height:312px;transform:scale(.8);transform-origin:top left;background:linear-gradient(120deg,#0D47A1 0%,var(--ft-surface,#082A5E) 55%,#0D47A1 120%);">
+            <div style="position:absolute;top:-120px;left:30%;width:560px;height:380px;background:radial-gradient(closest-side,rgba(255,109,0,.3),rgba(255,109,0,0) 70%);"></div>
+            <div style="position:relative;height:100%;display:flex;align-items:center;justify-content:space-between;padding:0 54px;box-sizing:border-box;">
+              <div style="max-width:440px;">
+                <div style="background:#fff;border-radius:16px;padding:14px 20px;display:inline-flex;align-items:center;gap:14px;"><img src="assets/symbol.png" alt="" style="height:50px;width:auto;"><img src="assets/wordmark.png" alt="" style="height:36px;width:auto;"></div>
+                <div style="font:800 46px/1.05 var(--ft-display,'Montserrat');color:#fff;margin-top:22px;letter-spacing:-.02em;">Faz tudo pela sua casa</div>
+                <div style="font:600 20px 'Montserrat';color:#CFE0F7;margin-top:12px;">Encontre profissionais de confiança em minutos.</div>
+              </div>
+              <div style="display:flex;align-items:flex-end;align-self:flex-end;"><img src="assets/mascote-faz.png" alt="" style="height:300px;width:auto;margin-right:-24px;filter:drop-shadow(0 14px 30px rgba(0,0,0,.35));"><img src="assets/mascote-tudo.png" alt="" style="height:282px;width:auto;filter:drop-shadow(0 14px 30px rgba(0,0,0,.35));"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!--SECTIONS-->
+
+  </main>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer style="background:var(--ft-surface,#082A5E);color:#9AA7B8;padding:54px 32px 60px;">
+    <div style="max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div style="background:#fff;border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px;">
+          <img src="assets/symbol.png" alt="" style="height:34px;width:auto;">
+          <img src="assets/wordmark.png" alt="FazTudo" style="height:26px;width:auto;">
+        </div>
+      </div>
+      <div style="font:600 13px/1.7 'Montserrat';text-align:right;">
+        Sistema de Design FazTudo · v1.0 · 2026<br>
+        Poppins & Nunito Sans (Google Fonts) · Ícones em traço 2px
+      </div>
+    </div>
+  </footer>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;accent&quot;: {
+    &quot;editor&quot;: &quot;color&quot;,
+    &quot;default&quot;: &quot;#FF6D00&quot;,
+    &quot;tsType&quot;: &quot;string&quot;,
+    &quot;options&quot;: [&quot;#FF6D00&quot;, &quot;#FF8A33&quot;, &quot;#FF5A1F&quot;, &quot;#F5A524&quot;]
+  },
+  &quot;displayFont&quot;: {
+    &quot;editor&quot;: &quot;enum&quot;,
+    &quot;default&quot;: &quot;Montserrat&quot;,
+    &quot;tsType&quot;: &quot;string&quot;,
+    &quot;options&quot;: [&quot;Montserrat&quot;, &quot;Plus Jakarta Sans&quot;, &quot;Sora&quot;]
+  },
+  &quot;surface&quot;: {
+    &quot;editor&quot;: &quot;color&quot;,
+    &quot;default&quot;: &quot;#082A5E&quot;,
+    &quot;tsType&quot;: &quot;string&quot;,
+    &quot;options&quot;: [&quot;#082A5E&quot;, &quot;#0A357D&quot;, &quot;#0B1530&quot;, &quot;#0D47A1&quot;]
+  }
+}">
+class Component extends DCLogic {
+  renderVals() {
+    const accent = this.props.accent ?? '#FF6D00';
+    const surface = this.props.surface ?? '#082A5E';
+    const display = this.props.displayFont ?? 'Montserrat';
+    return {
+      rootStyle: {
+        background: '#F5F7FA',
+        minHeight: '100vh',
+        fontFamily: "'Montserrat',sans-serif",
+        color: '#0E1620',
+        WebkitFontSmoothing: 'antialiased',
+        '--ft-accent': accent,
+        '--ft-surface': surface,
+        '--ft-display': "'" + display + "','Montserrat',sans-serif"
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

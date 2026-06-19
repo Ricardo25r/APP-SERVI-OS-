@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -50,9 +51,21 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
-        <Link href="/" className="text-xl font-extrabold tracking-tight">
-          <span className="text-primary">Faz</span>
-          <span className="text-brand">Tudo</span>
+        <Link
+          href="/"
+          className="flex items-center gap-2 text-xl font-extrabold tracking-tight"
+        >
+          <Image
+            src="/brand/symbol.png"
+            width={28}
+            height={28}
+            alt="FazTudo"
+            priority
+          />
+          <span>
+            <span className="text-primary">Faz</span>
+            <span className="italic text-brand">Tudo</span>
+          </span>
         </Link>
 
         <nav className="flex items-center gap-1 sm:gap-2">
