@@ -1,0 +1,43 @@
+# ----- Node / Next.js (frontend) -----
+node_modules/
+.next/
+out/
+build/
+dist/
+.npm/
+*.tsbuildinfo
+
+# ----- Python / FastAPI (backend) -----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ----- Ambiente / segredos -----
+.env
+.env.*
+!.env.example
+*.local
+
+# ----- Banco / uploads locais -----
+*.sqlite3
+*.db
+/uploads/
+
+# ----- Logs -----
+*.log
+logs/
+
+# ----- Editores / SO -----
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ----- Docker volumes locais -----
+.docker-data/
