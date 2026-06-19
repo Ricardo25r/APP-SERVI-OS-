@@ -3,6 +3,7 @@ import { Montserrat } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { SiteHeader } from "@/components/site-header";
+import { AppChrome } from "@/components/app-shell/app-chrome";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -35,7 +36,7 @@ export default function RootLayout({
       <body className="font-sans">
         <Providers>
           <SiteHeader />
-          {children}
+          <AppChrome>{children}</AppChrome>
         </Providers>
       </body>
     </html>
