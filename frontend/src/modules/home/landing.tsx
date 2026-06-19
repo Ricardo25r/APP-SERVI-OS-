@@ -151,7 +151,7 @@ export function Landing() {
           />
           <div className="mt-2 flex items-end justify-center">
             <Image
-              src="/brand/mascote-faz.png"
+              src="/brand/mascote-profissional.webp"
               width={220}
               height={300}
               alt="Mascote Faz"

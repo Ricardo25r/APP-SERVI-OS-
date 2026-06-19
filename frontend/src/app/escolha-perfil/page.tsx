@@ -57,7 +57,7 @@ const OPTIONS: ProfileOption[] = [
     value: "professional",
     title: "Trabalhar como profissional",
     description: "Quero oferecer meus serviços e conquistar novos clientes.",
-    mascote: "/brand/mascote-faz.png",
+    mascote: "/brand/mascote-profissional.webp",
     mascoteAlt: "Profissional com ferramentas representando oferta de serviços",
     badgeIcon: Briefcase,
     cardClassName: "bg-success/5",

@@ -79,7 +79,7 @@ export function AuthLayout({
 
         <div className="relative z-10 flex flex-1 flex-col items-center justify-center text-center">
           <Image
-            src="/brand/mascote-faz.png"
+            src="/brand/mascote-profissional.webp"
             width={360}
             height={360}
             alt="Mascote do FazTudo"
