@@ -78,14 +78,24 @@ export function AuthLayout({
         </Link>
 
         <div className="relative z-10 flex flex-1 flex-col items-center justify-center text-center">
-          <Image
-            src="/brand/mascote-profissional.webp"
-            width={360}
-            height={360}
-            alt="Mascote do FazTudo"
-            priority
-            className="h-auto w-56 drop-shadow-xl xl:w-72"
-          />
+          <div className="flex items-end justify-center gap-1">
+            <Image
+              src="/brand/mascote-profissional.webp"
+              width={300}
+              height={440}
+              alt="Mascote profissional do FazTudo"
+              priority
+              className="h-auto w-36 drop-shadow-xl xl:w-44"
+            />
+            <Image
+              src="/brand/mascote-tudo.png"
+              width={300}
+              height={440}
+              alt="Mascote do FazTudo"
+              priority
+              className="-ml-3 h-auto w-32 drop-shadow-xl xl:w-40"
+            />
+          </div>
           <h2 className="mt-8 max-w-sm text-2xl font-extrabold leading-snug xl:text-3xl">
             Profissionais de confiança, pertinho de você.
           </h2>
