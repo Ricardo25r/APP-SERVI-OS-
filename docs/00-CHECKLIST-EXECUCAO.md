@@ -7,7 +7,7 @@
 > - Repositório: https://github.com/Ricardo25r/APP-SERVI-OS-
 > - Pasta local: `C:\TrampoJa`
 > - Última atualização: **2026-06-18**
-> - Fase atual: **🏗️ Fase 1 (Infraestrutura) — base scaffoldada e verificada (compila/builda); validação local pendente (Docker + deps)**
+> - Fase atual: **✅ Fase 1 (Infraestrutura) VALIDADA (roda via Docker: infra healthy + health 200 + alembic ok). Pronta para a Fase 2 — Autenticação**
 
 ---
 
@@ -138,7 +138,7 @@ Os agentes que escreveram os specs encontraram pontos onde a fonte da verdade **
 
 > Cada fase só é marcada como concluída quando entregar **código + migrations + testes + documentação + checklist de validação** e for validada.
 
-- [ ] **Fase 1 — Infraestrutura** — 🟡 *scaffold criado e verificado (backend compila, frontend builda/typecheck OK); falta validar rodando com Docker + deps instaladas*
+- [x] **Fase 1 — Infraestrutura** — ✅ *validada em 2026-06-19: infra Docker healthy, `GET /api/v1/health` → 200, `alembic upgrade head` ok, pytest/ruff/build verdes (roda via `docker compose --profile full up`)*
   Setup monorepo, Docker (Postgres/Redis/MinIO), FastAPI base, Next.js base, Alembic, CI básico, padrões de projeto/segurança base.
 - [ ] **Fase 2 — Autenticação**
   Cadastro, login, recuperação de senha, JWT + refresh token, sessões, RBAC base.
@@ -172,7 +172,7 @@ Os agentes que escreveram os specs encontraram pontos onde a fonte da verdade **
 - [ ] Você revisar as **decisões pendentes** da seção 2 (principalmente 2.1 e 2.2).
 - [ ] Resolver setup da seção 3 (Python, gateway, Docker).
 - [x] **Fase 1 — Infraestrutura: scaffold criado** (backend FastAPI + frontend Next.js + infra Docker + CI) e verificado (compila/builda). Ver `docs/fases/fase-01-infraestrutura/`.
-- [ ] **Validar a Fase 1 localmente** (instalar Docker Desktop + deps) usando `docs/fases/fase-01-infraestrutura/checklist-validacao.md`.
+- [x] **Fase 1 validada localmente** (Docker): infra healthy + health 200 + alembic ok + pytest/ruff/build verdes. Detalhes em `docs/fases/fase-01-infraestrutura/checklist-validacao.md`.
 - [ ] Depois: **Fase 2 — Autenticação** (resolver antes as decisões de schema da seção 2 que afetam auth/users).
 
 ---

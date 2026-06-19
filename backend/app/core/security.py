@@ -6,7 +6,7 @@ Regras de RBAC, escopos e validação de roles virão nas próximas fases.
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import jwt
@@ -23,7 +23,7 @@ def _create_token(
     extra_claims: dict[str, Any] | None = None,
 ) -> str:
     """Cria um JWT assinado com as claims base (`sub`, `exp`, `iat`, `type`)."""
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     to_encode: dict[str, Any] = {
         "sub": str(subject),
         "iat": now,

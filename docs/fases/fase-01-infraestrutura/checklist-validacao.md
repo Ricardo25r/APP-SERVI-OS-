@@ -7,6 +7,26 @@
 
 ---
 
+## ✅ Resultado da 1ª validação (2026-06-19)
+
+Validação executada com Docker + Python 3.13 + Node 24:
+
+| Item | Status |
+|------|--------|
+| `docker compose up -d` (db/redis/minio) | ✅ todos *healthy* |
+| Bucket MinIO `trampoja` | ✅ criado |
+| Backend em container + `GET /api/v1/health` | ✅ `200 {"status":"ok"}` |
+| `alembic upgrade head` (na rede do Docker) | ✅ ok (`alembic_version` criada) |
+| `pytest` | ✅ 1 passed |
+| `ruff check` | ✅ All checks passed |
+| Frontend `npm run build` / `tsc --noEmit` | ✅ ok |
+
+> ⚠️ **Quirk do host (Windows):** a conexão **direta do host** ao Postgres em `localhost:5432` via asyncpg falhou (`connection was closed in the middle of operation`) — provável **firewall/antivírus** interceptando a porta 5432. **Não afeta o fluxo recomendado**, em que o backend roda em container e acessa o banco como `db:5432` pela rede do Docker.
+> - **Recomendado:** rodar via Docker — `docker compose --profile full up -d` e `make migrate` (alembic no container).
+> - **Se quiser rodar o backend localmente (venv):** libere a porta 5432 no antivírus/firewall, ou aponte o `DATABASE_URL` para o IP do host do Docker.
+
+---
+
 ## 0) Pré-requisitos
 
 - [ ] **Docker Desktop** instalado e rodando (`docker --version`, `docker compose version`).

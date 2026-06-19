@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import httpx
 import pytest
-
 from app.main import app
 
 

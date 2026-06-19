@@ -9,18 +9,15 @@ from __future__ import annotations
 import asyncio
 from logging.config import fileConfig
 
-from sqlalchemy.engine import Connection
-from sqlalchemy.ext.asyncio import async_engine_from_config
-from sqlalchemy.pool import NullPool
-
-from alembic import context
-
-from app.core.config import settings
-from app.database.base import Base
-
 # Importa os modelos para que estejam registrados em Base.metadata.
 # (Placeholder nesta fase — modelos serão adicionados nas próximas fases.)
 import app.models  # noqa: F401
+from alembic import context
+from app.core.config import settings
+from app.database.base import Base
+from sqlalchemy.engine import Connection
+from sqlalchemy.ext.asyncio import async_engine_from_config
+from sqlalchemy.pool import NullPool
 
 # Objeto de configuração do Alembic.
 config = context.config
