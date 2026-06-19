@@ -14,7 +14,7 @@ Validação executada com Docker + Python 3.13 + Node 24:
 | Item | Status |
 |------|--------|
 | `docker compose up -d` (db/redis/minio) | ✅ todos *healthy* |
-| Bucket MinIO `trampoja` | ✅ criado |
+| Bucket MinIO `faztudo` | ✅ criado |
 | Backend em container + `GET /api/v1/health` | ✅ `200 {"status":"ok"}` |
 | `alembic upgrade head` (na rede do Docker) | ✅ ok (`alembic_version` criada) |
 | `pytest` | ✅ 1 passed |
@@ -49,9 +49,9 @@ Validação executada com Docker + Python 3.13 + Node 24:
   # cp frontend/.env.local.example frontend/.env.local
   ```
 - [ ] Conferir os valores canônicos (portas/host/credenciais) batem com o contrato:
-  - `DATABASE_URL=postgresql+asyncpg://trampoja:trampoja_dev@db:5432/trampoja`
+  - `DATABASE_URL=postgresql+asyncpg://faztudo:faztudo_dev@db:5432/faztudo`
   - `REDIS_URL=redis://redis:6379/0`
-  - `S3_ENDPOINT=http://minio:9000` · `S3_BUCKET=trampoja` · `S3_ACCESS_KEY/SECRET_KEY=minioadmin`
+  - `S3_ENDPOINT=http://minio:9000` · `S3_BUCKET=faztudo` · `S3_ACCESS_KEY/SECRET_KEY=minioadmin`
   - `NEXT_PUBLIC_API_URL=http://localhost:8000`
 
 ---
@@ -68,15 +68,15 @@ Validação executada com Docker + Python 3.13 + Node 24:
   ```powershell
   docker compose ps
   ```
-- [ ] **PostgreSQL** responde na porta **5432** (banco `trampoja`):
+- [ ] **PostgreSQL** responde na porta **5432** (banco `faztudo`):
   ```powershell
-  docker compose exec db pg_isready -U trampoja -d trampoja
+  docker compose exec db pg_isready -U faztudo -d faztudo
   ```
 - [ ] **Redis** responde na porta **6379**:
   ```powershell
   docker compose exec redis redis-cli ping        # esperado: PONG
   ```
-- [ ] **MinIO** acessível: API em http://localhost:9000 e console em http://localhost:9001 (login `minioadmin` / `minioadmin`); bucket `trampoja` existe.
+- [ ] **MinIO** acessível: API em http://localhost:9000 e console em http://localhost:9001 (login `minioadmin` / `minioadmin`); bucket `faztudo` existe.
 - [ ] Ver logs em caso de falha: `docker compose logs -f db redis minio`.
 
 ---

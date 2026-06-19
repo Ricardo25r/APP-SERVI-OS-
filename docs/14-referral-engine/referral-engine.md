@@ -166,7 +166,7 @@ Profissional acessa "Indique e Ganhe"
         ↓
 Sistema gera (ou recupera) referral_code único do usuário
         ↓
-Sistema monta link: https://trampoja.com/r/{referral_code}
+Sistema monta link: https://faztudo.com/r/{referral_code}
         ↓
 Profissional compartilha (WhatsApp, redes, etc.)
 ```

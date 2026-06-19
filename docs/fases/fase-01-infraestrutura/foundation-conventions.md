@@ -34,7 +34,7 @@ TrampoJa/
 
 | Serviço | Nome no compose | Porta host | Observação |
 |---------|-----------------|-----------|------------|
-| PostgreSQL | `db` | 5432 | banco `trampoja` |
+| PostgreSQL | `db` | 5432 | banco `faztudo` |
 | Redis | `redis` | 6379 | |
 | MinIO (API) | `minio` | 9000 | storage S3 |
 | MinIO (Console) | `minio` | 9001 | UI web |
@@ -53,13 +53,13 @@ APP_DEBUG=true
 BACKEND_PORT=8000
 
 # PostgreSQL
-POSTGRES_USER=trampoja
-POSTGRES_PASSWORD=trampoja_dev
-POSTGRES_DB=trampoja
+POSTGRES_USER=faztudo
+POSTGRES_PASSWORD=faztudo_dev
+POSTGRES_DB=faztudo
 POSTGRES_HOST=db
 POSTGRES_PORT=5432
 # URL async usada pelo backend (SQLAlchemy + asyncpg)
-DATABASE_URL=postgresql+asyncpg://trampoja:trampoja_dev@db:5432/trampoja
+DATABASE_URL=postgresql+asyncpg://faztudo:faztudo_dev@db:5432/faztudo
 
 # Redis
 REDIS_URL=redis://redis:6379/0
@@ -68,7 +68,7 @@ REDIS_URL=redis://redis:6379/0
 S3_ENDPOINT=http://minio:9000
 S3_ACCESS_KEY=minioadmin
 S3_SECRET_KEY=minioadmin
-S3_BUCKET=trampoja
+S3_BUCKET=faztudo
 S3_REGION=us-east-1
 
 # Segurança / JWT

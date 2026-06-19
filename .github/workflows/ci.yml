@@ -26,13 +26,13 @@ jobs:
     #   db:
     #     image: postgres:16
     #     env:
-    #       POSTGRES_USER: trampoja
-    #       POSTGRES_PASSWORD: trampoja_dev
-    #       POSTGRES_DB: trampoja
+    #       POSTGRES_USER: faztudo
+    #       POSTGRES_PASSWORD: faztudo_dev
+    #       POSTGRES_DB: faztudo
     #     ports:
     #       - 5432:5432
     #     options: >-
-    #       --health-cmd "pg_isready -U trampoja"
+    #       --health-cmd "pg_isready -U faztudo"
     #       --health-interval 10s
     #       --health-timeout 5s
     #       --health-retries 5

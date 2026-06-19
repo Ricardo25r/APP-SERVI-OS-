@@ -21,7 +21,7 @@ Critério de sucesso: qualquer dev clona o repositório, sobe a infra, roda back
 
 - **Monorepo** com a estrutura do contrato: `backend/`, `frontend/`, `infra/`, `.github/workflows/`, `docs/` (já existe), `docker-compose.yml`, `.env.example`, `Makefile`, `README.md`, `.gitignore` (já existe).
 - **docker-compose** orquestrando os serviços de apoio:
-  - `db` — PostgreSQL 16, porta **5432**, banco `trampoja`.
+  - `db` — PostgreSQL 16, porta **5432**, banco `faztudo`.
   - `redis` — Redis 7, porta **6379**.
   - `minio` — MinIO (S3 compatível), API na porta **9000** e console na **9001**.
   - (`backend`/`frontend` opcionais no compose; em dev rodam localmente.)
@@ -119,9 +119,9 @@ TrampoJa/
 As variáveis ficam no `.env.example` da raiz (consumido por compose e backend). Resumo:
 
 - **App:** `APP_ENV`, `APP_DEBUG`, `BACKEND_PORT=8000`.
-- **PostgreSQL:** `POSTGRES_USER/PASSWORD/DB/HOST/PORT` + `DATABASE_URL=postgresql+asyncpg://trampoja:trampoja_dev@db:5432/trampoja`.
+- **PostgreSQL:** `POSTGRES_USER/PASSWORD/DB/HOST/PORT` + `DATABASE_URL=postgresql+asyncpg://faztudo:faztudo_dev@db:5432/faztudo`.
 - **Redis:** `REDIS_URL=redis://redis:6379/0`.
-- **Storage (MinIO):** `S3_ENDPOINT=http://minio:9000`, `S3_ACCESS_KEY/SECRET_KEY=minioadmin`, `S3_BUCKET=trampoja`, `S3_REGION=us-east-1`.
+- **Storage (MinIO):** `S3_ENDPOINT=http://minio:9000`, `S3_ACCESS_KEY/SECRET_KEY=minioadmin`, `S3_BUCKET=faztudo`, `S3_REGION=us-east-1`.
 - **JWT:** `JWT_SECRET`, `JWT_ALGORITHM=HS256`, `ACCESS_TOKEN_EXPIRE_MINUTES=15`, `REFRESH_TOKEN_EXPIRE_DAYS=7`.
 - **CORS:** `CORS_ORIGINS=http://localhost:3000`.
 - **Frontend** (`frontend/.env.local`): `NEXT_PUBLIC_API_URL=http://localhost:8000`.
@@ -133,7 +133,7 @@ As variáveis ficam no `.env.example` da raiz (consumido por compose e backend).
 ## 🔧 Passos de execução
 
 1. **Estrutura do monorepo** — criar as pastas `backend/`, `frontend/`, `infra/`, `.github/workflows/` e os arquivos de raiz (`docker-compose.yml`, `.env.example`, `Makefile`).
-2. **Infra (docker-compose)** — declarar `db` (Postgres 16), `redis` (Redis 7) e `minio`, com volumes nomeados e healthchecks; script de init em `infra/` (criação do bucket `trampoja`).
+2. **Infra (docker-compose)** — declarar `db` (Postgres 16), `redis` (Redis 7) e `minio`, com volumes nomeados e healthchecks; script de init em `infra/` (criação do bucket `faztudo`).
 3. **Backend base** — `app/main.py`, router `/api/v1`, `health.py`, `core/config.py` (pydantic-settings lendo o `.env`), `database/base.py` e `session.py` (engine async + `get_db()`), placeholders das próximas fases, `pyproject.toml`/`requirements.txt`, `Dockerfile`.
 4. **Alembic** — `alembic.ini` + `alembic/env.py` async lendo `DATABASE_URL`; garantir que `alembic upgrade head` roda sem erro (sem migrations de domínio).
 5. **Teste do backend** — `tests/test_health.py` validando `GET /api/v1/health` → `200 {"status":"ok"}`.

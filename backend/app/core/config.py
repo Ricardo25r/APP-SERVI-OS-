@@ -29,13 +29,13 @@ class Settings(BaseSettings):
     BACKEND_PORT: int = 8000
 
     # PostgreSQL
-    POSTGRES_USER: str = "trampoja"
-    POSTGRES_PASSWORD: str = "trampoja_dev"
-    POSTGRES_DB: str = "trampoja"
+    POSTGRES_USER: str = "faztudo"
+    POSTGRES_PASSWORD: str = "faztudo_dev"
+    POSTGRES_DB: str = "faztudo"
     POSTGRES_HOST: str = "db"
     POSTGRES_PORT: int = 5432
     # URL async usada pelo backend (SQLAlchemy + asyncpg)
-    DATABASE_URL: str = "postgresql+asyncpg://trampoja:trampoja_dev@db:5432/trampoja"
+    DATABASE_URL: str = "postgresql+asyncpg://faztudo:faztudo_dev@db:5432/faztudo"
 
     # Redis
     REDIS_URL: str = "redis://redis:6379/0"
@@ -44,7 +44,7 @@ class Settings(BaseSettings):
     S3_ENDPOINT: str = "http://minio:9000"
     S3_ACCESS_KEY: str = "minioadmin"
     S3_SECRET_KEY: str = "minioadmin"
-    S3_BUCKET: str = "trampoja"
+    S3_BUCKET: str = "faztudo"
     S3_REGION: str = "us-east-1"
 
     # Segurança / JWT

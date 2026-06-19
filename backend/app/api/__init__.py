@@ -28,7 +28,7 @@ from fastapi import APIRouter
 
 from app.api.health import router as health_router
 
-logger = logging.getLogger("trampoja.api")
+logger = logging.getLogger("faztudo.api")
 
 api_router = APIRouter(prefix="/api/v1")
 

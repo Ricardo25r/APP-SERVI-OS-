@@ -38,7 +38,7 @@
    - adicionar `aiosqlite` às dev-deps (o `test_leads.py` usa SQLite em memória).
    - `bcrypt` foi pinado para 4.x no `requirements.txt`/`pyproject.toml` → **rebuild da imagem backend** (`docker compose --profile full build backend`) para alinhar (container atual tem bcrypt 5).
 4. Gerar e aplicar migration **DENTRO do container** (host→5432 é bloqueado):
-   `docker exec trampoja-backend alembic revision --autogenerate -m "fases 2-5"` e depois `... alembic upgrade head`. Rodar `python -m app.seeds` para popular categorias.
+   `docker exec faztudo-backend alembic revision --autogenerate -m "fases 2-5"` e depois `... alembic upgrade head`. Rodar `python -m app.seeds` para popular categorias.
 5. Verificar: restart backend, smoke test dos endpoints (register→login→criar perfil→criar lead→conceder créditos→comprar lead), `pytest`, `ruff`.
 6. Frontend: fan-out das telas (auth, perfil, leads, marketplace/créditos), `npm run build`.
 7. Commit por fase, abrir PR do branch para `main` (ou merge) quando 2-5 estiverem verdes; marcar as fases no checklist.

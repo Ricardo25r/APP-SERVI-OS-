@@ -41,7 +41,10 @@ export default function HomePage() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 text-center">
-      <h1 className="text-5xl font-bold tracking-tight sm:text-6xl">FazTudo</h1>
+      <h1 className="text-5xl font-extrabold tracking-tight sm:text-6xl">
+        <span className="text-primary">Faz</span>
+        <span className="text-brand">Tudo</span>
+      </h1>
       <p className="max-w-md text-lg text-muted-foreground">
         Marketplace de prestadores de serviços locais
       </p>

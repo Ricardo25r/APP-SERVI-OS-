@@ -41,7 +41,7 @@ export interface AuthState {
   setHasHydrated: (value: boolean) => void;
 }
 
-const STORAGE_KEY = "trampoja-auth";
+const STORAGE_KEY = "faztudo-auth";
 
 export const useAuthStore = create<AuthState>()(
   persist(

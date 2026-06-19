@@ -1,5 +1,5 @@
 [project]
-name = "trampoja-backend"
+name = "faztudo-backend"
 version = "0.1.0"
 description = "FazTudo API — backend FastAPI do marketplace de serviços locais."
 readme = "README.md"

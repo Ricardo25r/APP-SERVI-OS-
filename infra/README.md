@@ -65,7 +65,7 @@ docker compose --profile full up -d --build
 
 | Serviço          | Endereço                       | Observação            |
 |------------------|--------------------------------|-----------------------|
-| PostgreSQL       | `localhost:5432`               | banco `trampoja`      |
+| PostgreSQL       | `localhost:5432`               | banco `faztudo`      |
 | Redis            | `localhost:6379`               |                       |
 | MinIO (API S3)   | http://localhost:9000          | endpoint S3           |
 | MinIO (Console)  | http://localhost:9001          | UI web                |
@@ -76,9 +76,9 @@ docker compose --profile full up -d --build
 
 Definidas no `.env` (valores padrão de desenvolvimento):
 
-- **PostgreSQL** — usuário `trampoja` / senha `trampoja_dev` / banco `trampoja`
+- **PostgreSQL** — usuário `faztudo` / senha `faztudo_dev` / banco `faztudo`
 - **MinIO** — usuário `minioadmin` / senha `minioadmin`
-  (Console em http://localhost:9001; bucket `trampoja` criado automaticamente
+  (Console em http://localhost:9001; bucket `faztudo` criado automaticamente
   pelo serviço `createbuckets`.)
 
 > Estas credenciais são **somente para dev**. Em produção, troque tudo

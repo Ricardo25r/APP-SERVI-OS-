@@ -20,7 +20,7 @@ from app.core.logging import setup_logging
 
 setup_logging()
 
-logger = logging.getLogger("trampoja.api")
+logger = logging.getLogger("faztudo.api")
 
 app = FastAPI(
     title="FazTudo API",

@@ -72,7 +72,7 @@ async def client(
 # --------------------------------------------------------------------------- #
 def _register_payload(
     *,
-    email: str = "alice@trampoja.com",
+    email: str = "alice@faztudo.com",
     phone: str = "11999990000",
     password: str = "senha-super-segura",
     name: str = "Alice Teste",
@@ -103,7 +103,7 @@ async def test_register_login_me_flow(client: httpx.AsyncClient) -> None:
     reg = await _register(client, password=password)
     assert reg.status_code == 201, reg.text
     reg_body = reg.json()
-    assert reg_body["user"]["email"] == "alice@trampoja.com"
+    assert reg_body["user"]["email"] == "alice@faztudo.com"
     assert reg_body["user"]["role"] == "customer"
     assert "password_hash" not in reg_body["user"]
     assert reg_body["tokens"]["token_type"] == "bearer"
@@ -113,7 +113,7 @@ async def test_register_login_me_flow(client: httpx.AsyncClient) -> None:
     # Login → 200 + novo par de tokens.
     login = await client.post(
         "/api/v1/auth/login",
-        json={"email": "alice@trampoja.com", "password": password},
+        json={"email": "alice@faztudo.com", "password": password},
     )
     assert login.status_code == 200, login.text
     access = login.json()["tokens"]["access_token"]
@@ -124,7 +124,7 @@ async def test_register_login_me_flow(client: httpx.AsyncClient) -> None:
     )
     assert me.status_code == 200, me.text
     me_body = me.json()
-    assert me_body["email"] == "alice@trampoja.com"
+    assert me_body["email"] == "alice@faztudo.com"
     assert me_body["has_customer_profile"] is False
     assert me_body["has_professional_profile"] is False
     assert me_body["last_login_at"] is not None  # login tocou last_login_at
@@ -147,7 +147,7 @@ async def test_refresh_rotates_and_revokes_old(client: httpx.AsyncClient) -> Non
     (sem re-rotacionar no mesmo segundo) — suficiente para provar que o novo
     refresh é aceito e o antigo fica revogado.
     """
-    reg = await _register(client, email="bob@trampoja.com", phone="11988887777")
+    reg = await _register(client, email="bob@faztudo.com", phone="11988887777")
     assert reg.status_code == 201, reg.text
     old_refresh = reg.json()["tokens"]["refresh_token"]
 
@@ -177,12 +177,12 @@ async def test_refresh_rotates_and_revokes_old(client: httpx.AsyncClient) -> Non
 @pytest.mark.asyncio
 async def test_login_wrong_password_401(client: httpx.AsyncClient) -> None:
     """Login com senha errada → 401."""
-    await _register(client, email="carol@trampoja.com", phone="11977776666",
+    await _register(client, email="carol@faztudo.com", phone="11977776666",
                     password="senha-correta")
 
     resp = await client.post(
         "/api/v1/auth/login",
-        json={"email": "carol@trampoja.com", "password": "senha-errada"},
+        json={"email": "carol@faztudo.com", "password": "senha-errada"},
     )
     assert resp.status_code == 401, resp.text
 
@@ -190,20 +190,20 @@ async def test_login_wrong_password_401(client: httpx.AsyncClient) -> None:
 @pytest.mark.asyncio
 async def test_register_duplicate_email_409(client: httpx.AsyncClient) -> None:
     """Register com email já usado → 409."""
-    first = await _register(client, email="dup@trampoja.com", phone="11900001111")
+    first = await _register(client, email="dup@faztudo.com", phone="11900001111")
     assert first.status_code == 201, first.text
 
     # Mesmo email, telefone diferente → conflito de email.
-    dup = await _register(client, email="dup@trampoja.com", phone="11900002222")
+    dup = await _register(client, email="dup@faztudo.com", phone="11900002222")
     assert dup.status_code == 409, dup.text
 
 
 @pytest.mark.asyncio
 async def test_register_duplicate_phone_409(client: httpx.AsyncClient) -> None:
     """Register com telefone já usado → 409."""
-    first = await _register(client, email="e1@trampoja.com", phone="11955554444")
+    first = await _register(client, email="e1@faztudo.com", phone="11955554444")
     assert first.status_code == 201, first.text
 
     # Email diferente, mesmo telefone → conflito de telefone.
-    dup = await _register(client, email="e2@trampoja.com", phone="11955554444")
+    dup = await _register(client, email="e2@faztudo.com", phone="11955554444")
     assert dup.status_code == 409, dup.text

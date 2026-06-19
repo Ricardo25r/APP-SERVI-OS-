@@ -30,7 +30,7 @@ ps: ## Lista o status dos containers
 	$(COMPOSE) --profile full ps
 
 db-shell: ## Abre o psql dentro do container do banco
-	$(COMPOSE) exec db psql -U $${POSTGRES_USER:-trampoja} -d $${POSTGRES_DB:-trampoja}
+	$(COMPOSE) exec db psql -U $${POSTGRES_USER:-faztudo} -d $${POSTGRES_DB:-faztudo}
 
 migrate: ## Roda as migrations (alembic upgrade head) no backend
 	$(COMPOSE) --profile full exec backend alembic upgrade head

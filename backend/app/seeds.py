@@ -21,7 +21,7 @@ from sqlalchemy import select
 from app.database.session import async_session_maker
 from app.models import Category, CategoryTier, CreditPackage
 
-logger = logging.getLogger("trampoja.seeds")
+logger = logging.getLogger("faztudo.seeds")
 
 # (slug kebab-case sem acento, nome exibido, tier) — §2.5.
 INITIAL_CATEGORIES: tuple[tuple[str, str, CategoryTier], ...] = (
