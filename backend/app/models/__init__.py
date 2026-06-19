@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from app.database.base import Base
 from app.models.achievement import Achievement, UserAchievement
+from app.models.audit_log import AuditLog
 from app.models.category import Category
 from app.models.conversation import Conversation
 from app.models.credit_package import CreditPackage
@@ -73,6 +74,7 @@ __all__ = [
     "XpTransaction",
     "Achievement",
     "UserAchievement",
+    "AuditLog",
     # Enums
     "UserRole",
     "UserStatus",
