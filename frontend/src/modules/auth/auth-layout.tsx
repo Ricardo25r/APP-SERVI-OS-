@@ -121,34 +121,38 @@ export function AuthLayout({
         {/* Topo (somente mobile): painel de marca com mascotes ou só o logo. */}
         {showMascots ? (
           <div className="mb-6 w-full max-w-md lg:hidden">
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-blue-800 px-5 py-5 text-center text-primary-foreground">
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-blue-800 px-3 pt-5 text-primary-foreground">
               <div
                 aria-hidden
-                className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-brand/20 blur-2xl"
+                className="pointer-events-none absolute -right-12 -top-12 h-36 w-36 rounded-full bg-brand/20 blur-2xl"
               />
-              <Link
-                href="/"
-                aria-label="Página inicial do FazTudo"
-                className="relative z-10 inline-flex"
-              >
-                <Wordmark className="text-2xl font-extrabold tracking-tight" />
-              </Link>
-              <div className="relative z-10 mt-1 flex items-end justify-center gap-1">
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -left-12 bottom-0 h-32 w-32 rounded-full bg-primary-foreground/10 blur-2xl"
+              />
+              <h2 className="relative z-10 text-center text-xl font-extrabold leading-tight tracking-tight">
+                <span className="block">Faça parte do</span>
+                <Wordmark className="block text-3xl" />
+              </h2>
+              <div className="relative z-10 mt-1 flex items-end justify-between gap-1">
                 <Image
                   src="/brand/mascote-profissional.webp"
-                  width={220}
-                  height={320}
+                  width={240}
+                  height={360}
                   alt="Mascote profissional do FazTudo"
                   priority
-                  className="h-28 w-auto drop-shadow-lg"
+                  className="-ml-3 h-44 w-auto drop-shadow-lg"
                 />
+                <p className="pb-10 text-center text-xs font-medium text-primary-foreground/90">
+                  Profissionais de confiança, pertinho de você
+                </p>
                 <Image
                   src="/brand/mascote-tudo.png"
-                  width={220}
-                  height={320}
+                  width={240}
+                  height={360}
                   alt="Mascote do FazTudo"
                   priority
-                  className="-ml-2 h-24 w-auto drop-shadow-lg"
+                  className="-mr-3 h-44 w-auto drop-shadow-lg"
                 />
               </div>
             </div>
