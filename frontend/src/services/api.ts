@@ -228,6 +228,37 @@ export const apiPut = <T>(
 export const apiDelete = <T>(path: string, options?: RequestOptions) =>
   request<T>(path, { ...options, method: "DELETE" });
 
+/**
+ * Upload multipart (`FormData`) autenticado contra `/api/v1`. Não define
+ * `Content-Type` — o browser monta o `boundary`. Em 401 tenta refresh + retry
+ * uma vez (igual ao `request`).
+ */
+export async function apiUpload<T>(path: string, form: FormData): Promise<T> {
+  const url = `${API_URL}${API_PREFIX}${path}`;
+  const doFetch = () => {
+    const headers: Record<string, string> = {};
+    const token = useAuthStore.getState().accessToken;
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+    return fetch(url, { method: "POST", headers, body: form });
+  };
+
+  let response = await doFetch();
+  if (response.status === 401) {
+    const refreshed = await tryRefresh();
+    if (refreshed) response = await doFetch();
+  }
+
+  const data = await parseBody(response);
+  if (!response.ok) {
+    throw new ApiError(
+      response.status,
+      extractDetail(data, `Upload to ${path} failed (${response.status})`),
+      data
+    );
+  }
+  return data as T;
+}
+
 /* ------------------------------------------------------------------ */
 /* Compatibilidade: objeto `api` legado (sem prefixo /api/v1).        */
 /* Usado pelo health-check em src/app/page.tsx — NÃO remover.         */

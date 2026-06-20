@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { Check, Loader2, MapPin } from "lucide-react";
+import { Check, ImagePlus, Loader2, MapPin, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { IconChip } from "@/components/ui/icon-chip";
@@ -14,7 +14,11 @@ import { cn } from "@/lib/utils";
 import type { Category, LeadType, LeadUrgency } from "@/types";
 
 import { categoryImage, categoryVisual } from "../category-icon";
-import { LEAD_TYPE_OPTIONS, LEAD_URGENCY_OPTIONS } from "../constants";
+import {
+  BUDGET_RANGE_OPTIONS,
+  LEAD_TYPE_OPTIONS,
+  LEAD_URGENCY_OPTIONS,
+} from "../constants";
 
 /** Valores do formulário (string para campos controlados). */
 export interface LeadFormValues {
@@ -23,9 +27,14 @@ export interface LeadFormValues {
   description: string;
   lead_type: LeadType;
   urgency: LeadUrgency;
+  budget_range: string;
   city: string;
   state: string;
   neighborhood: string;
+  latitude: number | null;
+  longitude: number | null;
+  /** Fotos novas selecionadas (enviadas após criar o lead). */
+  photos: File[];
 }
 
 export interface LeadFormProps {
@@ -55,10 +64,51 @@ const EMPTY: LeadFormValues = {
   description: "",
   lead_type: "one_time",
   urgency: "flexible",
+  budget_range: "",
   city: "",
   state: "",
   neighborhood: "",
+  latitude: null,
+  longitude: null,
+  photos: [],
 };
+
+/** Grupo de chips selecionáveis (1 valor). `allowClear` permite desmarcar. */
+function ChoiceChips({
+  options,
+  value,
+  onChange,
+  allowClear = false,
+}: {
+  options: { value: string; label: string }[];
+  value: string;
+  onChange: (value: string) => void;
+  allowClear?: boolean;
+}) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {options.map((o) => {
+        const selected = value === o.value;
+        return (
+          <button
+            key={o.value}
+            type="button"
+            aria-pressed={selected}
+            onClick={() => onChange(allowClear && selected ? "" : o.value)}
+            className={cn(
+              "rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+              selected
+                ? "border-transparent bg-primary text-primary-foreground hover:bg-primary/90"
+                : "border-border bg-card text-foreground hover:border-primary/40 hover:bg-primary/5"
+            )}
+          >
+            {o.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 export function LeadForm({
   mode,
@@ -79,7 +129,9 @@ export function LeadForm({
   const [geoLoading, setGeoLoading] = useState(false);
   const [geoMsg, setGeoMsg] = useState<string | null>(null);
   const [cityOpen, setCityOpen] = useState(false);
+  const [previews, setPreviews] = useState<string[]>([]);
   const cityBoxRef = useRef<HTMLDivElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const isEdit = mode === "edit";
 
@@ -114,7 +166,7 @@ export function LeadForm({
     };
   }, [values.state]);
 
-  // Detecta a localização do usuário e pré-preenche cidade/UF.
+  // Detecta a localização do usuário e pré-preenche cidade/UF + coordenadas.
   function detectLocation() {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
       setGeoMsg("Geolocalização não suportada neste dispositivo.");
@@ -137,15 +189,23 @@ export function LeadForm({
             ...prev,
             state: uf || prev.state,
             city: city || prev.city,
+            latitude,
+            longitude,
           }));
           setFieldErrors((prev) => ({ ...prev, city: "", state: "" }));
           setGeoMsg(
             uf || city
               ? `Local detectado: ${city}${uf ? `/${uf}` : ""}`
-              : "Não foi possível detectar sua cidade."
+              : "Localização detectada."
           );
         } catch {
-          setGeoMsg("Não foi possível detectar a localização.");
+          // Mesmo sem reverse-geocode, guardamos as coordenadas (mapa/distância).
+          setValues((prev) => ({
+            ...prev,
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+          }));
+          setGeoMsg("Localização detectada (cidade não identificada).");
         } finally {
           setGeoLoading(false);
         }
@@ -176,6 +236,40 @@ export function LeadForm({
     document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
   }, []);
+
+  // Revoga as URLs de preview ao desmontar (evita vazamento de memória).
+  useEffect(() => {
+    return () => {
+      previews.forEach((url) => URL.revokeObjectURL(url));
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function onPickFiles(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []).filter((f) =>
+      f.type.startsWith("image/")
+    );
+    if (files.length === 0) return;
+    setValues((prev) => ({ ...prev, photos: [...prev.photos, ...files] }));
+    setPreviews((prev) => [
+      ...prev,
+      ...files.map((f) => URL.createObjectURL(f)),
+    ]);
+    // Permite re-selecionar o mesmo arquivo depois.
+    e.target.value = "";
+  }
+
+  function removePhoto(index: number) {
+    setPreviews((prev) => {
+      const url = prev[index];
+      if (url) URL.revokeObjectURL(url);
+      return prev.filter((_, i) => i !== index);
+    });
+    setValues((prev) => ({
+      ...prev,
+      photos: prev.photos.filter((_, i) => i !== index),
+    }));
+  }
 
   const cityQuery = values.city.trim().toLowerCase();
   const cityExact = cities.some((c) => c.toLowerCase() === cityQuery);
@@ -209,6 +303,17 @@ export function LeadForm({
     });
   }
 
+  const hasCoords = values.latitude != null && values.longitude != null;
+  const mapSrc = hasCoords
+    ? `https://www.openstreetmap.org/export/embed.html?bbox=${
+        (values.longitude as number) - 0.012
+      }%2C${(values.latitude as number) - 0.008}%2C${
+        (values.longitude as number) + 0.012
+      }%2C${(values.latitude as number) + 0.008}&layer=mapnik&marker=${
+        values.latitude
+      }%2C${values.longitude}`
+    : null;
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6" noValidate>
       {error ? (
@@ -220,7 +325,7 @@ export function LeadForm({
         </div>
       ) : null}
 
-      {/* Categoria via grid de IconChips (somente na criação). */}
+      {/* Categoria via grid (somente na criação). */}
       {!isEdit ? (
         <fieldset className="space-y-2">
           <legend className="mb-2 text-sm font-medium leading-none">
@@ -311,40 +416,45 @@ export function LeadForm({
         ) : null}
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2">
-        {!isEdit ? (
-          <div className="space-y-1.5">
-            <Label htmlFor="lead_type">Tipo</Label>
-            <Select
-              id="lead_type"
-              value={values.lead_type}
-              onChange={(e) => setField("lead_type", e.target.value as LeadType)}
-            >
-              {LEAD_TYPE_OPTIONS.map((o) => (
-                <SelectOption key={o.value} value={o.value}>
-                  {o.label}
-                </SelectOption>
-              ))}
-            </Select>
-          </div>
-        ) : null}
-
-        <div className="space-y-1.5">
-          <Label htmlFor="urgency">Urgência</Label>
-          <Select
-            id="urgency"
-            value={values.urgency}
-            onChange={(e) => setField("urgency", e.target.value as LeadUrgency)}
-          >
-            {LEAD_URGENCY_OPTIONS.map((o) => (
-              <SelectOption key={o.value} value={o.value}>
-                {o.label}
-              </SelectOption>
-            ))}
-          </Select>
+      {/* Tipo de serviço (chips) — só na criação (afeta o custo). */}
+      {!isEdit ? (
+        <div className="space-y-2">
+          <span className="text-sm font-medium leading-none">
+            Tipo de serviço
+          </span>
+          <ChoiceChips
+            options={LEAD_TYPE_OPTIONS}
+            value={values.lead_type}
+            onChange={(v) => setField("lead_type", v as LeadType)}
+          />
         </div>
+      ) : null}
+
+      {/* Urgência (chips). */}
+      <div className="space-y-2">
+        <span className="text-sm font-medium leading-none">Urgência</span>
+        <ChoiceChips
+          options={LEAD_URGENCY_OPTIONS}
+          value={values.urgency}
+          onChange={(v) => setField("urgency", v as LeadUrgency)}
+        />
       </div>
 
+      {/* Orçamento (faixas, chips) — opcional. */}
+      <div className="space-y-2">
+        <span className="text-sm font-medium leading-none">
+          Orçamento{" "}
+          <span className="font-normal text-muted-foreground">(opcional)</span>
+        </span>
+        <ChoiceChips
+          options={BUDGET_RANGE_OPTIONS}
+          value={values.budget_range}
+          onChange={(v) => setField("budget_range", v)}
+          allowClear
+        />
+      </div>
+
+      {/* Localização + mapa (somente na criação). */}
       {!isEdit ? (
         <div className="space-y-3">
           <div className="flex items-center justify-between gap-2">
@@ -439,21 +549,86 @@ export function LeadForm({
             </div>
           </div>
 
+          <div className="space-y-1.5">
+            <Label htmlFor="neighborhood">Bairro (opcional)</Label>
+            <Input
+              id="neighborhood"
+              value={values.neighborhood}
+              onChange={(e) => setField("neighborhood", e.target.value)}
+              placeholder="Ex.: Setor 01"
+            />
+          </div>
+
+          {mapSrc ? (
+            <div className="overflow-hidden rounded-xl border">
+              <iframe
+                title="Mapa do local do serviço"
+                src={mapSrc}
+                loading="lazy"
+                className="h-44 w-full border-0"
+              />
+            </div>
+          ) : null}
+
           {geoMsg ? (
             <p className="text-xs text-muted-foreground">{geoMsg}</p>
           ) : null}
         </div>
       ) : null}
 
-      <div className="space-y-1.5">
-        <Label htmlFor="neighborhood">Bairro (opcional)</Label>
-        <Input
-          id="neighborhood"
-          value={values.neighborhood}
-          onChange={(e) => setField("neighborhood", e.target.value)}
-          placeholder="Ex.: Setor 01"
-        />
-      </div>
+      {/* Fotos (somente na criação). */}
+      {!isEdit ? (
+        <div className="space-y-2">
+          <span className="text-sm font-medium leading-none">
+            Fotos{" "}
+            <span className="font-normal text-muted-foreground">(opcional)</span>
+          </span>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={onPickFiles}
+          />
+          <div className="flex flex-wrap gap-2">
+            {previews.map((url, i) => (
+              <div
+                key={url}
+                className="relative h-20 w-20 overflow-hidden rounded-xl border bg-muted"
+              >
+                <Image
+                  src={url}
+                  alt={`Foto ${i + 1}`}
+                  width={80}
+                  height={80}
+                  unoptimized
+                  className="h-20 w-20 object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => removePhoto(i)}
+                  aria-label="Remover foto"
+                  className="absolute right-1 top-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-foreground/70 text-background transition-colors hover:bg-foreground"
+                >
+                  <X className="h-3 w-3" aria-hidden />
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              className="flex h-20 w-20 flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-border text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
+            >
+              <ImagePlus className="h-5 w-5" aria-hidden />
+              <span className="text-[10px] font-medium">Adicionar</span>
+            </button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Tire uma foto ou anexe da galeria (JPG/PNG/WEBP, até 5 MB cada).
+          </p>
+        </div>
+      ) : null}
 
       <div className="flex flex-wrap gap-2 pt-2">
         <Button

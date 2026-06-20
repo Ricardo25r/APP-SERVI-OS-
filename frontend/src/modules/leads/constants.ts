@@ -44,6 +44,31 @@ export const LEAD_URGENCY_OPTIONS: { value: LeadUrgency; label: string }[] = [
 ];
 
 /* ------------------------------------------------------------------ */
+/* Orçamento (faixas predefinidas)                                    */
+/* ------------------------------------------------------------------ */
+
+export const BUDGET_RANGE_LABELS: Record<string, string> = {
+  ate_100: "Até R$ 100",
+  "100_300": "R$ 100–300",
+  "300_500": "R$ 300–500",
+  "500_1000": "R$ 500–1.000",
+  acima_1000: "Acima de R$ 1.000",
+};
+
+export const BUDGET_RANGE_OPTIONS: { value: string; label: string }[] = [
+  { value: "ate_100", label: BUDGET_RANGE_LABELS.ate_100 },
+  { value: "100_300", label: BUDGET_RANGE_LABELS["100_300"] },
+  { value: "300_500", label: BUDGET_RANGE_LABELS["300_500"] },
+  { value: "500_1000", label: BUDGET_RANGE_LABELS["500_1000"] },
+  { value: "acima_1000", label: BUDGET_RANGE_LABELS.acima_1000 },
+];
+
+export function budgetRangeLabel(value?: string | null): string | null {
+  if (!value) return null;
+  return BUDGET_RANGE_LABELS[value] ?? value;
+}
+
+/* ------------------------------------------------------------------ */
 /* Status                                                             */
 /* ------------------------------------------------------------------ */
 

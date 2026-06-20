@@ -6,8 +6,14 @@
  * lista crua — ambos tratados defensivamente.
  */
 
-import { apiDelete, apiGet, apiPatch, apiPost } from "@/services/api";
-import type { Category, Lead, LeadType, LeadUrgency } from "@/types";
+import { apiDelete, apiGet, apiPatch, apiPost, apiUpload } from "@/services/api";
+import type {
+  Category,
+  Lead,
+  LeadMedia,
+  LeadType,
+  LeadUrgency,
+} from "@/types";
 
 /** Body de criação de lead (`POST /leads/`). */
 export interface CreateLeadInput {
@@ -19,6 +25,9 @@ export interface CreateLeadInput {
   city: string;
   state: string;
   neighborhood?: string;
+  budget_range?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 /** Body de edição de lead (`PATCH /leads/{id}`) — apenas campos editáveis. */
@@ -27,6 +36,7 @@ export interface UpdateLeadInput {
   description?: string;
   urgency?: LeadUrgency;
   neighborhood?: string | null;
+  budget_range?: string | null;
 }
 
 /**
@@ -78,4 +88,14 @@ export function updateLead(id: string, input: UpdateLeadInput): Promise<Lead> {
 /** Cancela (exclui) uma solicitação aberta. */
 export function cancelLead(id: string): Promise<void> {
   return apiDelete<void>(`/leads/${id}`);
+}
+
+/** Faz upload de uma foto e anexa ao lead (`POST /leads/{id}/media`). */
+export function uploadLeadMedia(
+  leadId: string,
+  file: File
+): Promise<LeadMedia> {
+  const form = new FormData();
+  form.append("file", file);
+  return apiUpload<LeadMedia>(`/leads/${leadId}/media`, form);
 }

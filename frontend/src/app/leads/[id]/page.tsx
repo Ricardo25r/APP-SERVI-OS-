@@ -8,6 +8,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Coins, MapPin, MessageSquare, Pencil } from "lucide-react";
 
@@ -26,6 +27,7 @@ import { useRequireAuth } from "@/hooks/use-auth";
 import type { Lead, LeadStatus } from "@/types";
 
 import {
+  budgetRangeLabel,
   categoryVisual,
   describeApiError,
   fetchLead,
@@ -102,6 +104,7 @@ export default function LeadDetailPage() {
         description: values.description,
         urgency: values.urgency,
         neighborhood: values.neighborhood ? values.neighborhood : null,
+        budget_range: values.budget_range || null,
       });
       setLead(updated);
       setEditing(false);
@@ -182,6 +185,7 @@ export default function LeadDetailPage() {
                   description: lead.description,
                   urgency: lead.urgency,
                   neighborhood: lead.neighborhood ?? "",
+                  budget_range: lead.budget_range ?? "",
                 }}
                 submitting={saving}
                 error={saveError}
@@ -246,7 +250,48 @@ export default function LeadDetailPage() {
                     {leadUrgencyLabel(lead.urgency)}
                   </span>
                 </div>
+                {budgetRangeLabel(lead.budget_range) ? (
+                  <div className="text-muted-foreground">
+                    Orçamento:{" "}
+                    <span className="font-medium text-foreground">
+                      {budgetRangeLabel(lead.budget_range)}
+                    </span>
+                  </div>
+                ) : null}
               </div>
+
+              {lead.media && lead.media.length > 0 ? (
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {lead.media.map((m) => (
+                    <Image
+                      key={m.id}
+                      src={m.url}
+                      alt="Foto do serviço"
+                      width={160}
+                      height={160}
+                      unoptimized
+                      className="h-28 w-28 shrink-0 rounded-xl border object-cover"
+                    />
+                  ))}
+                </div>
+              ) : null}
+
+              {lead.latitude != null && lead.longitude != null ? (
+                <div className="overflow-hidden rounded-xl border">
+                  <iframe
+                    title="Mapa do local do serviço"
+                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${
+                      lead.longitude - 0.012
+                    }%2C${lead.latitude - 0.008}%2C${
+                      lead.longitude + 0.012
+                    }%2C${lead.latitude + 0.008}&layer=mapnik&marker=${
+                      lead.latitude
+                    }%2C${lead.longitude}`}
+                    loading="lazy"
+                    className="h-44 w-full border-0"
+                  />
+                </div>
+              ) : null}
 
               <div className="flex flex-wrap gap-2 pt-1">
                 {isOpen ? (

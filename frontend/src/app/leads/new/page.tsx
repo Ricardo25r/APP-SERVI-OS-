@@ -29,6 +29,7 @@ import {
   describeApiError,
   fetchCategories,
   LeadForm,
+  uploadLeadMedia,
   type LeadFormValues,
 } from "@/modules/leads";
 
@@ -89,7 +90,7 @@ export default function NewLeadPage() {
     setSubmitting(true);
     setSubmitError(null);
     try {
-      await createLead({
+      const lead = await createLead({
         category_id: values.category_id,
         title: values.title,
         description: values.description,
@@ -98,7 +99,18 @@ export default function NewLeadPage() {
         city: values.city,
         state: values.state,
         neighborhood: values.neighborhood || undefined,
+        budget_range: values.budget_range || undefined,
+        latitude: values.latitude ?? undefined,
+        longitude: values.longitude ?? undefined,
       });
+      // Sobe as fotos selecionadas (sequencial; falha de uma não aborta o fluxo).
+      for (const file of values.photos) {
+        try {
+          await uploadLeadMedia(lead.id, file);
+        } catch {
+          // O lead já foi criado; ignora falha de upload individual.
+        }
+      }
       router.push("/leads");
     } catch (err) {
       setSubmitError(

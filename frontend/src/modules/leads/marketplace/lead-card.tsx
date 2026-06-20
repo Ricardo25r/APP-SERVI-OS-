@@ -14,7 +14,7 @@
 "use client";
 
 import Link from "next/link";
-import { Briefcase, Coins, Loader2, MapPin } from "lucide-react";
+import { ArrowRight, Coins, Loader2, MapPin, Ruler } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ import { IconChip } from "@/components/ui/icon-chip";
 import { cn } from "@/lib/utils";
 import type { Lead, LeadContact } from "@/types";
 
+import { categoryVisual } from "../category-icon";
 import { ContactCard } from "./contact-card";
 import { formatDate, urgencyMeta, type PurchaseErrorInfo } from "./utils";
 
@@ -48,6 +49,10 @@ export function LeadCard({
   onBuy,
 }: LeadCardProps) {
   const urgency = urgencyMeta(lead.urgency);
+  const visual = categoryVisual({
+    slug: lead.category?.slug,
+    name: lead.category?.name,
+  });
 
   // Prioriza a flag do backend; se ausente, infere pelo saldo conhecido.
   const canAfford =
@@ -64,11 +69,19 @@ export function LeadCard({
       <CardContent className="flex flex-1 flex-col gap-3 p-4">
         {/* Cabeçalho: IconChip da categoria + título/categoria. */}
         <div className="flex items-start gap-3">
-          <IconChip icon={Briefcase} color="blue" size="md" aria-hidden />
+          <IconChip
+            icon={visual.icon}
+            color={visual.color}
+            size="md"
+            aria-hidden
+          />
           <div className="min-w-0 flex-1">
-            <h3 className="truncate text-base font-bold tracking-tight">
+            <Link
+              href={`/marketplace/${lead.id}`}
+              className="block truncate text-base font-bold tracking-tight hover:text-primary"
+            >
               {lead.title}
-            </h3>
+            </Link>
             {lead.category?.name && (
               <p className="truncate text-xs font-medium text-muted-foreground">
                 {lead.category.name}
@@ -95,6 +108,12 @@ export function LeadCard({
             <span className="inline-flex items-center gap-1.5">
               <MapPin className="h-3.5 w-3.5" aria-hidden />
               {locationParts.join(", ")}
+            </span>
+          )}
+          {lead.distance_km != null && (
+            <span className="inline-flex items-center gap-1.5">
+              <Ruler className="h-3.5 w-3.5" aria-hidden />
+              {lead.distance_km.toLocaleString("pt-BR")} km
             </span>
           )}
           <span>Publicado em {formatDate(lead.created_at)}</span>
@@ -151,6 +170,14 @@ export function LeadCard({
             </Button>
           )}
         </div>
+
+        <Link
+          href={`/marketplace/${lead.id}`}
+          className="inline-flex items-center gap-1 self-start text-xs font-semibold text-primary hover:underline"
+        >
+          Ver detalhes
+          <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+        </Link>
       </CardContent>
     </Card>
   );

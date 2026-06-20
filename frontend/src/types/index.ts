@@ -146,6 +146,9 @@ export interface Lead {
   city: string;
   state: string;
   neighborhood: string | null;
+  budget_range: string | null;
+  latitude: number | null;
+  longitude: number | null;
   status: LeadStatus;
   credits_cost: number;
   expires_at: string | null;
@@ -159,6 +162,17 @@ export interface Lead {
   affordable?: boolean;
   /** Contato liberado (apenas comprador/dono). */
   contact?: LeadContact;
+  /** Fotos do serviço (URL presignada). */
+  media?: LeadMedia[];
+  /** Distância (km) do profissional ao serviço (visão do profissional). */
+  distance_km?: number | null;
+}
+
+/** Foto do lead (`LeadMediaOut`). */
+export interface LeadMedia {
+  id: string;
+  url: string;
+  position: number;
 }
 
 /** `credit_wallets` -> resposta de `GET /credits/balance`. */
