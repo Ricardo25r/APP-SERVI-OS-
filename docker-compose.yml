@@ -104,6 +104,19 @@ services:
     restart: "no"
 
   # ---------------------------------------------------------------------------
+  # mailpit — captura de e-mails em DEV (SMTP :1025 · UI web http://localhost:8025)
+  # Os alertas do monitoramento caem aqui (sem precisar de SMTP real).
+  # ---------------------------------------------------------------------------
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: faztudo-mailpit
+    restart: unless-stopped
+    profiles: ["full"]
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+
+  # ---------------------------------------------------------------------------
   # backend — FastAPI/uvicorn (profile "full", perfil de dev com hot-reload)
   # ---------------------------------------------------------------------------
   backend:
