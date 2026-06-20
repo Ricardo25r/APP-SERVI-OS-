@@ -13,6 +13,7 @@ import {
   CreditCard,
   LayoutDashboard,
   Users,
+  Activity,
   type LucideIcon,
 } from "lucide-react";
 
@@ -60,6 +61,7 @@ const NAV_BY_ROLE: Record<UserRole, NavItem[]> = {
     { href: "/admin/usuarios", label: "Usuários", icon: Users },
     { href: "/admin/leads", label: "Leads", icon: ClipboardList },
     { href: "/admin/financeiro", label: "Financeiro", icon: CreditCard },
+    { href: "/admin/monitoramento", label: "Monitor", icon: Activity },
     { href: "/profile", label: "Perfil", icon: User },
   ],
 };

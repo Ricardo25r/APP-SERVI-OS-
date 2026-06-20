@@ -9,6 +9,7 @@
 
 import Link from "next/link";
 import {
+  Activity,
   LayoutDashboard,
   Users,
   ClipboardList,
@@ -57,6 +58,13 @@ const SHORTCUTS: Shortcut[] = [
     description: "Pagamentos, créditos e relatórios",
     icon: Wallet,
     color: "blue",
+  },
+  {
+    href: "/admin/monitoramento",
+    label: "Monitoramento",
+    description: "Métricas, saúde e erros (com traceback)",
+    icon: Activity,
+    color: "orange",
   },
 ];
 

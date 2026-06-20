@@ -51,6 +51,7 @@ const NAV_BY_ROLE: Record<UserRole, NavLink[]> = {
     { href: "/admin/categorias", label: "Categorias" },
     { href: "/admin/creditos", label: "Créditos" },
     { href: "/admin/auditoria", label: "Auditoria" },
+    { href: "/admin/monitoramento", label: "Monitoramento" },
   ],
 };
 
