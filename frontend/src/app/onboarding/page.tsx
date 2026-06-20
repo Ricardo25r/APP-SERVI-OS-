@@ -33,21 +33,21 @@ import { useRedirectAuthenticated } from "@/modules/auth";
 
 const PROS = [
   { name: "Eletricista", rating: "4,9", img: "/brand/avatar-1.png" },
-  { name: "Encanador", rating: "4,8", img: "/brand/avatar-3.png" },
-  { name: "Pintor", rating: "4,7", img: "/brand/avatar-2.png" },
+  { name: "Encanador", rating: "4,8", img: "/brand/avatar-2.png" },
+  { name: "Pintor", rating: "4,7", img: "/brand/avatar-3.png" },
   { name: "Pedreiro", rating: "4,9", img: "/brand/avatar-4.png" },
 ];
 
 /** Slide 1 — lista de profissionais (fotos) + categorias flutuantes + lupa. */
 function IllustrationFind() {
   const chips = [
-    { src: "/brand/icon-rolo.png", pos: "left-0 top-6" },
-    { src: "/brand/icon-tomada.png", pos: "left-1 top-32" },
-    { src: "/brand/icon-torneira.png", pos: "right-0 top-10" },
-    { src: "/brand/icon-tijolo.png", pos: "right-1 top-36" },
+    { src: "/brand/icon-rolo.png", pos: "left-0 top-10" },
+    { src: "/brand/icon-tomada.png", pos: "left-1 top-48" },
+    { src: "/brand/icon-torneira.png", pos: "right-0 top-14" },
+    { src: "/brand/icon-tijolo.png", pos: "right-1 top-52" },
   ];
   return (
-    <div className="relative mx-auto h-72 w-full max-w-xs">
+    <div className="relative mx-auto h-[27rem] w-full max-w-xs">
       {chips.map((c, i) => (
         <Image
           key={i}
@@ -63,29 +63,29 @@ function IllustrationFind() {
         />
       ))}
 
-      {/* "Telefone" com a lista de profissionais */}
-      <div className="absolute left-1/2 top-1 h-[17rem] w-44 -translate-x-1/2 rounded-[1.75rem] border-4 border-foreground/10 bg-card p-2 shadow-xl">
-        <div className="mx-auto mb-2 mt-1 h-1.5 w-10 rounded-full bg-foreground/10" />
-        <div className="space-y-2">
+      {/* "Telefone" (mais alto) com a lista de profissionais */}
+      <div className="absolute left-1/2 top-0 h-[26rem] w-48 -translate-x-1/2 rounded-[2.25rem] border-4 border-foreground/10 bg-card p-2.5 shadow-xl">
+        <div className="mx-auto mb-3 mt-1 h-1.5 w-12 rounded-full bg-foreground/10" />
+        <div className="space-y-3">
           {PROS.map((p) => (
             <div
               key={p.name}
-              className="flex items-center gap-2 rounded-xl border border-border/60 bg-background p-1.5"
+              className="flex items-center gap-2.5 rounded-xl border border-border/60 bg-background p-2 text-left"
             >
               <Image
                 src={p.img}
-                width={56}
-                height={56}
+                width={72}
+                height={72}
                 alt=""
                 aria-hidden
-                className="h-7 w-7 shrink-0 rounded-full object-cover"
+                className="h-9 w-9 shrink-0 rounded-full bg-muted object-cover"
               />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[11px] font-semibold text-foreground">
+                <p className="truncate text-xs font-semibold text-foreground">
                   {p.name}
                 </p>
-                <p className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
-                  {Array.from({ length: 3 }).map((_, i) => (
+                <p className="mt-0.5 flex items-center gap-0.5 text-[10px] text-muted-foreground">
+                  {Array.from({ length: 4 }).map((_, i) => (
                     <Star
                       key={i}
                       className="h-2.5 w-2.5 fill-brand text-brand"
@@ -108,7 +108,7 @@ function IllustrationFind() {
         height={180}
         alt=""
         aria-hidden
-        className="absolute right-3 top-16 h-24 w-24 object-contain drop-shadow-lg"
+        className="absolute right-1 top-28 h-24 w-24 object-contain drop-shadow-lg"
       />
     </div>
   );
