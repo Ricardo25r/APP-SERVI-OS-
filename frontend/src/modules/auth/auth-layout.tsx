@@ -47,6 +47,11 @@ export interface AuthLayoutProps {
   children: React.ReactNode;
   /** Rodapé com links de navegação (ex.: ir para cadastro/login). */
   footer?: React.ReactNode;
+  /**
+   * No **mobile**, troca o logo do topo por um painel de marca com os dois
+   * mascotes (usado no Cadastro). No desktop o painel lateral já os exibe.
+   */
+  showMascots?: boolean;
 }
 
 export function AuthLayout({
@@ -54,6 +59,7 @@ export function AuthLayout({
   description,
   children,
   footer,
+  showMascots = false,
 }: AuthLayoutProps) {
   return (
     <main className="grid min-h-screen w-full lg:grid-cols-2">
@@ -112,21 +118,57 @@ export function AuthLayout({
 
       {/* Coluna do formulário (direita no desktop, único bloco no mobile) */}
       <section className="flex min-h-screen flex-col items-center justify-center bg-background px-4 py-10 sm:px-6">
-        {/* Logo no topo (somente mobile) */}
-        <Link
-          href="/"
-          aria-label="Página inicial do FazTudo"
-          className="mb-6 inline-flex lg:hidden"
-        >
-          <Image
-            src="/brand/logo-faztudo-full.png"
-            width={200}
-            height={64}
-            alt="FazTudo"
-            priority
-            className="h-12 w-auto"
-          />
-        </Link>
+        {/* Topo (somente mobile): painel de marca com mascotes ou só o logo. */}
+        {showMascots ? (
+          <div className="mb-6 w-full max-w-md lg:hidden">
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-blue-800 px-5 py-5 text-center text-primary-foreground">
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-brand/20 blur-2xl"
+              />
+              <Link
+                href="/"
+                aria-label="Página inicial do FazTudo"
+                className="relative z-10 inline-flex"
+              >
+                <Wordmark className="text-2xl font-extrabold tracking-tight" />
+              </Link>
+              <div className="relative z-10 mt-1 flex items-end justify-center gap-1">
+                <Image
+                  src="/brand/mascote-profissional.webp"
+                  width={220}
+                  height={320}
+                  alt="Mascote profissional do FazTudo"
+                  priority
+                  className="h-28 w-auto drop-shadow-lg"
+                />
+                <Image
+                  src="/brand/mascote-tudo.png"
+                  width={220}
+                  height={320}
+                  alt="Mascote do FazTudo"
+                  priority
+                  className="-ml-2 h-24 w-auto drop-shadow-lg"
+                />
+              </div>
+            </div>
+          </div>
+        ) : (
+          <Link
+            href="/"
+            aria-label="Página inicial do FazTudo"
+            className="mb-6 inline-flex lg:hidden"
+          >
+            <Image
+              src="/brand/logo-faztudo-full.png"
+              width={200}
+              height={64}
+              alt="FazTudo"
+              priority
+              className="h-12 w-auto"
+            />
+          </Link>
+        )}
 
         <Card className="w-full max-w-md rounded-2xl shadow-lg">
           <CardHeader className="space-y-1.5">

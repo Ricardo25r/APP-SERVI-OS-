@@ -148,6 +148,7 @@ function RegisterForm() {
     <AuthLayout
       title="Criar conta"
       description="Cadastre-se no FazTudo"
+      showMascots
       footer={
         <p className="text-sm text-muted-foreground">
           Já tem conta?{" "}
