@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { Check, Loader2, MapPin } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import type { Category, LeadType, LeadUrgency } from "@/types";
 
-import { categoryVisual } from "../category-icon";
+import { categoryImage, categoryVisual } from "../category-icon";
 import { LEAD_TYPE_OPTIONS, LEAD_URGENCY_OPTIONS } from "../constants";
 
 /** Valores do formulário (string para campos controlados). */
@@ -233,6 +234,7 @@ export function LeadForm({
           >
             {categories.map((c) => {
               const visual = categoryVisual({ slug: c.slug, name: c.name });
+              const img = categoryImage(c.slug);
               const selected = values.category_id === c.id;
               return (
                 <button
@@ -254,7 +256,18 @@ export function LeadForm({
                       <Check className="h-3 w-3" aria-hidden />
                     </span>
                   ) : null}
-                  <IconChip icon={visual.icon} color={visual.color} size="md" />
+                  {img ? (
+                    <Image
+                      src={img}
+                      width={96}
+                      height={96}
+                      alt=""
+                      aria-hidden
+                      className="h-12 w-12 rounded-xl object-cover object-top"
+                    />
+                  ) : (
+                    <IconChip icon={visual.icon} color={visual.color} size="md" />
+                  )}
                   <span className="line-clamp-2 text-xs font-medium leading-tight text-foreground">
                     {c.name}
                   </span>

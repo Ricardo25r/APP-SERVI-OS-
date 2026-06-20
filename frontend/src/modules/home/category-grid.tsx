@@ -14,6 +14,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { IconChip } from "@/components/ui/icon-chip";
+import { categoryImage } from "@/modules/leads/category-icon";
 import {
   FALLBACK_CATEGORIES,
   OUTRAS_CATEGORY,
@@ -26,17 +27,6 @@ export interface CategoryGridProps {
   /** Monta o href de cada categoria a partir do slug. */
   hrefFor: (slug: string) => string;
 }
-
-/** Categorias com foto real (as demais caem no ícone lucide). */
-const CATEGORY_IMAGES: Record<string, string> = {
-  baba: "/brand/categorias/baba.png",
-  cuidador: "/brand/categorias/cuidador.png",
-  diarista: "/brand/categorias/diarista.png",
-  domestica: "/brand/categorias/domestica.png",
-  eletricista: "/brand/categorias/eletricista.png",
-  encanador: "/brand/categorias/encanador.png",
-  jardinagem: "/brand/categorias/jardinagem.png",
-};
 
 export function CategoryGrid({ hrefFor }: CategoryGridProps) {
   const [items, setItems] = React.useState<CategoryItem[]>(FALLBACK_CATEGORIES);
@@ -85,7 +75,7 @@ export function CategoryGrid({ hrefFor }: CategoryGridProps) {
   return (
     <div className="grid grid-cols-4 gap-3 sm:grid-cols-4 lg:grid-cols-8">
       {items.map((item, i) => {
-        const img = CATEGORY_IMAGES[item.slug];
+        const img = categoryImage(item.slug);
         return (
           <Link
             key={item.slug}

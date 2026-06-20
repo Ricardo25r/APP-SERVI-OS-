@@ -70,3 +70,20 @@ export function categoryVisual(input?: {
   }
   return FALLBACK;
 }
+
+/** Fotos reais por slug de categoria (as demais usam o ícone). */
+const CATEGORY_IMAGES: Record<string, string> = {
+  baba: "/brand/categorias/baba.png",
+  cuidador: "/brand/categorias/cuidador.png",
+  diarista: "/brand/categorias/diarista.png",
+  domestica: "/brand/categorias/domestica.png",
+  eletricista: "/brand/categorias/eletricista.png",
+  encanador: "/brand/categorias/encanador.png",
+  jardinagem: "/brand/categorias/jardinagem.png",
+};
+
+/** Caminho da foto real da categoria (ou null para usar o ícone). */
+export function categoryImage(slug?: string | null): string | null {
+  if (!slug) return null;
+  return CATEGORY_IMAGES[slug] ?? null;
+}
