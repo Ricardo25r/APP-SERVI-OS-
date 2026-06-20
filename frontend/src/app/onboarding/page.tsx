@@ -42,12 +42,12 @@ const PROS = [
 function IllustrationFind() {
   const chips = [
     { src: "/brand/icon-rolo.png", pos: "left-0 top-10" },
-    { src: "/brand/icon-tomada.png", pos: "left-1 top-48" },
+    { src: "/brand/icon-tomada.png", pos: "left-1 top-44" },
     { src: "/brand/icon-torneira.png", pos: "right-0 top-14" },
-    { src: "/brand/icon-tijolo.png", pos: "right-1 top-52" },
+    { src: "/brand/icon-tijolo.png", pos: "right-1 top-48" },
   ];
   return (
-    <div className="relative mx-auto h-[27rem] w-full max-w-xs">
+    <div className="relative mx-auto h-[24rem] w-full max-w-sm">
       {chips.map((c, i) => (
         <Image
           key={i}
@@ -64,41 +64,43 @@ function IllustrationFind() {
       ))}
 
       {/* "Telefone" (mais alto) com a lista de profissionais */}
-      <div className="absolute left-1/2 top-0 h-[26rem] w-48 -translate-x-1/2 rounded-[2.25rem] border-4 border-foreground/10 bg-card p-2.5 shadow-xl">
+      <div className="absolute left-1/2 top-0 h-[22rem] w-56 -translate-x-1/2 overflow-hidden rounded-[2.25rem] border-4 border-foreground/10 bg-card p-2.5 shadow-xl">
         <div className="mx-auto mb-3 mt-1 h-1.5 w-12 rounded-full bg-foreground/10" />
         <div className="space-y-3">
           {PROS.map((p) => (
             <div
               key={p.name}
-              className="flex items-center gap-2.5 rounded-xl border border-border/60 bg-background p-2 text-left"
+              className="flex items-center gap-2.5 rounded-xl border border-border/60 bg-background p-2.5 text-left"
             >
               <Image
                 src={p.img}
-                width={72}
-                height={72}
+                width={88}
+                height={88}
                 alt=""
                 aria-hidden
-                className="h-9 w-9 shrink-0 rounded-full bg-muted object-cover"
+                className="h-11 w-11 shrink-0 rounded-full bg-muted object-cover"
               />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-xs font-semibold text-foreground">
+                <p className="truncate text-sm font-semibold text-foreground">
                   {p.name}
                 </p>
-                <p className="mt-0.5 flex items-center gap-0.5 text-[10px] text-muted-foreground">
+                <p className="mt-0.5 flex items-center gap-0.5 text-[11px] text-muted-foreground">
                   {Array.from({ length: 4 }).map((_, i) => (
                     <Star
                       key={i}
-                      className="h-2.5 w-2.5 fill-brand text-brand"
+                      className="h-3 w-3 fill-brand text-brand"
                       aria-hidden
                     />
                   ))}
                   <span className="ml-0.5">{p.rating}</span>
                 </p>
               </div>
-              <BadgeCheck className="h-4 w-4 shrink-0 text-success" aria-hidden />
+              <BadgeCheck className="h-5 w-5 shrink-0 text-success" aria-hidden />
             </div>
           ))}
         </div>
+        {/* Degradê branco: a lista "some" no rodapé do telefone */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-card via-card/80 to-transparent" />
       </div>
 
       {/* Lupa grande, sobre a direita do telefone (altura do Encanador) */}
