@@ -54,8 +54,15 @@ const NAV_BY_ROLE: Record<UserRole, NavLink[]> = {
   ],
 };
 
-/** Rotas de autenticação têm header próprio (painel azul / AppHeader). */
-const AUTH_ROUTES = ["/login", "/register", "/escolha-perfil", "/recuperar-senha"];
+/** Telas full-screen com header próprio (não mostram a barra de marketing). */
+const AUTH_ROUTES = [
+  "/splash",
+  "/onboarding",
+  "/login",
+  "/register",
+  "/escolha-perfil",
+  "/recuperar-senha",
+];
 
 export function SiteHeader() {
   const router = useRouter();
