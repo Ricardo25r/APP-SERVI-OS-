@@ -9,7 +9,7 @@
  * Acessível: usa `role="radiogroup"` + botões `role="radio"` com `aria-checked`.
  */
 import * as React from "react";
-import { Briefcase, UserRound } from "lucide-react";
+import Image from "next/image";
 
 import { cn } from "@/lib/utils";
 
@@ -19,8 +19,9 @@ interface RoleOption {
   value: AccountRole;
   title: string;
   description: string;
-  icon: React.ComponentType<{ className?: string }>;
-  /** Classe tonal do IconChip. */
+  /** Busto (mascote) exibido no card. */
+  image: string;
+  /** Classe tonal do fundo do avatar. */
   chipClassName: string;
 }
 
@@ -29,15 +30,15 @@ const OPTIONS: RoleOption[] = [
     value: "customer",
     title: "Contratante",
     description: "Quero contratar serviços",
-    icon: UserRound,
-    chipClassName: "bg-primary/10 text-primary",
+    image: "/brand/busto-contratante.png",
+    chipClassName: "bg-primary/10",
   },
   {
     value: "professional",
     title: "Profissional",
     description: "Quero oferecer serviços",
-    icon: Briefcase,
-    chipClassName: "bg-brand/10 text-brand",
+    image: "/brand/busto-profissional.png",
+    chipClassName: "bg-brand/10",
   },
 ];
 
@@ -70,7 +71,6 @@ export function RoleSelector({
     >
       {OPTIONS.map((option) => {
         const selected = value === option.value;
-        const Icon = option.icon;
         return (
           <button
             key={option.value}
@@ -88,11 +88,18 @@ export function RoleSelector({
           >
             <span
               className={cn(
-                "inline-flex h-10 w-10 items-center justify-center rounded-lg",
+                "inline-flex h-16 w-16 items-center justify-center overflow-hidden rounded-full",
                 option.chipClassName
               )}
             >
-              <Icon className="h-5 w-5" aria-hidden />
+              <Image
+                src={option.image}
+                width={120}
+                height={120}
+                alt=""
+                aria-hidden
+                className="h-full w-full object-cover object-top"
+              />
             </span>
             <span className="text-sm font-semibold text-foreground">
               {option.title}
