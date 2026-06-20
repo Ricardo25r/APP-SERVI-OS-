@@ -13,7 +13,7 @@
  * Apenas camada visual + estado local do slide — sem regra de negócio.
  */
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
@@ -85,8 +85,14 @@ function IllustrationFind() {
                   {p.name}
                 </p>
                 <p className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
-                  <Star className="h-3 w-3 fill-brand text-brand" aria-hidden />
-                  {p.rating}
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <Star
+                      key={i}
+                      className="h-2.5 w-2.5 fill-brand text-brand"
+                      aria-hidden
+                    />
+                  ))}
+                  <span className="ml-0.5">{p.rating}</span>
                 </p>
               </div>
               <BadgeCheck className="h-4 w-4 shrink-0 text-success" aria-hidden />
@@ -95,14 +101,14 @@ function IllustrationFind() {
         </div>
       </div>
 
-      {/* Lupa (grande, sobre o telefone) */}
+      {/* Lupa grande, sobre a direita do telefone (altura do Encanador) */}
       <Image
         src="/brand/icon-lupa.png"
-        width={140}
-        height={140}
+        width={180}
+        height={180}
         alt=""
         aria-hidden
-        className="absolute bottom-5 left-1/2 h-20 w-20 translate-x-10 object-contain drop-shadow-lg"
+        className="absolute right-3 top-16 h-24 w-24 object-contain drop-shadow-lg"
       />
     </div>
   );
@@ -216,23 +222,36 @@ export default function OnboardingPage() {
   return (
     <main className="flex min-h-screen flex-col bg-background">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-6 py-6">
-        {/* Topo: progresso + pular */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2" aria-hidden>
+        {/* Topo: progresso (stepper de 3 pontos ligados) + pular */}
+        <div className="flex items-center gap-4">
+          <div className="flex flex-1 items-center" aria-hidden>
             {SLIDES.map((_, i) => (
-              <span
-                key={i}
-                className={cn(
-                  "h-2 rounded-full transition-all",
-                  i === index ? "w-6 bg-primary" : "w-2 bg-muted-foreground/25"
-                )}
-              />
+              <Fragment key={i}>
+                <span
+                  className={cn(
+                    "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
+                    i <= index ? "border-primary" : "border-muted-foreground/30"
+                  )}
+                >
+                  {i <= index ? (
+                    <span className="h-2 w-2 rounded-full bg-primary" />
+                  ) : null}
+                </span>
+                {i < SLIDES.length - 1 ? (
+                  <span
+                    className={cn(
+                      "h-0.5 flex-1 rounded-full transition-colors",
+                      i < index ? "bg-primary" : "bg-muted-foreground/25"
+                    )}
+                  />
+                ) : null}
+              </Fragment>
             ))}
           </div>
           <button
             type="button"
             onClick={() => router.push("/login")}
-            className="text-sm font-semibold text-primary"
+            className="shrink-0 text-sm font-semibold text-primary"
           >
             Pular
           </button>
