@@ -31,6 +31,7 @@ from app.models.enums import (
     UserRole,
     UserStatus,
 )
+from app.models.error_log import ErrorLog
 from app.models.lead import Lead
 from app.models.lead_media import LeadMedia
 from app.models.lead_purchase import LeadPurchase
@@ -63,6 +64,7 @@ __all__ = [
     "ProfessionalProfile",
     "ProfessionalCategory",
     "Category",
+    "ErrorLog",
     "Lead",
     "LeadMedia",
     "CreditWallet",

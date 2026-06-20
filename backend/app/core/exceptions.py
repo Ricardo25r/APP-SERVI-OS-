@@ -17,8 +17,13 @@ JSON padronizadas ``{"detail": "..."}`` com o status HTTP correspondente
 
 from __future__ import annotations
 
+import logging
+import traceback as _tb
+
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
+
+logger = logging.getLogger("faztudo.errors")
 
 
 class DomainError(Exception):
@@ -79,12 +84,57 @@ async def domain_exception_handler(_: Request, exc: DomainError) -> JSONResponse
     return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
 
 
-def register_exception_handlers(app: FastAPI) -> None:
-    """Registra o handler global de :class:`DomainError` no app FastAPI.
+async def unhandled_exception_handler(
+    request: Request, exc: Exception
+) -> JSONResponse:
+    """Captura exceções **não tratadas** (HTTP 500).
 
-    Chamado uma vez no ``main.py``. Subclasses são cobertas pelo mesmo handler.
+    Persiste o erro + ``traceback`` em ``error_logs`` (para o painel admin) e
+    devolve ao cliente uma mensagem **genérica** — nunca o traceback
+    (defesa contra *information disclosure*). A persistência é best-effort: se
+    falhar, ainda assim responde 500 ao cliente.
+    """
+    tb = "".join(_tb.format_exception(type(exc), exc, exc.__traceback__))
+    logger.error(
+        "Unhandled %s on %s %s\n%s",
+        type(exc).__name__,
+        request.method,
+        request.url.path,
+        tb,
+    )
+    try:
+        from app.database.session import async_session_maker
+        from app.models import ErrorLog
+
+        async with async_session_maker() as session:
+            session.add(
+                ErrorLog(
+                    error_type=type(exc).__name__,
+                    message=(str(exc) or type(exc).__name__)[:4000],
+                    traceback=tb[:20000],
+                    path=str(request.url.path)[:512],
+                    method=request.method[:10],
+                    status_code=500,
+                    request_id=getattr(request.state, "request_id", None),
+                )
+            )
+            await session.commit()
+    except Exception:  # noqa: BLE001 - persistência best-effort
+        logger.exception("Falha ao persistir ErrorLog")
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={"detail": "Erro interno. Tente novamente em instantes."},
+    )
+
+
+def register_exception_handlers(app: FastAPI) -> None:
+    """Registra os handlers globais no app FastAPI.
+
+    Chamado uma vez no ``main.py``. Subclasses de ``DomainError`` caem no mesmo
+    handler; ``Exception`` cobre os 500 não tratados (com captura em ``error_logs``).
     """
     app.add_exception_handler(DomainError, domain_exception_handler)
+    app.add_exception_handler(Exception, unhandled_exception_handler)
 
 
 __all__ = [
@@ -96,5 +146,6 @@ __all__ = [
     "ConflictError",
     "DomainValidationError",
     "domain_exception_handler",
+    "unhandled_exception_handler",
     "register_exception_handlers",
 ]

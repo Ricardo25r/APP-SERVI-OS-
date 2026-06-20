@@ -8,12 +8,14 @@ from __future__ import annotations
 
 import logging
 import time
+import uuid
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import Response
 
 from app.api import api_router
+from app.core import metrics
 from app.core.config import settings
 from app.core.exceptions import register_exception_handlers
 from app.core.logging import setup_logging
@@ -49,11 +51,24 @@ app.add_middleware(
 
 
 @app.middleware("http")
-async def log_requests(request: Request, call_next) -> Response:
-    """Middleware simples de logging: método, caminho, status e duração."""
+async def observability_middleware(request: Request, call_next) -> Response:
+    """Logging + coleta de métricas (latência/status) por request.
+
+    Gera um ``request_id`` (correlaciona com ``error_logs``) e registra a amostra
+    no coletor — inclusive quando o handler levanta exceção (conta como 500).
+    """
+    request.state.request_id = uuid.uuid4().hex
     start = time.perf_counter()
-    response = await call_next(request)
+    try:
+        response = await call_next(request)
+    except Exception:
+        elapsed_ms = (time.perf_counter() - start) * 1000
+        metrics.record_request(request.method, request.url.path, 500, elapsed_ms)
+        raise
     elapsed_ms = (time.perf_counter() - start) * 1000
+    metrics.record_request(
+        request.method, request.url.path, response.status_code, elapsed_ms
+    )
     logger.info(
         "%s %s -> %s (%.1f ms)",
         request.method,
