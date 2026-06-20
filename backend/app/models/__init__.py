@@ -32,6 +32,7 @@ from app.models.enums import (
     UserStatus,
 )
 from app.models.lead import Lead
+from app.models.lead_media import LeadMedia
 from app.models.lead_purchase import LeadPurchase
 from app.models.message import Message
 from app.models.mixins import (
@@ -63,6 +64,7 @@ __all__ = [
     "ProfessionalCategory",
     "Category",
     "Lead",
+    "LeadMedia",
     "CreditWallet",
     "CreditTransaction",
     "LeadPurchase",

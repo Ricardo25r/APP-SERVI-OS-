@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime
+from decimal import Decimal
 from typing import TYPE_CHECKING
 
 from sqlalchemy import (
@@ -17,6 +18,7 @@ from sqlalchemy import (
     ForeignKey,
     Index,
     Integer,
+    Numeric,
     String,
     Text,
 )
@@ -29,6 +31,7 @@ from app.models.mixins import SoftDeleteMixin, TimestampMixin, UUIDPKMixin
 
 if TYPE_CHECKING:
     from app.models.category import Category
+    from app.models.lead_media import LeadMedia
     from app.models.lead_purchase import LeadPurchase
     from app.models.user import User
 
@@ -78,6 +81,11 @@ class Lead(UUIDPKMixin, TimestampMixin, SoftDeleteMixin, Base):
     city: Mapped[str] = mapped_column(String(120), nullable=False, index=True)
     state: Mapped[str] = mapped_column(String(2), nullable=False, index=True)
     neighborhood: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    # Faixa de orçamento (valor controlado no schema) + coordenadas do serviço
+    # (preenchidas pela geolocalização do contratante; usadas para mapa/distância).
+    budget_range: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    latitude: Mapped[Decimal | None] = mapped_column(Numeric(9, 6), nullable=True)
+    longitude: Mapped[Decimal | None] = mapped_column(Numeric(9, 6), nullable=True)
     status: Mapped[LeadStatus] = mapped_column(
         Enum(
             LeadStatus,
@@ -105,6 +113,12 @@ class Lead(UUIDPKMixin, TimestampMixin, SoftDeleteMixin, Base):
         "LeadPurchase",
         back_populates="lead",
         uselist=False,
+    )
+    media: Mapped[list[LeadMedia]] = relationship(
+        "LeadMedia",
+        back_populates="lead",
+        cascade="all, delete-orphan",
+        order_by="LeadMedia.position",
     )
 
     __table_args__ = (

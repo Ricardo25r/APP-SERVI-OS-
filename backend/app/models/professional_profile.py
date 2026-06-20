@@ -49,6 +49,10 @@ class ProfessionalProfile(UUIDPKMixin, TimestampMixin, SoftDeleteMixin, Base):
     service_radius_km: Mapped[int] = mapped_column(
         Integer, nullable=False, default=10, server_default=text("10")
     )
+    # Coordenadas do profissional (geolocalização) — usadas para calcular a
+    # distância até o serviço do lead. Opcionais.
+    latitude: Mapped[Decimal | None] = mapped_column(Numeric(9, 6), nullable=True)
+    longitude: Mapped[Decimal | None] = mapped_column(Numeric(9, 6), nullable=True)
 
     # Campos de reputação/gamificação — defaults apenas nestas fases (§2.4).
     verified: Mapped[bool] = mapped_column(
