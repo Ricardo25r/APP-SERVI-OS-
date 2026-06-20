@@ -152,40 +152,46 @@ export function ProfessionalHome({ user }: { user: User }) {
           className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-primary-foreground/10 blur-3xl"
         />
 
-        {/* Mascotes: boneca + boneco (canto direito no desktop) */}
-        <div className="pointer-events-none absolute -bottom-3 right-2 hidden items-end sm:flex lg:right-8">
-          <Image
-            src="/brand/mascote-tudo.png"
-            width={300}
-            height={440}
-            alt=""
-            aria-hidden
-            priority
-            className="h-40 w-auto drop-shadow-xl lg:h-48"
-          />
-          <Image
-            src="/brand/mascote-profissional.webp"
-            width={300}
-            height={440}
-            alt=""
-            aria-hidden
-            priority
-            className="-ml-5 h-44 w-auto drop-shadow-xl lg:h-52"
-          />
-        </div>
+        <div className="relative z-10">
+          {/* Esquerda: saudação + título (2 linhas) + tagline | Direita: mascotes */}
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-primary-foreground/80">
+                Olá{firstName ? `, ${firstName}` : ""}
+              </p>
+              <h1 className="mt-1 text-2xl font-extrabold leading-[1.1] tracking-tight sm:text-4xl">
+                <span className="block text-primary-foreground">Conquiste</span>
+                <span className="block text-brand">novos clientes</span>
+              </h1>
+              <p className="mt-3 max-w-md text-sm text-primary-foreground/80">
+                Veja oportunidades e desbloqueie contatos com seus créditos.
+              </p>
+            </div>
 
-        <div className="relative z-10 max-w-xl">
-          <p className="text-sm font-medium text-primary-foreground/80">
-            Olá{firstName ? `, ${firstName}` : ""}
-          </p>
-          <h1 className="mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl">
-            Pronto para conquistar novos clientes?
-          </h1>
-          <p className="mt-2 max-w-md text-sm text-primary-foreground/80">
-            Explore as oportunidades e use seus créditos para desbloquear
-            contatos. Pague apenas pelos leads que quiser.
-          </p>
+            {/* Mascotes maiores, alinhados ao topo (Olá) */}
+            <div className="flex shrink-0 items-end">
+              <Image
+                src="/brand/mascote-tudo.png"
+                width={300}
+                height={440}
+                alt=""
+                aria-hidden
+                priority
+                className="h-44 w-auto drop-shadow-xl sm:h-52 lg:h-60"
+              />
+              <Image
+                src="/brand/mascote-profissional.webp"
+                width={300}
+                height={440}
+                alt=""
+                aria-hidden
+                priority
+                className="-ml-4 h-48 w-auto drop-shadow-xl sm:h-56 lg:h-64"
+              />
+            </div>
+          </div>
 
+          {/* CTAs (embaixo) */}
           <div className="mt-5 flex flex-wrap items-center gap-3">
             <Link href="/marketplace" className="shrink-0">
               <Button
@@ -218,26 +224,6 @@ export function ProfessionalHome({ user }: { user: User }) {
                   : "--"}
             </span>
           </p>
-
-          {/* Mascotes (mobile, abaixo do conteúdo) */}
-          <div className="mt-6 flex items-end justify-center gap-1 sm:hidden">
-            <Image
-              src="/brand/mascote-tudo.png"
-              width={300}
-              height={440}
-              alt=""
-              aria-hidden
-              className="h-28 w-auto drop-shadow-xl"
-            />
-            <Image
-              src="/brand/mascote-profissional.webp"
-              width={300}
-              height={440}
-              alt=""
-              aria-hidden
-              className="-ml-3 h-32 w-auto drop-shadow-xl"
-            />
-          </div>
         </div>
       </section>
 
