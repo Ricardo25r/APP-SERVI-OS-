@@ -37,7 +37,7 @@ export function toSession(resp: AuthResponse): AuthSession {
 export function homePathForRole(role: UserRole): string {
   switch (role) {
     case "customer":
-      return "/leads";
+      return "/";
     case "professional":
       return "/marketplace";
     case "admin":
