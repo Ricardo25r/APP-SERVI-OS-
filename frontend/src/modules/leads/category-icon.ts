@@ -80,6 +80,10 @@ const CATEGORY_IMAGES: Record<string, string> = {
   eletricista: "/brand/categorias/eletricista.png",
   encanador: "/brand/categorias/encanador.png",
   jardinagem: "/brand/categorias/jardinagem.png",
+  montagem: "/brand/categorias/montagem.png",
+  pintor: "/brand/categorias/pintor.png",
+  reforma: "/brand/categorias/reforma.png",
+  outras: "/brand/categorias/outras.png",
 };
 
 /** Caminho da foto real da categoria (ou null para usar o ícone). */
