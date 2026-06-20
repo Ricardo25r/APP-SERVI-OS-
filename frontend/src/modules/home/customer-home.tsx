@@ -120,26 +120,32 @@ export function CustomerHome({ user }: { user: User }) {
         />
 
         <div className="relative z-10">
-          <p className="text-sm font-medium text-primary-foreground/80">
-            Olá{firstName ? `, ${firstName}` : ""}
-          </p>
-          <h1 className="mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl">
-            O que você precisa hoje?
-          </h1>
+          {/* Esquerda: saudação + título (2 linhas) + selos | Direita: mascotes */}
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-primary-foreground/80">
+                Olá{firstName ? `, ${firstName}` : ""}
+              </p>
+              <h1 className="mt-1 text-xl font-extrabold leading-tight tracking-tight sm:text-3xl">
+                <span className="block text-primary-foreground">O que você</span>
+                <span className="block text-brand">precisa hoje?</span>
+              </h1>
 
-          {/* Selos (3 linhas) à esquerda + mascotes maiores à direita */}
-          <div className="mt-4 flex items-end justify-between gap-3">
-            <ul className="flex flex-col gap-2.5 pb-2">
-              {TRUST.map(({ icon: Icon, label }) => (
-                <li
-                  key={label}
-                  className="flex items-center gap-1.5 text-xs font-medium text-primary-foreground/90 sm:text-sm"
-                >
-                  <Icon className="h-4 w-4 shrink-0 text-brand" aria-hidden />
-                  {label}
-                </li>
-              ))}
-            </ul>
+              {/* Selos (3 linhas) */}
+              <ul className="mt-3 flex flex-col gap-2">
+                {TRUST.map(({ icon: Icon, label }) => (
+                  <li
+                    key={label}
+                    className="flex items-center gap-1.5 text-xs font-medium text-primary-foreground/90 sm:text-sm"
+                  >
+                    <Icon className="h-4 w-4 shrink-0 text-brand" aria-hidden />
+                    {label}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Mascotes maiores, alinhados ao topo (Olá) */}
             <div className="flex shrink-0 items-end">
               <Image
                 src="/brand/mascote-tudo.png"
@@ -148,7 +154,7 @@ export function CustomerHome({ user }: { user: User }) {
                 alt=""
                 aria-hidden
                 priority
-                className="h-36 w-auto drop-shadow-xl sm:h-44 lg:h-52"
+                className="h-44 w-auto drop-shadow-xl sm:h-52 lg:h-60"
               />
               <Image
                 src="/brand/mascote-profissional.webp"
@@ -157,7 +163,7 @@ export function CustomerHome({ user }: { user: User }) {
                 alt=""
                 aria-hidden
                 priority
-                className="-ml-4 h-40 w-auto drop-shadow-xl sm:h-48 lg:h-56"
+                className="-ml-4 h-48 w-auto drop-shadow-xl sm:h-56 lg:h-64"
               />
             </div>
           </div>
