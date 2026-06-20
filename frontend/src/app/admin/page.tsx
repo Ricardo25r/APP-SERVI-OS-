@@ -9,6 +9,7 @@
 
 import Link from "next/link";
 import {
+  Activity,
   ClipboardList,
   CreditCard,
   Gift,
@@ -64,6 +65,12 @@ const SHORTCUTS: Shortcut[] = [
     label: "Auditoria",
     description: "Trilha imutável das ações administrativas.",
     icon: ScrollText,
+  },
+  {
+    href: "/admin/monitoramento",
+    label: "Monitoramento",
+    description: "Métricas, saúde do sistema e erros capturados (com traceback).",
+    icon: Activity,
   },
 ];
 
