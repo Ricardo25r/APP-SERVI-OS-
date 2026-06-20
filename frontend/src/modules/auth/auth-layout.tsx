@@ -56,8 +56,6 @@ export interface AuthLayoutProps {
   mascotHeadlineLead?: string;
   /** Segunda linha do título do painel mobile (laranja, destaque). */
   mascotHeadlineAccent?: string;
-  /** Frase de apoio no centro do painel mobile. */
-  mascotTagline?: string;
 }
 
 export function AuthLayout({
@@ -66,9 +64,8 @@ export function AuthLayout({
   children,
   footer,
   showMascots = false,
-  mascotHeadlineLead = "Encontre os melhores",
-  mascotHeadlineAccent = "profissionais",
-  mascotTagline = "Contrate com segurança, pertinho de você.",
+  mascotHeadlineLead = "Achou difícil achar?",
+  mascotHeadlineAccent = "Aqui você encontra.",
 }: AuthLayoutProps) {
   return (
     <main className="grid min-h-screen w-full lg:grid-cols-2">
@@ -139,7 +136,7 @@ export function AuthLayout({
                 aria-hidden
                 className="pointer-events-none absolute -left-12 bottom-0 h-32 w-32 rounded-full bg-primary-foreground/10 blur-2xl"
               />
-              <h2 className="relative z-10 text-center text-xl font-extrabold leading-tight tracking-tight">
+              <h2 className="relative z-10 text-center text-lg font-extrabold leading-tight tracking-tight">
                 <span className="block">{mascotHeadlineLead}</span>
                 <span className="block text-brand">{mascotHeadlineAccent}</span>
               </h2>
@@ -150,18 +147,27 @@ export function AuthLayout({
                   height={360}
                   alt="Mascote profissional do FazTudo"
                   priority
-                  className="-ml-3 h-44 w-auto drop-shadow-lg"
+                  className="-ml-3 h-40 w-auto drop-shadow-lg"
                 />
-                <p className="pb-10 text-center text-xs font-medium text-primary-foreground/90">
-                  {mascotTagline}
-                </p>
+                <div className="flex flex-col items-center pb-8">
+                  <Image
+                    src="/brand/logo-casa-branca.png"
+                    width={96}
+                    height={96}
+                    alt=""
+                    aria-hidden
+                    priority
+                    className="h-9 w-auto drop-shadow"
+                  />
+                  <Wordmark className="mt-1 text-lg font-extrabold tracking-tight" />
+                </div>
                 <Image
                   src="/brand/mascote-tudo.png"
                   width={240}
                   height={360}
                   alt="Mascote do FazTudo"
                   priority
-                  className="-mr-3 h-44 w-auto drop-shadow-lg"
+                  className="-mr-3 h-40 w-auto drop-shadow-lg"
                 />
               </div>
             </div>
