@@ -3,13 +3,14 @@
 /**
  * Tela 25 — Splash Screen (abertura do app).
  *
- * Painel azul com: wordmark FazTudo + casinha da marca, claim em 2 linhas,
- * cidade ao fundo (com janelas) + arco pontilhado, herói com o TRIO de
- * profissionais ancorado na base, degradê de transição, selos de confiança e
- * indicador de carregamento. Após um instante, avança para o Onboarding
- * (ou home, se já autenticado). `?stay=1` pausa o auto-avanço (QA/preview).
+ * Painel azul com: wordmark FazTudo + casinha real da marca encaixada no "Tudo",
+ * claim em 2 linhas (branca + laranja), cidade ao fundo (com janelas) atrás das
+ * cabeças + arco pontilhado, herói com o TRIO grande ancorado na base, degradê
+ * de transição, selos de confiança e "Carregando...". Após um instante avança
+ * para o Onboarding (ou home, se já autenticado). `?stay=1` pausa (QA/preview).
  *
- * Mobile-first. Apenas camada visual + 1 timer. 100% tokens do design system.
+ * Mobile-first: o conteúdo vive numa coluna largura-de-celular (max-w-sm)
+ * centralizada, então fica idêntico no celular e no desktop. 100% tokens.
  */
 
 import { useEffect } from "react";
@@ -26,73 +27,54 @@ const TRUST = [
   { icon: Headset, label: "Suporte\ndedicado" },
 ];
 
-/** Casinha da marca (telhado + chaminé + janela), em branco sobre o azul. */
-function HouseMark({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 120 92" className={className} aria-hidden>
-      {/* chaminé */}
-      <rect x="84" y="16" width="12" height="28" rx="2" fill="currentColor" />
-      {/* telhado */}
-      <path d="M60 4 6 46h18v2h72v-2h18z" fill="currentColor" />
-      {/* corpo */}
-      <rect x="24" y="46" width="72" height="42" rx="4" fill="currentColor" />
-      {/* janela (4 vidros na cor da marca) */}
-      <g className="fill-primary">
-        <rect x="47" y="56" width="11" height="11" rx="1.5" />
-        <rect x="62" y="56" width="11" height="11" rx="1.5" />
-        <rect x="47" y="70" width="11" height="11" rx="1.5" />
-        <rect x="62" y="70" width="11" height="11" rx="1.5" />
-      </g>
-    </svg>
-  );
-}
-
-/** Skyline da cidade com janelas + arco pontilhado, atrás do trio. */
+/** Skyline da cidade com janelas + arco pontilhado, atrás do trio (na cabeça). */
 function CityBackdrop() {
   const buildings = [
-    { x: 6, w: 34, h: 70 },
-    { x: 44, w: 26, h: 104 },
-    { x: 74, w: 30, h: 86 },
-    { x: 150, w: 28, h: 96 },
-    { x: 182, w: 34, h: 70 },
-    { x: 296, w: 30, h: 92 },
-    { x: 330, w: 26, h: 70 },
-    { x: 360, w: 34, h: 110 },
+    { x: 2, w: 36, h: 120 },
+    { x: 42, w: 28, h: 170 },
+    { x: 74, w: 32, h: 140 },
+    { x: 110, w: 26, h: 96 },
+    { x: 150, w: 30, h: 158 },
+    { x: 184, w: 36, h: 116 },
+    { x: 286, w: 28, h: 104 },
+    { x: 318, w: 32, h: 150 },
+    { x: 354, w: 26, h: 112 },
+    { x: 384, w: 14, h: 150 },
   ];
-  const baseY = 160;
+  const baseY = 220;
   return (
     <svg
       aria-hidden
-      viewBox="0 0 400 160"
-      preserveAspectRatio="xMidYMax meet"
-      className="absolute inset-x-0 bottom-40 h-56 w-full text-blue-900"
+      viewBox="0 0 400 220"
+      preserveAspectRatio="none"
+      className="absolute inset-x-0 bottom-36 h-[42%] w-full text-blue-900"
     >
-      {/* arco pontilhado */}
       <path
-        d="M40 84 Q200 8 360 84"
+        d="M30 70 Q200 0 370 70"
         fill="none"
-        stroke="currentColor"
-        strokeOpacity="0.5"
-        strokeWidth="2"
-        strokeDasharray="2 8"
+        strokeOpacity="0.55"
+        strokeWidth="2.5"
+        strokeDasharray="2 9"
         strokeLinecap="round"
-        className="text-brand"
+        className="stroke-brand"
       />
       {buildings.map((b, i) => {
-        const cols = Math.max(2, Math.floor(b.w / 10));
-        const rows = Math.max(2, Math.floor(b.h / 16));
+        const cols = Math.max(2, Math.floor(b.w / 11));
+        const rows = Math.max(2, Math.floor(b.h / 22));
         const cells = [];
         for (let r = 0; r < rows; r++) {
           for (let c = 0; c < cols; c++) {
             cells.push(
               <rect
                 key={`${r}-${c}`}
-                x={b.x + 5 + c * 9}
-                y={baseY - b.h + 8 + r * 14}
+                x={b.x + 5 + c * 10}
+                y={baseY - b.h + 10 + r * 20}
                 width="4"
-                height="6"
+                height="8"
                 rx="0.5"
-                className={(i + r + c) % 3 === 0 ? "fill-brand/30" : "fill-blue-200/25"}
+                className={
+                  (i + r + c) % 4 === 0 ? "fill-brand/30" : "fill-blue-200/25"
+                }
               />
             );
           }
@@ -106,7 +88,7 @@ function CityBackdrop() {
               height={b.h}
               rx="2"
               fill="currentColor"
-              fillOpacity="0.55"
+              fillOpacity="0.6"
             />
             {cells}
           </g>
@@ -132,65 +114,81 @@ export default function SplashPage() {
   }, [hasHydrated, isAuthenticated, router]);
 
   return (
-    <main className="relative flex min-h-screen flex-col overflow-hidden bg-gradient-to-b from-primary to-blue-900 text-primary-foreground">
-      {/* Brilhos decorativos */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -right-24 top-10 h-72 w-72 rounded-full bg-primary-foreground/10 blur-3xl"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -left-20 top-1/3 h-72 w-72 rounded-full bg-brand/20 blur-3xl"
-      />
-
-      {/* Cidade ao fundo */}
-      <CityBackdrop />
-
-      {/* Marca + claim */}
-      <div className="relative z-10 mt-14 flex flex-col items-center px-6 text-center">
-        <span className="relative text-6xl font-extrabold tracking-tight drop-shadow">
-          <span className="text-primary-foreground">Faz</span>
-          <span className="relative italic text-brand">
-            Tudo
-            <HouseMark className="absolute -top-8 left-1/2 h-9 w-11 -translate-x-1/2 text-primary-foreground drop-shadow" />
-          </span>
-        </span>
-        <p className="mt-5 text-lg font-medium leading-snug">
-          <span className="block text-primary-foreground">Conectando você aos</span>
-          <span className="block font-bold text-brand">melhores profissionais.</span>
-        </p>
-      </div>
-
-      {/* Herói: trio de profissionais, grande e ancorado na base */}
-      <div className="relative z-10 mt-2 flex min-h-0 flex-1 items-end justify-center px-2">
-        <Image
-          src="/brand/mascote-trio.png"
-          width={1493}
-          height={882}
-          alt="Profissionais FazTudo: eletricista, pintora e pedreiro"
-          priority
-          className="h-auto max-h-full w-full max-w-md object-contain object-bottom drop-shadow-2xl"
+    <main className="relative flex min-h-screen justify-center overflow-hidden bg-gradient-to-b from-primary to-blue-900 text-primary-foreground">
+      {/* Coluna largura-de-celular (mesma cara no mobile e desktop) */}
+      <div className="relative flex min-h-screen w-full max-w-sm flex-col overflow-hidden">
+        {/* Brilhos decorativos */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-16 top-10 h-60 w-60 rounded-full bg-primary-foreground/10 blur-3xl"
         />
-      </div>
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -left-16 top-1/3 h-60 w-60 rounded-full bg-brand/20 blur-3xl"
+        />
 
-      {/* Rodapé: degradê de transição + selos + carregando */}
-      <div className="relative z-20 -mt-16 bg-gradient-to-t from-blue-900 via-blue-900/95 to-transparent px-6 pb-7 pt-16">
-        <div className="mx-auto grid w-full max-w-sm grid-cols-4 gap-2">
-          {TRUST.map(({ icon: Icon, label }) => (
-            <div key={label} className="flex flex-col items-center gap-1.5 text-center">
-              <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary-foreground/10">
-                <Icon className="h-5 w-5 text-primary-foreground" aria-hidden />
-              </span>
-              <span className="whitespace-pre-line text-[11px] leading-tight text-primary-foreground/80">
-                {label}
-              </span>
-            </div>
-          ))}
+        {/* Cidade ao fundo (atrás das cabeças) */}
+        <CityBackdrop />
+
+        {/* Marca + claim */}
+        <div className="relative z-20 mt-12 flex flex-col items-center px-6 text-center">
+          <span className="relative inline-block text-6xl font-extrabold tracking-tight drop-shadow">
+            <Image
+              src="/brand/logo-casa-branca.png"
+              width={1330}
+              height={798}
+              alt=""
+              aria-hidden
+              priority
+              className="absolute -top-6 right-0 h-auto w-16 drop-shadow"
+            />
+            <span className="text-primary-foreground">Faz</span>
+            <span className="italic text-brand">Tudo</span>
+          </span>
+          <p className="mt-5 text-lg font-medium leading-snug">
+            <span className="block text-primary-foreground">
+              Conectando você aos
+            </span>
+            <span className="block font-bold text-brand">
+              melhores profissionais.
+            </span>
+          </p>
         </div>
 
-        <div className="mt-5 flex items-center justify-center gap-2 text-sm text-primary-foreground/80">
-          <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-          Carregando...
+        {/* Herói: trio grande, ancorado na base */}
+        <div className="relative z-10 flex min-h-0 flex-1 items-end justify-center">
+          <Image
+            src="/brand/mascote-trio.webp"
+            width={1100}
+            height={650}
+            alt="Profissionais FazTudo: eletricista, pintora e pedreiro"
+            priority
+            className="h-auto max-h-full w-[112%] max-w-none object-contain object-bottom drop-shadow-2xl"
+          />
+        </div>
+
+        {/* Rodapé: degradê de transição (cobre o corte) + selos + carregando */}
+        <div className="relative z-20 -mt-20 bg-gradient-to-t from-blue-900 from-30% via-blue-900/80 to-transparent px-6 pb-7 pt-20">
+          <div className="mx-auto grid w-full max-w-sm grid-cols-4 gap-2">
+            {TRUST.map(({ icon: Icon, label }) => (
+              <div
+                key={label}
+                className="flex flex-col items-center gap-1.5 text-center"
+              >
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary-foreground/10">
+                  <Icon className="h-5 w-5 text-primary-foreground" aria-hidden />
+                </span>
+                <span className="whitespace-pre-line text-[11px] leading-tight text-primary-foreground/80">
+                  {label}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-5 flex items-center justify-center gap-2 text-sm text-primary-foreground/80">
+            <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+            Carregando...
+          </div>
         </div>
       </div>
     </main>
