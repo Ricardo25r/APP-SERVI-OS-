@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Check, Loader2, MapPin } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -77,6 +77,8 @@ export function LeadForm({
   const [cities, setCities] = useState<string[]>([]);
   const [geoLoading, setGeoLoading] = useState(false);
   const [geoMsg, setGeoMsg] = useState<string | null>(null);
+  const [cityOpen, setCityOpen] = useState(false);
+  const cityBoxRef = useRef<HTMLDivElement>(null);
 
   const isEdit = mode === "edit";
 
@@ -162,6 +164,24 @@ export function LeadForm({
     detectLocation();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Fecha a lista de cidades ao clicar fora.
+  useEffect(() => {
+    function onDocClick(e: MouseEvent) {
+      if (cityBoxRef.current && !cityBoxRef.current.contains(e.target as Node)) {
+        setCityOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, []);
+
+  const cityQuery = values.city.trim().toLowerCase();
+  const cityExact = cities.some((c) => c.toLowerCase() === cityQuery);
+  const cityOptions =
+    !cityQuery || cityExact
+      ? cities
+      : cities.filter((c) => c.toLowerCase().includes(cityQuery));
 
   /** Validação client-side mínima dos obrigatórios. */
   function validate(): boolean {
@@ -357,24 +377,49 @@ export function LeadForm({
 
             <div className="space-y-1.5 sm:col-span-2">
               <Label htmlFor="city">Cidade</Label>
-              <Input
-                id="city"
-                list="cidades-list"
-                value={values.city}
-                onChange={(e) => setField("city", e.target.value)}
-                placeholder={
-                  values.state
-                    ? "Selecione ou digite a cidade"
-                    : "Escolha o estado primeiro"
-                }
-                autoComplete="off"
-                aria-invalid={Boolean(fieldErrors.city)}
-              />
-              <datalist id="cidades-list">
-                {cities.map((c) => (
-                  <option key={c} value={c} />
-                ))}
-              </datalist>
+              <div ref={cityBoxRef} className="relative">
+                <Input
+                  id="city"
+                  value={values.city}
+                  onChange={(e) => {
+                    setField("city", e.target.value);
+                    setCityOpen(true);
+                  }}
+                  onFocus={() => setCityOpen(true)}
+                  onClick={() => setCityOpen(true)}
+                  placeholder={
+                    values.state
+                      ? "Selecione ou digite a cidade"
+                      : "Escolha o estado primeiro"
+                  }
+                  autoComplete="off"
+                  role="combobox"
+                  aria-expanded={cityOpen}
+                  aria-invalid={Boolean(fieldErrors.city)}
+                />
+                {cityOpen && cityOptions.length > 0 ? (
+                  <ul
+                    role="listbox"
+                    className="absolute inset-x-0 top-full z-20 mt-1 max-h-60 overflow-auto rounded-xl border border-border bg-card py-1 shadow-lg"
+                  >
+                    {cityOptions.map((c) => (
+                      <li key={c}>
+                        <button
+                          type="button"
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            setField("city", c);
+                            setCityOpen(false);
+                          }}
+                          className="flex w-full px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-primary/5"
+                        >
+                          {c}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
               {fieldErrors.city ? (
                 <p className="text-xs text-destructive">{fieldErrors.city}</p>
               ) : null}
