@@ -64,7 +64,7 @@ export function AuthLayout({
   children,
   footer,
   showMascots = false,
-  mascotHeadlineLead = "Achou difícil achar?",
+  mascotHeadlineLead = "Precisa de um serviço?",
   mascotHeadlineAccent = "Aqui você encontra.",
 }: AuthLayoutProps) {
   return (
@@ -140,14 +140,14 @@ export function AuthLayout({
                 <span className="block">{mascotHeadlineLead}</span>
                 <span className="block text-brand">{mascotHeadlineAccent}</span>
               </h2>
-              <div className="relative z-10 mt-1 flex items-end justify-between gap-1">
+              <div className="relative z-10 mt-1 flex items-end justify-center gap-1">
                 <Image
                   src="/brand/mascote-profissional.webp"
                   width={240}
                   height={360}
                   alt="Mascote profissional do FazTudo"
                   priority
-                  className="-ml-3 h-40 w-auto drop-shadow-lg"
+                  className="h-40 w-auto drop-shadow-lg"
                 />
                 <div className="flex flex-col items-center pb-8">
                   <Image
@@ -157,9 +157,9 @@ export function AuthLayout({
                     alt=""
                     aria-hidden
                     priority
-                    className="h-9 w-auto drop-shadow"
+                    className="h-7 w-auto drop-shadow"
                   />
-                  <Wordmark className="mt-1 text-lg font-extrabold tracking-tight" />
+                  <Wordmark className="mt-1 text-2xl font-extrabold tracking-tight" />
                 </div>
                 <Image
                   src="/brand/mascote-tudo.png"
@@ -167,7 +167,7 @@ export function AuthLayout({
                   height={360}
                   alt="Mascote do FazTudo"
                   priority
-                  className="-mr-3 h-40 w-auto drop-shadow-lg"
+                  className="h-40 w-auto drop-shadow-lg"
                 />
               </div>
             </div>

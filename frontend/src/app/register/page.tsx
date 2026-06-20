@@ -151,8 +151,8 @@ function RegisterForm() {
       showMascots
       mascotHeadlineLead={
         selectedRole === "professional"
-          ? "Sem clientes na mão?"
-          : "Achou difícil achar?"
+          ? "Procurando trabalho?"
+          : "Precisa de um serviço?"
       }
       mascotHeadlineAccent="Aqui você encontra."
       footer={
