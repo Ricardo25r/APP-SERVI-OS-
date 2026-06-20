@@ -10,6 +10,7 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import Link from "next/link";
 
 import { IconChip } from "@/components/ui/icon-chip";
@@ -25,6 +26,17 @@ export interface CategoryGridProps {
   /** Monta o href de cada categoria a partir do slug. */
   hrefFor: (slug: string) => string;
 }
+
+/** Categorias com foto real (as demais caem no ícone lucide). */
+const CATEGORY_IMAGES: Record<string, string> = {
+  baba: "/brand/categorias/baba.png",
+  cuidador: "/brand/categorias/cuidador.png",
+  diarista: "/brand/categorias/diarista.png",
+  domestica: "/brand/categorias/domestica.png",
+  eletricista: "/brand/categorias/eletricista.png",
+  encanador: "/brand/categorias/encanador.png",
+  jardinagem: "/brand/categorias/jardinagem.png",
+};
 
 export function CategoryGrid({ hrefFor }: CategoryGridProps) {
   const [items, setItems] = React.useState<CategoryItem[]>(FALLBACK_CATEGORIES);
@@ -72,18 +84,32 @@ export function CategoryGrid({ hrefFor }: CategoryGridProps) {
 
   return (
     <div className="grid grid-cols-4 gap-3 sm:grid-cols-4 lg:grid-cols-8">
-      {items.map((item, i) => (
-        <Link
-          key={item.slug}
-          href={hrefFor(item.slug)}
-          className="flex flex-col items-center gap-2 rounded-xl border bg-card p-3 text-center transition-colors hover:border-primary/40 hover:bg-secondary"
-        >
-          <IconChip icon={item.icon} color={chipColorForIndex(i)} />
-          <span className="text-xs font-semibold leading-tight text-foreground">
-            {item.name}
-          </span>
-        </Link>
-      ))}
+      {items.map((item, i) => {
+        const img = CATEGORY_IMAGES[item.slug];
+        return (
+          <Link
+            key={item.slug}
+            href={hrefFor(item.slug)}
+            className="flex flex-col items-center gap-2 rounded-xl border bg-card p-3 text-center transition-colors hover:border-primary/40 hover:bg-secondary"
+          >
+            {img ? (
+              <Image
+                src={img}
+                width={88}
+                height={88}
+                alt=""
+                aria-hidden
+                className="h-11 w-11 rounded-xl object-cover"
+              />
+            ) : (
+              <IconChip icon={item.icon} color={chipColorForIndex(i)} />
+            )}
+            <span className="text-xs font-semibold leading-tight text-foreground">
+              {item.name}
+            </span>
+          </Link>
+        );
+      })}
     </div>
   );
 }
