@@ -140,7 +140,7 @@ export function AuthLayout({
                 <span className="block">{mascotHeadlineLead}</span>
                 <span className="block text-brand">{mascotHeadlineAccent}</span>
               </h2>
-              <div className="relative z-10 mt-1 flex items-end justify-center gap-1">
+              <div className="relative z-10 mt-1 flex items-end justify-center gap-5">
                 <Image
                   src="/brand/mascote-profissional.webp"
                   width={240}
