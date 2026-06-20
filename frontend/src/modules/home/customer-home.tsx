@@ -112,37 +112,14 @@ export function CustomerHome({ user }: { user: User }) {
 
   return (
     <main className="mx-auto max-w-5xl px-4 pb-16 pt-6 sm:px-6">
-      {/* Hero: saudação + busca + CTA + selos + mascote */}
+      {/* Hero: saudação + selos (3 linhas) + mascotes (lado, maiores) + busca/CTA */}
       <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-blue-700 px-5 py-6 text-primary-foreground sm:px-8 sm:py-8">
-        {/* Brilho decorativo */}
         <div
           aria-hidden
           className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-primary-foreground/10 blur-3xl"
         />
 
-        {/* Mascotes: boneca + boneco (decorativo, desktop) */}
-        <div className="pointer-events-none absolute -bottom-3 right-2 hidden items-end sm:flex lg:right-8">
-          <Image
-            src="/brand/mascote-tudo.png"
-            width={300}
-            height={440}
-            alt=""
-            aria-hidden
-            priority
-            className="h-40 w-auto drop-shadow-xl lg:h-48"
-          />
-          <Image
-            src="/brand/mascote-profissional.webp"
-            width={300}
-            height={440}
-            alt=""
-            aria-hidden
-            priority
-            className="-ml-5 h-44 w-auto drop-shadow-xl lg:h-52"
-          />
-        </div>
-
-        <div className="relative z-10 max-w-xl">
+        <div className="relative z-10">
           <p className="text-sm font-medium text-primary-foreground/80">
             Olá{firstName ? `, ${firstName}` : ""}
           </p>
@@ -150,7 +127,43 @@ export function CustomerHome({ user }: { user: User }) {
             O que você precisa hoje?
           </h1>
 
-          <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+          {/* Selos (3 linhas) à esquerda + mascotes maiores à direita */}
+          <div className="mt-4 flex items-end justify-between gap-3">
+            <ul className="flex flex-col gap-2.5 pb-2">
+              {TRUST.map(({ icon: Icon, label }) => (
+                <li
+                  key={label}
+                  className="flex items-center gap-1.5 text-xs font-medium text-primary-foreground/90 sm:text-sm"
+                >
+                  <Icon className="h-4 w-4 shrink-0 text-brand" aria-hidden />
+                  {label}
+                </li>
+              ))}
+            </ul>
+            <div className="flex shrink-0 items-end">
+              <Image
+                src="/brand/mascote-tudo.png"
+                width={300}
+                height={440}
+                alt=""
+                aria-hidden
+                priority
+                className="h-36 w-auto drop-shadow-xl sm:h-44 lg:h-52"
+              />
+              <Image
+                src="/brand/mascote-profissional.webp"
+                width={300}
+                height={440}
+                alt=""
+                aria-hidden
+                priority
+                className="-ml-4 h-40 w-auto drop-shadow-xl sm:h-48 lg:h-56"
+              />
+            </div>
+          </div>
+
+          {/* Busca + CTA (embaixo) */}
+          <div className="mt-4 flex flex-col gap-3 sm:flex-row">
             <form onSubmit={handleSearch} className="flex-1">
               <SearchInput
                 value={query}
@@ -169,39 +182,6 @@ export function CustomerHome({ user }: { user: User }) {
                 Nova solicitação
               </Button>
             </Link>
-          </div>
-
-          {/* Selos de confiança */}
-          <ul className="mt-5 flex flex-wrap gap-x-5 gap-y-2">
-            {TRUST.map(({ icon: Icon, label }) => (
-              <li
-                key={label}
-                className="flex items-center gap-1.5 text-xs font-medium text-primary-foreground/90"
-              >
-                <Icon className="h-4 w-4 text-brand" aria-hidden />
-                {label}
-              </li>
-            ))}
-          </ul>
-
-          {/* Mascotes (mobile, abaixo do conteúdo) */}
-          <div className="mt-6 flex items-end justify-center gap-1 sm:hidden">
-            <Image
-              src="/brand/mascote-tudo.png"
-              width={300}
-              height={440}
-              alt=""
-              aria-hidden
-              className="h-28 w-auto drop-shadow-xl"
-            />
-            <Image
-              src="/brand/mascote-profissional.webp"
-              width={300}
-              height={440}
-              alt=""
-              aria-hidden
-              className="-ml-3 h-32 w-auto drop-shadow-xl"
-            />
           </div>
         </div>
       </section>

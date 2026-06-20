@@ -13,6 +13,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 
 import { useAuth } from "@/hooks/use-auth";
 import { CustomerHome } from "@/modules/home/customer-home";
@@ -30,12 +31,15 @@ export default function HomePage() {
     }
   }, [hasHydrated, isAuthenticated, router]);
 
-  // Antes da hidratação — ou enquanto redireciona p/ splash — placeholder neutro.
+  // Antes da hidratação — ou enquanto redireciona p/ splash — loader centralizado
+  // (evita a sensação de "tela branca" no refresh).
   if (!hasHydrated || !isAuthenticated || !user) {
     return (
-      <main className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-        <div className="h-8 w-48 animate-pulse rounded bg-muted" />
-        <div className="mt-4 h-4 w-72 animate-pulse rounded bg-muted" />
+      <main className="flex min-h-[70vh] items-center justify-center bg-background px-4">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-7 w-7 animate-spin text-primary" aria-hidden />
+          <span className="text-sm text-muted-foreground">Carregando...</span>
+        </div>
       </main>
     );
   }
