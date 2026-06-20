@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Check } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Check, Loader2, MapPin } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { IconChip } from "@/components/ui/icon-chip";
@@ -41,6 +41,13 @@ export interface LeadFormProps {
   onCancel?: () => void;
 }
 
+/** Unidades federativas (siglas) para o seletor de estado. */
+const BR_UFS = [
+  "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS",
+  "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC",
+  "SP", "SE", "TO",
+];
+
 const EMPTY: LeadFormValues = {
   category_id: "",
   title: "",
@@ -67,6 +74,9 @@ export function LeadForm({
     ...initialValues,
   });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [cities, setCities] = useState<string[]>([]);
+  const [geoLoading, setGeoLoading] = useState(false);
+  const [geoMsg, setGeoMsg] = useState<string | null>(null);
 
   const isEdit = mode === "edit";
 
@@ -75,7 +85,83 @@ export function LeadForm({
     value: LeadFormValues[K]
   ) {
     setValues((prev) => ({ ...prev, [key]: value }));
+    setFieldErrors((prev) => (prev[key] ? { ...prev, [key]: "" } : prev));
   }
+
+  // Municípios do estado selecionado (lista suspensa de cidade — API do IBGE).
+  useEffect(() => {
+    const uf = values.state;
+    if (!uf || uf.length !== 2) {
+      setCities([]);
+      return;
+    }
+    let active = true;
+    fetch(
+      `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios?orderBy=nome`
+    )
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data: { nome: string }[]) => {
+        if (active) setCities(data.map((m) => m.nome));
+      })
+      .catch(() => {
+        if (active) setCities([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, [values.state]);
+
+  // Detecta a localização do usuário e pré-preenche cidade/UF.
+  function detectLocation() {
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      setGeoMsg("Geolocalização não suportada neste dispositivo.");
+      return;
+    }
+    setGeoLoading(true);
+    setGeoMsg(null);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const { latitude, longitude } = pos.coords;
+          const res = await fetch(
+            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=pt`
+          );
+          const d = await res.json();
+          const uf =
+            String(d.principalSubdivisionCode || "").split("-")[1] || "";
+          const city = d.city || d.locality || "";
+          setValues((prev) => ({
+            ...prev,
+            state: uf || prev.state,
+            city: city || prev.city,
+          }));
+          setFieldErrors((prev) => ({ ...prev, city: "", state: "" }));
+          setGeoMsg(
+            uf || city
+              ? `Local detectado: ${city}${uf ? `/${uf}` : ""}`
+              : "Não foi possível detectar sua cidade."
+          );
+        } catch {
+          setGeoMsg("Não foi possível detectar a localização.");
+        } finally {
+          setGeoLoading(false);
+        }
+      },
+      () => {
+        setGeoLoading(false);
+        setGeoMsg("Não foi possível obter sua localização (permissão negada).");
+      },
+      { timeout: 10000, enableHighAccuracy: false }
+    );
+  }
+
+  // Pré-preenche pela localização ao abrir (criação, com campos vazios).
+  useEffect(() => {
+    if (isEdit) return;
+    if (initialValues?.city || initialValues?.state) return;
+    detectLocation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /** Validação client-side mínima dos obrigatórios. */
   function validate(): boolean {
@@ -227,34 +313,77 @@ export function LeadForm({
       </div>
 
       {!isEdit ? (
-        <div className="grid gap-5 sm:grid-cols-3">
-          <div className="space-y-1.5 sm:col-span-2">
-            <Label htmlFor="city">Cidade</Label>
-            <Input
-              id="city"
-              value={values.city}
-              onChange={(e) => setField("city", e.target.value)}
-              placeholder="Ex.: Ariquemes"
-              aria-invalid={Boolean(fieldErrors.city)}
-            />
-            {fieldErrors.city ? (
-              <p className="text-xs text-destructive">{fieldErrors.city}</p>
-            ) : null}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-sm font-medium leading-none">Localização</span>
+            <button
+              type="button"
+              onClick={detectLocation}
+              disabled={geoLoading}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary disabled:opacity-60"
+            >
+              {geoLoading ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
+              ) : (
+                <MapPin className="h-3.5 w-3.5" aria-hidden />
+              )}
+              {geoLoading ? "Detectando..." : "Usar minha localização"}
+            </button>
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="state">Estado (UF)</Label>
-            <Input
-              id="state"
-              value={values.state}
-              onChange={(e) => setField("state", e.target.value)}
-              placeholder="RO"
-              maxLength={2}
-              aria-invalid={Boolean(fieldErrors.state)}
-            />
-            {fieldErrors.state ? (
-              <p className="text-xs text-destructive">{fieldErrors.state}</p>
-            ) : null}
+
+          <div className="grid gap-5 sm:grid-cols-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="state">Estado (UF)</Label>
+              <Select
+                id="state"
+                value={values.state}
+                onChange={(e) => {
+                  setField("state", e.target.value);
+                  setField("city", "");
+                }}
+                aria-invalid={Boolean(fieldErrors.state)}
+              >
+                <SelectOption value="">UF</SelectOption>
+                {BR_UFS.map((uf) => (
+                  <SelectOption key={uf} value={uf}>
+                    {uf}
+                  </SelectOption>
+                ))}
+              </Select>
+              {fieldErrors.state ? (
+                <p className="text-xs text-destructive">{fieldErrors.state}</p>
+              ) : null}
+            </div>
+
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label htmlFor="city">Cidade</Label>
+              <Input
+                id="city"
+                list="cidades-list"
+                value={values.city}
+                onChange={(e) => setField("city", e.target.value)}
+                placeholder={
+                  values.state
+                    ? "Selecione ou digite a cidade"
+                    : "Escolha o estado primeiro"
+                }
+                autoComplete="off"
+                aria-invalid={Boolean(fieldErrors.city)}
+              />
+              <datalist id="cidades-list">
+                {cities.map((c) => (
+                  <option key={c} value={c} />
+                ))}
+              </datalist>
+              {fieldErrors.city ? (
+                <p className="text-xs text-destructive">{fieldErrors.city}</p>
+              ) : null}
+            </div>
           </div>
+
+          {geoMsg ? (
+            <p className="text-xs text-muted-foreground">{geoMsg}</p>
+          ) : null}
         </div>
       ) : null}
 
