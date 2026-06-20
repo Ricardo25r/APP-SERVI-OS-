@@ -52,6 +52,12 @@ export interface AuthLayoutProps {
    * mascotes (usado no Cadastro). No desktop o painel lateral já os exibe.
    */
   showMascots?: boolean;
+  /** Primeira linha do título do painel mobile (branca). */
+  mascotHeadlineLead?: string;
+  /** Segunda linha do título do painel mobile (laranja, destaque). */
+  mascotHeadlineAccent?: string;
+  /** Frase de apoio no centro do painel mobile. */
+  mascotTagline?: string;
 }
 
 export function AuthLayout({
@@ -60,6 +66,9 @@ export function AuthLayout({
   children,
   footer,
   showMascots = false,
+  mascotHeadlineLead = "Encontre os melhores",
+  mascotHeadlineAccent = "profissionais",
+  mascotTagline = "Contrate com segurança, pertinho de você.",
 }: AuthLayoutProps) {
   return (
     <main className="grid min-h-screen w-full lg:grid-cols-2">
@@ -131,8 +140,8 @@ export function AuthLayout({
                 className="pointer-events-none absolute -left-12 bottom-0 h-32 w-32 rounded-full bg-primary-foreground/10 blur-2xl"
               />
               <h2 className="relative z-10 text-center text-xl font-extrabold leading-tight tracking-tight">
-                <span className="block">Faça parte do</span>
-                <Wordmark className="block text-3xl" />
+                <span className="block">{mascotHeadlineLead}</span>
+                <span className="block text-brand">{mascotHeadlineAccent}</span>
               </h2>
               <div className="relative z-10 mt-1 flex items-end justify-between gap-1">
                 <Image
@@ -144,7 +153,7 @@ export function AuthLayout({
                   className="-ml-3 h-44 w-auto drop-shadow-lg"
                 />
                 <p className="pb-10 text-center text-xs font-medium text-primary-foreground/90">
-                  Profissionais de confiança, pertinho de você
+                  {mascotTagline}
                 </p>
                 <Image
                   src="/brand/mascote-tudo.png"

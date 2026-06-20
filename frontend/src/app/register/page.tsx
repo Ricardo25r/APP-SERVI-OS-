@@ -149,6 +149,15 @@ function RegisterForm() {
       title="Criar conta"
       description="Cadastre-se no FazTudo"
       showMascots
+      mascotHeadlineLead="Encontre os melhores"
+      mascotHeadlineAccent={
+        selectedRole === "professional" ? "serviços" : "profissionais"
+      }
+      mascotTagline={
+        selectedRole === "professional"
+          ? "O FazTudo é seu parceiro para crescer."
+          : "Contrate com segurança, pertinho de você."
+      }
       footer={
         <p className="text-sm text-muted-foreground">
           Já tem conta?{" "}
