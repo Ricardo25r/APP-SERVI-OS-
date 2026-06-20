@@ -121,18 +121,18 @@ export function CustomerHome({ user }: { user: User }) {
 
         <div className="relative z-10">
           {/* Esquerda: saudação + título (2 linhas) + selos | Direita: mascotes */}
-          <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start justify-between gap-2">
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-primary-foreground/80">
                 Olá{firstName ? `, ${firstName}` : ""}
               </p>
-              <h1 className="mt-1 text-xl font-extrabold leading-tight tracking-tight sm:text-3xl">
+              <h1 className="mt-1 text-2xl font-extrabold leading-[1.1] tracking-tight sm:text-4xl">
                 <span className="block text-primary-foreground">O que você</span>
                 <span className="block text-brand">precisa hoje?</span>
               </h1>
 
               {/* Selos (3 linhas) */}
-              <ul className="mt-3 flex flex-col gap-2">
+              <ul className="mt-6 flex flex-col gap-2">
                 {TRUST.map(({ icon: Icon, label }) => (
                   <li
                     key={label}
