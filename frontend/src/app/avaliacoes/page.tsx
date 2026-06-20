@@ -59,6 +59,7 @@ export default function AvaliacoesPage() {
           <CardContent className="pt-0">
             <ReviewList
               userId={user.id}
+              showSummary
               emptyLabel="Você ainda não recebeu avaliações."
             />
           </CardContent>

@@ -12,7 +12,6 @@ import { Loader2, MessageSquare } from "lucide-react";
 
 import { Avatar } from "@/components/ui/avatar";
 import { EmptyState } from "@/components/ui/empty-state";
-import { cn } from "@/lib/utils";
 
 import { fetchUserReviews } from "./api";
 import { StarRating } from "./star-rating";
@@ -31,12 +30,15 @@ interface ReviewListProps {
   className?: string;
   /** Mensagem quando não há avaliações. */
   emptyLabel?: string;
+  /** Exibe um resumo (média + total) acima da lista. */
+  showSummary?: boolean;
 }
 
 export function ReviewList({
   userId,
   className,
   emptyLabel = "Ainda não há avaliações.",
+  showSummary = false,
 }: ReviewListProps) {
   const { data, isLoading, isError, error } = useQuery<ReceivedReview[]>({
     queryKey: userReviewsKey(userId),
@@ -77,15 +79,35 @@ export function ReviewList({
     );
   }
 
+  const total = reviews.length;
+  const average =
+    reviews.reduce((sum, r) => sum + (r.score || 0), 0) / total;
+
   return (
-    <ul className={cn("space-y-3", className)}>
-      {reviews.map((review, idx) => {
-        const author = reviewAuthorName(review);
-        return (
-          <li
-            key={review.id ?? idx}
-            className="rounded-xl border bg-card p-4 shadow-sm"
-          >
+    <div className={className}>
+      {showSummary && (
+        <div className="mb-4 flex items-center gap-4 rounded-xl border bg-muted/30 px-4 py-3">
+          <div className="flex flex-col items-center">
+            <span className="text-3xl font-extrabold leading-none tabular-nums text-foreground">
+              {average.toFixed(1)}
+            </span>
+            <StarRating value={average} size="sm" className="mt-1.5" />
+          </div>
+          <span className="h-10 w-px bg-border" aria-hidden />
+          <p className="text-sm text-muted-foreground">
+            {total}{" "}
+            {total === 1 ? "avaliação recebida" : "avaliações recebidas"}
+          </p>
+        </div>
+      )}
+      <ul className="space-y-3">
+        {reviews.map((review, idx) => {
+          const author = reviewAuthorName(review);
+          return (
+            <li
+              key={review.id ?? idx}
+              className="rounded-xl border bg-card p-4 shadow-sm"
+            >
             <div className="flex items-start gap-3">
               <Avatar name={author} size="md" className="shrink-0" />
               <div className="min-w-0 flex-1 space-y-1.5">
@@ -107,7 +129,8 @@ export function ReviewList({
             </div>
           </li>
         );
-      })}
-    </ul>
+        })}
+      </ul>
+    </div>
   );
 }
