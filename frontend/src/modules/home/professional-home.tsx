@@ -152,7 +152,7 @@ export function ProfessionalHome({ user }: { user: User }) {
           className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-primary-foreground/10 blur-3xl"
         />
 
-        {/* Mascotes: boneca + boneco (decorativo, desktop) */}
+        {/* Mascotes: boneca + boneco (canto direito no desktop) */}
         <div className="pointer-events-none absolute -bottom-3 right-2 hidden items-end sm:flex lg:right-8">
           <Image
             src="/brand/mascote-tudo.png"
@@ -218,6 +218,26 @@ export function ProfessionalHome({ user }: { user: User }) {
                   : "--"}
             </span>
           </p>
+
+          {/* Mascotes (mobile, abaixo do conteúdo) */}
+          <div className="mt-6 flex items-end justify-center gap-1 sm:hidden">
+            <Image
+              src="/brand/mascote-tudo.png"
+              width={300}
+              height={440}
+              alt=""
+              aria-hidden
+              className="h-28 w-auto drop-shadow-xl"
+            />
+            <Image
+              src="/brand/mascote-profissional.webp"
+              width={300}
+              height={440}
+              alt=""
+              aria-hidden
+              className="-ml-3 h-32 w-auto drop-shadow-xl"
+            />
+          </div>
         </div>
       </section>
 

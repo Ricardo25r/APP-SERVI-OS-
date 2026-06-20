@@ -183,6 +183,26 @@ export function CustomerHome({ user }: { user: User }) {
               </li>
             ))}
           </ul>
+
+          {/* Mascotes (mobile, abaixo do conteúdo) */}
+          <div className="mt-6 flex items-end justify-center gap-1 sm:hidden">
+            <Image
+              src="/brand/mascote-tudo.png"
+              width={300}
+              height={440}
+              alt=""
+              aria-hidden
+              className="h-28 w-auto drop-shadow-xl"
+            />
+            <Image
+              src="/brand/mascote-profissional.webp"
+              width={300}
+              height={440}
+              alt=""
+              aria-hidden
+              className="-ml-3 h-32 w-auto drop-shadow-xl"
+            />
+          </div>
         </div>
       </section>
 
