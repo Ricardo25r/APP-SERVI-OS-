@@ -21,6 +21,7 @@ from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core import metrics
+from app.core.alerts import alerts_status, send_test_alert
 from app.core.config import settings
 from app.core.deps import require_roles
 from app.core.exceptions import NotFoundError
@@ -68,6 +69,7 @@ async def overview(
         "db_latency_ms": db_latency_ms,
         "errors_24h": int(errors_24h),
         "status": status_label,
+        "alerts": alerts_status(),
     }
 
 
@@ -114,3 +116,13 @@ async def test_error(
     raise RuntimeError(
         "Erro de teste do painel de monitoramento (intencional)."
     )
+
+
+@router.post("/test-alert", summary="Envia um alerta de teste por e-mail (admin)")
+async def test_alert(
+    _admin: User = Depends(require_roles(UserRole.admin)),
+) -> dict:
+    """Dispara um alerta de teste. Retorna ``sent`` (e-mail enviado) ou
+    ``dev-log`` (SMTP não configurado — alerta só registrado no log)."""
+    result = await send_test_alert()
+    return {"result": result}

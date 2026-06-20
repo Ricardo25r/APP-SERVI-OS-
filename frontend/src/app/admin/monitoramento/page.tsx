@@ -16,6 +16,8 @@ import {
   Activity,
   AlertTriangle,
   ArrowLeft,
+  Bell,
+  BellRing,
   Bug,
   ChevronDown,
   Cpu,
@@ -58,6 +60,12 @@ interface Overview {
   threads: number;
   db_latency_ms: number | null;
   errors_24h: number;
+  alerts?: {
+    enabled: boolean;
+    configured: boolean;
+    email_to: string;
+    slow_ms: number;
+  };
 }
 
 interface ErrorItem {
@@ -224,6 +232,8 @@ export default function MonitoringPage() {
   const [updatedAt, setUpdatedAt] = useState<string>("");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [testing, setTesting] = useState(false);
+  const [alerting, setAlerting] = useState(false);
+  const [alertResult, setAlertResult] = useState<string | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const load = useCallback(async () => {
@@ -271,6 +281,23 @@ export default function MonitoringPage() {
     }, 900);
   }
 
+  async function triggerTestAlert() {
+    setAlerting(true);
+    setAlertResult(null);
+    try {
+      const r = await apiPost<{ result: string }>("/monitoring/test-alert");
+      setAlertResult(
+        r.result === "sent"
+          ? "Alerta de teste enviado por e-mail."
+          : "SMTP não configurado — alerta só registrado no log. Configure o SMTP para receber por e-mail."
+      );
+    } catch {
+      setAlertResult("Falha ao disparar o alerta de teste.");
+    } finally {
+      setAlerting(false);
+    }
+  }
+
   if (!auth.hasHydrated || !auth.isAuthenticated || !auth.isAdmin) {
     return (
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
@@ -302,6 +329,24 @@ export default function MonitoringPage() {
             {overview ? ` · no ar há ${formatUptime(overview.uptime_seconds)}` : ""}
             {updatedAt ? ` · atualizado às ${updatedAt}` : ""}
           </p>
+          {overview?.alerts ? (
+            <p className="mt-1 flex items-center gap-1.5 text-xs">
+              <Bell className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
+              {overview.alerts.configured ? (
+                <span className="text-success">
+                  Alertas ativos · {overview.alerts.email_to} · lentidão acima de{" "}
+                  {overview.alerts.slow_ms}ms
+                </span>
+              ) : (
+                <span className="text-muted-foreground">
+                  Alertas inativos — configure o SMTP para receber por e-mail
+                </span>
+              )}
+            </p>
+          ) : null}
+          {alertResult ? (
+            <p className="mt-1 text-xs text-primary">{alertResult}</p>
+          ) : null}
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button
@@ -327,6 +372,16 @@ export default function MonitoringPage() {
           >
             <FlaskConical className="h-4 w-4" aria-hidden />
             {testing ? "Testando…" : "Testar captura"}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            onClick={() => void triggerTestAlert()}
+            disabled={alerting}
+          >
+            <BellRing className="h-4 w-4" aria-hidden />
+            {alerting ? "Enviando…" : "Testar alerta"}
           </Button>
           <Button
             variant="outline"

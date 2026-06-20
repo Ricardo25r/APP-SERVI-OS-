@@ -78,6 +78,20 @@ class Settings(BaseSettings):
     # STRIPE_API_KEY: str = ""
     # STRIPE_WEBHOOK_SECRET: str = ""
 
+    # Alertas de monitoramento (e-mail via SMTP). Segredos só via env.
+    ALERTS_ENABLED: bool = False
+    ALERT_EMAIL_TO: str = ""  # destinatário(s), separados por vírgula
+    ALERT_SLOW_MS: int = 3000  # request acima disso dispara alerta de lentidão
+    ALERT_COOLDOWN_SECONDS: int = 300  # janela mínima entre alertas da mesma chave
+    SMTP_HOST: str = ""
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_FROM: str = ""  # remetente; vazio = usa SMTP_USER
+    SMTP_STARTTLS: bool = True
+    # URL do painel (link nos e-mails de alerta).
+    MONITORING_URL: str = "http://localhost:3000/admin/monitoramento"
+
     @property
     def cors_origins_list(self) -> list[str]:
         """Lista de origens permitidas, derivada de `CORS_ORIGINS`.

@@ -121,6 +121,19 @@ async def unhandled_exception_handler(
             await session.commit()
     except Exception:  # noqa: BLE001 - persistência best-effort
         logger.exception("Falha ao persistir ErrorLog")
+    # Alerta por e-mail (best-effort, throttled, não bloqueia a resposta).
+    try:
+        from app.core.alerts import alert_error
+
+        alert_error(
+            type(exc).__name__,
+            str(request.url.path),
+            request.method,
+            getattr(request.state, "request_id", None),
+            (str(exc) or type(exc).__name__)[:300],
+        )
+    except Exception:  # noqa: BLE001
+        logger.exception("Falha ao disparar alerta de erro")
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={"detail": "Erro interno. Tente novamente em instantes."},

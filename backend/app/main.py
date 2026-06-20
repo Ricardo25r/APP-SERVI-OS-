@@ -15,7 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import Response
 
 from app.api import api_router
-from app.core import metrics
+from app.core import alerts, metrics
 from app.core.config import settings
 from app.core.exceptions import register_exception_handlers
 from app.core.logging import setup_logging
@@ -69,6 +69,9 @@ async def observability_middleware(request: Request, call_next) -> Response:
     metrics.record_request(
         request.method, request.url.path, response.status_code, elapsed_ms
     )
+    # Alerta de lentidão (erros 5xx já alertam pelo handler de exceção).
+    if elapsed_ms > settings.ALERT_SLOW_MS and response.status_code < 500:
+        alerts.alert_slow(request.url.path, request.method, elapsed_ms)
     logger.info(
         "%s %s -> %s (%.1f ms)",
         request.method,
