@@ -137,6 +137,8 @@ class UserProfileService:
             city=data.city,
             state=data.state,
             service_radius_km=data.service_radius_km,
+            latitude=data.latitude,
+            longitude=data.longitude,
             availability_status=data.availability_status,
         )
         self.repo.add_professional_profile(profile)
@@ -186,6 +188,10 @@ class UserProfileService:
             and payload["service_radius_km"] is not None
         ):
             profile.service_radius_km = payload["service_radius_km"]
+        if "latitude" in payload:
+            profile.latitude = payload["latitude"]
+        if "longitude" in payload:
+            profile.longitude = payload["longitude"]
         if (
             "availability_status" in payload
             and payload["availability_status"] is not None
@@ -291,6 +297,14 @@ class UserProfileService:
             city=profile.city,
             state=profile.state,
             service_radius_km=profile.service_radius_km,
+            latitude=(
+                float(profile.latitude) if profile.latitude is not None else None
+            ),
+            longitude=(
+                float(profile.longitude)
+                if profile.longitude is not None
+                else None
+            ),
             availability_status=profile.availability_status,
             rating=float(profile.rating),
             total_reviews=profile.total_reviews,

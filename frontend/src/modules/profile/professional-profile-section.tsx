@@ -17,7 +17,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Coins, Loader2 } from "lucide-react";
+import { Coins, Loader2, MapPin } from "lucide-react";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -64,6 +64,8 @@ interface ProfessionalProfileForm {
   city: string;
   state: string;
   service_radius_km: string;
+  latitude: number | null;
+  longitude: number | null;
   availability_status: AvailabilityStatus;
 }
 
@@ -73,6 +75,8 @@ const EMPTY_FORM: ProfessionalProfileForm = {
   city: "",
   state: "",
   service_radius_km: "",
+  latitude: null,
+  longitude: null,
   availability_status: "available",
 };
 
@@ -84,6 +88,8 @@ function fromProfile(p: ProfessionalProfile): ProfessionalProfileForm {
     state: p.state ?? "",
     service_radius_km:
       p.service_radius_km != null ? String(p.service_radius_km) : "",
+    latitude: p.latitude ?? null,
+    longitude: p.longitude ?? null,
     availability_status: p.availability_status,
   };
 }
@@ -97,6 +103,8 @@ function toPayload(form: ProfessionalProfileForm) {
     city: form.city.trim() ? form.city.trim() : undefined,
     state: form.state ? form.state : undefined,
     service_radius_km: radius ? Number(radius) : undefined,
+    latitude: form.latitude ?? undefined,
+    longitude: form.longitude ?? undefined,
     availability_status: form.availability_status,
   };
 }
@@ -105,6 +113,8 @@ export function ProfessionalProfileSection() {
   const queryClient = useQueryClient();
   const [form, setForm] = useState<ProfessionalProfileForm>(EMPTY_FORM);
   const [saved, setSaved] = useState(false);
+  const [geoLoading, setGeoLoading] = useState(false);
+  const [geoMsg, setGeoMsg] = useState<string | null>(null);
 
   const {
     data: profile,
@@ -165,6 +175,53 @@ export function ProfessionalProfileSection() {
     const n = Number(v);
     return Number.isNaN(n) || n < 0;
   }, [form.service_radius_km]);
+
+  function detectLocation() {
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      setGeoMsg("Geolocalização não suportada neste dispositivo.");
+      return;
+    }
+    setGeoLoading(true);
+    setGeoMsg(null);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        try {
+          const res = await fetch(
+            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=pt`
+          );
+          const d = await res.json();
+          const uf =
+            String(d.principalSubdivisionCode || "").split("-")[1] || "";
+          const city = d.city || d.locality || "";
+          setForm((f) => ({
+            ...f,
+            latitude,
+            longitude,
+            city: city || f.city,
+            state: uf || f.state,
+          }));
+          setSaved(false);
+          setGeoMsg(
+            `Localização capturada${
+              city ? `: ${city}${uf ? `/${uf}` : ""}` : ""
+            } — clientes verão a distância até o serviço.`
+          );
+        } catch {
+          setForm((f) => ({ ...f, latitude, longitude }));
+          setSaved(false);
+          setGeoMsg("Localização capturada para cálculo de distância.");
+        } finally {
+          setGeoLoading(false);
+        }
+      },
+      () => {
+        setGeoLoading(false);
+        setGeoMsg("Não foi possível obter sua localização (permissão negada).");
+      },
+      { timeout: 10000, enableHighAccuracy: false }
+    );
+  }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -322,6 +379,37 @@ export function ProfessionalProfileSection() {
                 rows={4}
               />
             </div>
+
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-sm font-medium leading-none">
+                Localização
+              </span>
+              <button
+                type="button"
+                onClick={detectLocation}
+                disabled={mutation.isPending || geoLoading}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary disabled:opacity-60"
+              >
+                {geoLoading ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
+                ) : (
+                  <MapPin className="h-3.5 w-3.5" aria-hidden />
+                )}
+                {geoLoading ? "Detectando..." : "Usar minha localização"}
+              </button>
+            </div>
+            {geoMsg ? (
+              <p className="text-xs text-muted-foreground">{geoMsg}</p>
+            ) : form.latitude != null ? (
+              <p className="text-xs text-success">
+                Localização definida para cálculo de distância.
+              </p>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                Defina sua localização para os clientes verem a distância até o
+                serviço.
+              </p>
+            )}
 
             <div className="grid gap-4 sm:grid-cols-3">
               <div className="space-y-2 sm:col-span-2">

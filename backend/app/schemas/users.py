@@ -136,6 +136,8 @@ class ProfessionalProfileIn(BaseModel):
     city: str = Field(min_length=1, max_length=120)
     state: str = Field(min_length=2, max_length=2)
     service_radius_km: int = Field(default=10, ge=0, le=1000)
+    latitude: float | None = Field(default=None, ge=-90, le=90)
+    longitude: float | None = Field(default=None, ge=-180, le=180)
     availability_status: AvailabilityStatus = AvailabilityStatus.available
     category_ids: list[uuid.UUID] = Field(default_factory=list)
 
@@ -158,6 +160,8 @@ class ProfessionalProfileUpdate(BaseModel):
     city: str | None = Field(default=None, min_length=1, max_length=120)
     state: str | None = Field(default=None, min_length=2, max_length=2)
     service_radius_km: int | None = Field(default=None, ge=0, le=1000)
+    latitude: float | None = Field(default=None, ge=-90, le=90)
+    longitude: float | None = Field(default=None, ge=-180, le=180)
     availability_status: AvailabilityStatus | None = None
 
     @field_validator("state")
@@ -182,6 +186,8 @@ class ProfessionalProfileOut(BaseModel):
     city: str | None
     state: str | None
     service_radius_km: int
+    latitude: float | None = None
+    longitude: float | None = None
     availability_status: AvailabilityStatus
 
     # Reputação (Fase 7) — populada a partir de professional_profiles.

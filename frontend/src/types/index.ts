@@ -82,6 +82,8 @@ export interface ProfessionalProfile {
   city: string | null;
   state: string | null;
   service_radius_km: number;
+  latitude?: number | null;
+  longitude?: number | null;
   verified: boolean;
   premium: boolean;
   rating: number;
@@ -104,6 +106,8 @@ export interface ProfessionalProfilePublic {
   city: string | null;
   state: string | null;
   service_radius_km: number;
+  latitude?: number | null;
+  longitude?: number | null;
   verified: boolean;
   premium: boolean;
   rating: number;
