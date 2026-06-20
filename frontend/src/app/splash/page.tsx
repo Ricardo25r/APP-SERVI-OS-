@@ -79,23 +79,15 @@ export default function SplashPage() {
         </p>
       </div>
 
-      {/* Herói: mascotes (duo interino até chegar o trio oficial) */}
-      <div className="relative z-10 flex min-h-0 flex-1 items-end justify-center gap-1 py-6">
+      {/* Herói: trio de profissionais FazTudo */}
+      <div className="relative z-10 flex min-h-0 flex-1 items-center justify-center py-6">
         <Image
-          src="/brand/mascote-profissional.webp"
-          width={300}
-          height={460}
-          alt="Profissional FazTudo"
+          src="/brand/mascote-trio.png"
+          width={1493}
+          height={882}
+          alt="Profissionais FazTudo: eletricista, pintora e pedreiro"
           priority
-          className="h-full max-h-[42vh] w-auto object-contain drop-shadow-2xl"
-        />
-        <Image
-          src="/brand/mascote-tudo.png"
-          width={300}
-          height={460}
-          alt="Profissional FazTudo"
-          priority
-          className="-ml-4 h-full max-h-[38vh] w-auto object-contain drop-shadow-2xl"
+          className="h-auto max-h-full w-full max-w-md object-contain drop-shadow-2xl"
         />
       </div>
 
