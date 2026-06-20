@@ -120,16 +120,27 @@ export function CustomerHome({ user }: { user: User }) {
           className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-primary-foreground/10 blur-3xl"
         />
 
-        {/* Mascote (decorativo, desktop) */}
-        <Image
-          src="/brand/mascote-profissional.webp"
-          width={300}
-          height={440}
-          alt=""
-          aria-hidden
-          priority
-          className="pointer-events-none absolute -bottom-3 right-3 hidden h-44 w-auto drop-shadow-xl sm:block lg:right-10 lg:h-52"
-        />
+        {/* Mascotes: boneca + boneco (decorativo, desktop) */}
+        <div className="pointer-events-none absolute -bottom-3 right-2 hidden items-end sm:flex lg:right-8">
+          <Image
+            src="/brand/mascote-tudo.png"
+            width={300}
+            height={440}
+            alt=""
+            aria-hidden
+            priority
+            className="h-40 w-auto drop-shadow-xl lg:h-48"
+          />
+          <Image
+            src="/brand/mascote-profissional.webp"
+            width={300}
+            height={440}
+            alt=""
+            aria-hidden
+            priority
+            className="-ml-5 h-44 w-auto drop-shadow-xl lg:h-52"
+          />
+        </div>
 
         <div className="relative z-10 max-w-xl">
           <p className="text-sm font-medium text-primary-foreground/80">
