@@ -1,24 +1,31 @@
 /**
- * `ProfessionalHome` — Home logada do profissional (dashboard).
+ * `ProfessionalHome` — Home logada do profissional (Tela 03 / dashboard).
  *
- * Saudação + resumo (saldo de créditos via `GET /credits/balance`, XP/nível via
- * `GET /gamification/me`) em `StatCard`s + cards de atalho (Oportunidades,
- * Créditos, Nível). O resumo é carregado de forma resiliente: se falhar, a Home
- * ainda mostra os atalhos (degrada para "só atalhos"). Somente camada visual.
+ * Hero azul (saudação + CTAs "Ver oportunidades"/"Comprar créditos" + mascote)
+ * → Resumo (saldo de créditos via `GET /credits/balance`, XP/nível via
+ * `GET /gamification/me`) em `StatCard`s → "Como funciona" → Atalhos.
+ * O resumo é carregado de forma resiliente: se falhar, a Home ainda mostra o
+ * resto. Segue o design system (tokens). Somente camada visual.
  */
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
-  Sparkles,
-  Coins,
-  Trophy,
-  MessageSquare,
   ChevronRight,
+  Coins,
+  Handshake,
+  MessageSquare,
+  Plus,
+  Search,
+  Sparkles,
+  Trophy,
+  Unlock,
   type LucideIcon,
 } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/stat-card";
 import { SectionHeader } from "@/components/ui/section-header";
 import { IconChip } from "@/components/ui/icon-chip";
@@ -26,6 +33,32 @@ import { apiGet } from "@/services/api";
 import type { CreditWallet, User } from "@/types";
 import type { GamificationMe } from "@/modules/gamification/types";
 import { formatXp } from "@/modules/gamification/utils";
+
+const STEPS: {
+  icon: LucideIcon;
+  color: "blue" | "orange" | "green";
+  title: string;
+  desc: string;
+}[] = [
+  {
+    icon: Search,
+    color: "blue",
+    title: "Encontre oportunidades",
+    desc: "Veja leads da sua região e categoria.",
+  },
+  {
+    icon: Unlock,
+    color: "orange",
+    title: "Compre o contato",
+    desc: "Use seus créditos para desbloquear o cliente.",
+  },
+  {
+    icon: Handshake,
+    color: "green",
+    title: "Feche o serviço",
+    desc: "Negocie pelo chat e conquiste boas avaliações.",
+  },
+];
 
 interface Shortcut {
   href: string;
@@ -112,18 +145,69 @@ export function ProfessionalHome({ user }: { user: User }) {
 
   return (
     <main className="mx-auto max-w-5xl px-4 pb-16 pt-6 sm:px-6">
-      {/* Saudação */}
-      <section className="rounded-2xl bg-primary px-5 py-6 text-primary-foreground sm:px-8 sm:py-8">
-        <p className="text-sm font-medium text-primary-foreground/80">
-          Olá{firstName ? `, ${firstName}` : ""}
-        </p>
-        <h1 className="mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl">
-          Pronto para conquistar novos clientes?
-        </h1>
-        <p className="mt-2 max-w-lg text-sm text-primary-foreground/80">
-          Explore as oportunidades disponíveis e use seus créditos para
-          desbloquear contatos.
-        </p>
+      {/* Hero: saudação + CTAs + saldo + mascote */}
+      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-blue-700 px-5 py-6 text-primary-foreground sm:px-8 sm:py-8">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-primary-foreground/10 blur-3xl"
+        />
+
+        {/* Mascote (decorativo, desktop) */}
+        <Image
+          src="/brand/mascote-profissional.webp"
+          width={300}
+          height={440}
+          alt=""
+          aria-hidden
+          priority
+          className="pointer-events-none absolute -bottom-3 right-3 hidden h-44 w-auto drop-shadow-xl sm:block lg:right-10 lg:h-52"
+        />
+
+        <div className="relative z-10 max-w-xl">
+          <p className="text-sm font-medium text-primary-foreground/80">
+            Olá{firstName ? `, ${firstName}` : ""}
+          </p>
+          <h1 className="mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl">
+            Pronto para conquistar novos clientes?
+          </h1>
+          <p className="mt-2 max-w-md text-sm text-primary-foreground/80">
+            Explore as oportunidades e use seus créditos para desbloquear
+            contatos. Pague apenas pelos leads que quiser.
+          </p>
+
+          <div className="mt-5 flex flex-wrap items-center gap-3">
+            <Link href="/marketplace" className="shrink-0">
+              <Button
+                size="lg"
+                className="gap-1.5 bg-brand font-semibold text-brand-foreground hover:bg-brand/90"
+              >
+                <Sparkles className="h-4 w-4" aria-hidden />
+                Ver oportunidades
+              </Button>
+            </Link>
+            <Link href="/credits" className="shrink-0">
+              <Button
+                size="lg"
+                className="gap-1.5 bg-primary-foreground/15 font-semibold text-primary-foreground hover:bg-primary-foreground/25"
+              >
+                <Plus className="h-4 w-4" aria-hidden />
+                Comprar créditos
+              </Button>
+            </Link>
+          </div>
+
+          <p className="mt-4 inline-flex items-center gap-1.5 text-sm text-primary-foreground/90">
+            <Coins className="h-4 w-4 text-brand" aria-hidden />
+            Saldo:{" "}
+            <span className="font-bold">
+              {loading
+                ? "..."
+                : summary.balance != null
+                  ? `${formatXp(summary.balance)} ${summary.balance === 1 ? "crédito" : "créditos"}`
+                  : "--"}
+            </span>
+          </p>
+        </div>
       </section>
 
       {/* Resumo */}
@@ -149,9 +233,7 @@ export function ProfessionalHome({ user }: { user: User }) {
             <StatCard
               label="XP acumulado"
               value={
-                summary.gamification
-                  ? formatXp(summary.gamification.xp)
-                  : "--"
+                summary.gamification ? formatXp(summary.gamification.xp) : "--"
               }
               icon={Sparkles}
               iconColor="blue"
@@ -166,8 +248,33 @@ export function ProfessionalHome({ user }: { user: User }) {
         )}
       </section>
 
-      {/* Atalhos */}
+      {/* Como funciona */}
       <section className="pb-4">
+        <SectionHeader title="Como funciona" className="mb-4" />
+        <div className="grid gap-3 sm:grid-cols-3">
+          {STEPS.map((step, i) => (
+            <div
+              key={step.title}
+              className="relative rounded-xl border bg-card p-4"
+            >
+              <span
+                aria-hidden
+                className="absolute right-3 top-3 text-2xl font-extrabold text-muted-foreground/15"
+              >
+                {i + 1}
+              </span>
+              <IconChip icon={step.icon} color={step.color} />
+              <p className="mt-3 text-sm font-bold tracking-tight">
+                {step.title}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">{step.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Atalhos */}
+      <section className="pb-4 pt-4">
         <SectionHeader title="Atalhos" className="mb-4" />
         <div className="grid gap-3 sm:grid-cols-2">
           {SHORTCUTS.map((item) => (

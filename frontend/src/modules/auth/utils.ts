@@ -39,7 +39,7 @@ export function homePathForRole(role: UserRole): string {
     case "customer":
       return "/";
     case "professional":
-      return "/marketplace";
+      return "/";
     case "admin":
     default:
       return "/";
