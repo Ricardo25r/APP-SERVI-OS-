@@ -17,6 +17,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import smtplib
+import ssl
 import threading
 import time
 from email.message import EmailMessage
@@ -58,13 +59,28 @@ def _mask_emails(emails: list[str]) -> str:
 
 
 def _send_smtp(subject: str, body: str) -> None:
-    """Envia o e-mail via SMTP (bloqueante — sempre chamar em thread)."""
+    """Envia o e-mail via SMTP (bloqueante — sempre chamar em thread).
+
+    Porta **465** → SSL implícito (``SMTP_SSL``, ex.: Resend). Demais portas →
+    STARTTLS opcional (**587** Gmail) ou texto puro (**1025** Mailpit em dev).
+    """
     msg = EmailMessage()
     msg["Subject"] = subject
     msg["From"] = settings.SMTP_FROM or settings.SMTP_USER or "faztudo@localhost"
     msg["To"] = ", ".join(_recipients())
     msg.set_content(body)
-    with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=15) as server:
+
+    if settings.SMTP_PORT == 465:
+        context = ssl.create_default_context()
+        with smtplib.SMTP_SSL(
+            settings.SMTP_HOST, settings.SMTP_PORT, context=context, timeout=30
+        ) as server:
+            if settings.SMTP_USER:
+                server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+            server.send_message(msg)
+        return
+
+    with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=30) as server:
         if settings.SMTP_STARTTLS:
             server.starttls()
         if settings.SMTP_USER:
