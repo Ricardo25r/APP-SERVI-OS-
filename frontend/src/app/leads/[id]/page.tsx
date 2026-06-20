@@ -9,7 +9,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Coins, MapPin, Pencil } from "lucide-react";
+import { ArrowLeft, Coins, MapPin, MessageSquare, Pencil } from "lucide-react";
 
 import { AppHeader } from "@/components/app-shell/app-header";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -23,7 +23,7 @@ import {
 import { IconChip } from "@/components/ui/icon-chip";
 import { cn } from "@/lib/utils";
 import { useRequireAuth } from "@/hooks/use-auth";
-import type { Lead } from "@/types";
+import type { Lead, LeadStatus } from "@/types";
 
 import {
   categoryVisual,
@@ -36,6 +36,26 @@ import {
   updateLead,
   type LeadFormValues,
 } from "@/modules/leads";
+
+/** Mensagem de contexto conforme o status da solicitação. */
+const STATUS_HINT: Record<LeadStatus, { text: string; cls: string }> = {
+  open: {
+    text: "Solicitação ativa — profissionais da sua região já podem ver e entrar em contato.",
+    cls: "border-primary/20 bg-primary/5 text-primary",
+  },
+  purchased: {
+    text: "Um profissional adquiriu seu contato. Fique de olho nas mensagens.",
+    cls: "border-success/30 bg-success/10 text-success",
+  },
+  closed: {
+    text: "Esta solicitação foi encerrada.",
+    cls: "border-border bg-muted/50 text-muted-foreground",
+  },
+  cancelled: {
+    text: "Esta solicitação foi cancelada.",
+    cls: "border-destructive/30 bg-destructive/10 text-destructive",
+  },
+};
 
 export default function LeadDetailPage() {
   const auth = useRequireAuth("customer");
@@ -103,6 +123,7 @@ export default function LeadDetailPage() {
   }
 
   const isOpen = lead?.status === "open";
+  const hint = lead ? STATUS_HINT[lead.status] : null;
   const visual = categoryVisual({
     slug: lead?.category?.slug,
     name: lead?.category?.name,
@@ -188,6 +209,17 @@ export default function LeadDetailPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-5">
+              {hint ? (
+                <div
+                  className={cn(
+                    "rounded-xl border px-3.5 py-2.5 text-sm",
+                    hint.cls
+                  )}
+                >
+                  {hint.text}
+                </div>
+              ) : null}
+
               <p className="whitespace-pre-wrap text-sm">{lead.description}</p>
 
               <div className="grid gap-3 rounded-xl bg-muted/40 p-4 text-sm sm:grid-cols-2">
@@ -216,18 +248,28 @@ export default function LeadDetailPage() {
                 </div>
               </div>
 
-              {isOpen ? (
-                <div className="pt-2">
+              <div className="flex flex-wrap gap-2 pt-1">
+                {isOpen ? (
                   <Button className="gap-1.5" onClick={() => setEditing(true)}>
                     <Pencil className="h-4 w-4" aria-hidden />
                     Editar
                   </Button>
-                </div>
-              ) : (
-                <p className="rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
-                  Esta solicitação não está mais aberta e não pode ser editada.
-                </p>
-              )}
+                ) : null}
+                {lead.status === "purchased" || lead.status === "closed" ? (
+                  <Link
+                    href="/conversas"
+                    className={cn(
+                      buttonVariants({
+                        variant: isOpen ? "outline" : "default",
+                      }),
+                      "gap-1.5"
+                    )}
+                  >
+                    <MessageSquare className="h-4 w-4" aria-hidden />
+                    Ver conversas
+                  </Link>
+                ) : null}
+              </div>
             </CardContent>
           </Card>
         )}
