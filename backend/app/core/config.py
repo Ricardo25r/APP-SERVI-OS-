@@ -52,6 +52,9 @@ class Settings(BaseSettings):
     S3_SECRET_KEY: str = "minioadmin"
     S3_BUCKET: str = "faztudo"
     S3_REGION: str = "us-east-1"
+    # URL pública do storage (acessível pelo navegador) p/ montar URLs de mídia.
+    # O backend faz upload via S3_ENDPOINT (rede interna) e presigna GET aqui.
+    S3_PUBLIC_URL: str = "http://localhost:9000"
 
     # Segurança / JWT
     JWT_SECRET: str = "troque-este-segredo-em-producao"

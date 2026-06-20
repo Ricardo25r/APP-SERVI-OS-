@@ -9,10 +9,14 @@ contato correta (§4 / §5.6). Faz o ``commit`` (repositório só faz ``flush``)
 ``TIER_COST`` (custo base por tier da categoria) e a promoção por ``lead_type``
 ficam aqui. ``credits_cost`` é gravado na criação e é imutável depois (por isso o
 PATCH não troca ``category_id``/``lead_type``).
+
+Fase 11: persiste ``budget_range``/coordenadas, monta a galeria de ``media`` (URLs
+presignadas) e calcula ``distance_km`` (Haversine) para o profissional.
 """
 
 from __future__ import annotations
 
+import math
 import uuid
 from datetime import UTC, datetime, timedelta
 
@@ -23,10 +27,12 @@ from app.core.exceptions import (
     NotFoundError,
     PermissionDeniedError,
 )
+from app.core.storage import presigned_get_url, upload_bytes
 from app.models import (
     Category,
     CategoryTier,
     Lead,
+    LeadMedia,
     LeadStatus,
     LeadType,
     User,
@@ -38,6 +44,7 @@ from app.schemas.leads import (
     CustomerSummary,
     LeadContact,
     LeadCreate,
+    LeadMediaOut,
     LeadRead,
     LeadUpdate,
 )
@@ -82,6 +89,39 @@ def classify_credits_cost(tier: CategoryTier, lead_type: LeadType) -> int:
     return base
 
 
+def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """Distância em km entre dois pontos (fórmula de Haversine)."""
+    radius = 6371.0
+    d_lat = math.radians(lat2 - lat1)
+    d_lon = math.radians(lon2 - lon1)
+    a = (
+        math.sin(d_lat / 2) ** 2
+        + math.cos(math.radians(lat1))
+        * math.cos(math.radians(lat2))
+        * math.sin(d_lon / 2) ** 2
+    )
+    return 2 * radius * math.asin(math.sqrt(a))
+
+
+def _profile_coords(profile) -> tuple[float, float] | None:
+    """Coordenadas (lat, lng) do profissional, ou ``None`` se não tiver."""
+    if profile is None or profile.latitude is None or profile.longitude is None:
+        return None
+    return (float(profile.latitude), float(profile.longitude))
+
+
+def _distance_km(lead_lat, lead_lng, viewer_coords) -> float | None:
+    """Distância (km, 1 casa) do lead ao ``viewer_coords``, se houver coords."""
+    if lead_lat is None or lead_lng is None or viewer_coords is None:
+        return None
+    return round(
+        _haversine_km(
+            float(lead_lat), float(lead_lng), viewer_coords[0], viewer_coords[1]
+        ),
+        1,
+    )
+
+
 class LeadService:
     """Orquestra criação, listagem, leitura, update e cancelamento de leads."""
 
@@ -120,6 +160,9 @@ class LeadService:
             city=data.city,
             state=data.state.upper(),
             neighborhood=data.neighborhood,
+            budget_range=data.budget_range,
+            latitude=data.latitude,
+            longitude=data.longitude,
             status=LeadStatus.open,
             credits_cost=classify_credits_cost(category.tier, data.lead_type),
             expires_at=now + timedelta(days=LEAD_EXPIRATION_DAYS),
@@ -186,12 +229,14 @@ class LeadService:
                 offset=offset,
             )
             balance = profile.wallet.balance if profile.wallet is not None else 0
+            coords = _profile_coords(profile)
             items = [
                 self._to_read(
                     lead,
                     viewer=current_user,
                     include_contact=False,
                     affordable=balance >= lead.credits_cost,
+                    viewer_coords=coords,
                 )
                 for lead in leads
             ]
@@ -224,10 +269,14 @@ class LeadService:
             profile = await self.repo.get_professional_profile(current_user.id)
             if profile is None:
                 raise PermissionDeniedError("Perfil profissional inexistente.")
+            coords = _profile_coords(profile)
             purchased = await self.repo.professional_has_purchased(lead, profile.id)
             if purchased:
                 return self._to_read(
-                    lead, viewer=current_user, include_contact=True
+                    lead,
+                    viewer=current_user,
+                    include_contact=True,
+                    viewer_coords=coords,
                 )
             eligible = await self.repo.is_professional_eligible(profile, lead)
             if not eligible:
@@ -238,6 +287,7 @@ class LeadService:
                 viewer=current_user,
                 include_contact=False,
                 affordable=balance >= lead.credits_cost,
+                viewer_coords=coords,
             )
 
         raise PermissionDeniedError("Papel sem acesso a este lead.")
@@ -265,6 +315,8 @@ class LeadService:
         # neighborhood é nullable: permite explicitamente setar para None.
         if "neighborhood" in payload:
             lead.neighborhood = payload["neighborhood"]
+        if "budget_range" in payload:
+            lead.budget_range = payload["budget_range"]
 
         await self.repo.flush()
         await self.db.commit()
@@ -285,6 +337,42 @@ class LeadService:
         lead.deleted_at = datetime.now(UTC)
         await self.repo.flush()
         await self.db.commit()
+
+    # ------------------------------------------------------------------ #
+    # Mídia (fotos do lead)
+    # ------------------------------------------------------------------ #
+    async def add_media(
+        self,
+        current_user: User,
+        lead_id: uuid.UUID,
+        *,
+        filename: str,
+        content_type: str | None,
+        data: bytes,
+    ) -> LeadMediaOut:
+        """Anexa uma foto ao lead (apenas o dono, enquanto ``open``).
+
+        Faz upload do binário no storage (MinIO) e registra ``LeadMedia``.
+        """
+        lead = await self._get_owned_open_lead(current_user, lead_id)
+        ext = ""
+        if "." in filename:
+            ext = "." + filename.rsplit(".", 1)[1].lower()[:8]
+        key = f"leads/{lead.id}/{uuid.uuid4().hex}{ext}"
+        upload_bytes(data, key, content_type)
+        position = len(lead.media)
+        media = LeadMedia(
+            lead_id=lead.id,
+            object_key=key,
+            content_type=content_type,
+            position=position,
+        )
+        self.db.add(media)
+        await self.repo.flush()
+        await self.db.commit()
+        return LeadMediaOut(
+            id=media.id, url=presigned_get_url(key), position=position
+        )
 
     # ------------------------------------------------------------------ #
     # Helpers internos
@@ -315,11 +403,13 @@ class LeadService:
         viewer: User,
         include_contact: bool,
         affordable: bool | None = None,
+        viewer_coords: tuple[float, float] | None = None,
     ) -> LeadRead:
         """Monta o ``LeadRead`` aplicando a visibilidade de contato (§4 / §5.6).
 
         ``include_contact`` deve vir ``True`` apenas para o customer dono ou o
         profissional comprador. ``customer`` (resumo) nunca expõe telefone/email.
+        ``viewer_coords`` (do profissional) habilita o cálculo de ``distance_km``.
         """
         category: Category | None = lead.category
         is_purchased = lead.purchase is not None
@@ -332,6 +422,15 @@ class LeadService:
                 phone=lead.customer.phone,
             )
 
+        media = [
+            LeadMediaOut(
+                id=m.id,
+                url=presigned_get_url(m.object_key),
+                position=m.position,
+            )
+            for m in lead.media
+        ]
+
         return LeadRead(
             id=lead.id,
             customer_id=lead.customer_id,
@@ -343,6 +442,11 @@ class LeadService:
             city=lead.city,
             state=lead.state,
             neighborhood=lead.neighborhood,
+            budget_range=lead.budget_range,
+            latitude=float(lead.latitude) if lead.latitude is not None else None,
+            longitude=(
+                float(lead.longitude) if lead.longitude is not None else None
+            ),
             status=lead.status,
             credits_cost=lead.credits_cost,
             expires_at=lead.expires_at,
@@ -361,4 +465,6 @@ class LeadService:
             is_purchased=is_purchased,
             contact=contact,
             affordable=affordable,
+            media=media,
+            distance_km=_distance_km(lead.latitude, lead.longitude, viewer_coords),
         )

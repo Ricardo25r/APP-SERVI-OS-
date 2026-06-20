@@ -15,7 +15,16 @@ from __future__ import annotations
 
 import uuid
 
-from fastapi import APIRouter, Depends, Query, Response, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    File,
+    HTTPException,
+    Query,
+    Response,
+    UploadFile,
+    status,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import get_current_user, require_roles
@@ -24,6 +33,7 @@ from app.models import LeadStatus, User, UserRole
 from app.schemas.leads import (
     LeadCreate,
     LeadListResponse,
+    LeadMediaOut,
     LeadRead,
     LeadUpdate,
 )
@@ -130,3 +140,47 @@ async def cancel_lead(
     service = LeadService(db)
     await service.cancel(current_user, lead_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+# Limites de upload de mídia (foto do serviço).
+MAX_MEDIA_BYTES = 5 * 1024 * 1024  # 5 MB
+ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
+
+
+@router.post(
+    "/{lead_id}/media",
+    response_model=LeadMediaOut,
+    status_code=status.HTTP_201_CREATED,
+    summary="Anexar foto ao lead (dono, só enquanto open)",
+)
+async def upload_lead_media(
+    lead_id: uuid.UUID,
+    file: UploadFile = File(...),
+    current_user: User = Depends(require_roles(UserRole.customer)),
+    db: AsyncSession = Depends(get_db),
+) -> LeadMediaOut:
+    """Upload de uma foto do serviço (JPG/PNG/WEBP/GIF, até 5 MB), anexada ao
+    lead. Apenas o contratante dono, enquanto o lead está aberto."""
+    if file.content_type not in ALLOWED_IMAGE_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail="Formato não suportado (use JPG, PNG, WEBP ou GIF).",
+        )
+    data = await file.read()
+    if not data:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Arquivo vazio."
+        )
+    if len(data) > MAX_MEDIA_BYTES:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail="Imagem muito grande (máximo 5 MB).",
+        )
+    service = LeadService(db)
+    return await service.add_media(
+        current_user,
+        lead_id,
+        filename=file.filename or "foto.jpg",
+        content_type=file.content_type,
+        data=data,
+    )

@@ -10,16 +10,23 @@ do customer (``LeadContact``) **só** aparece para o customer dono do lead ou pa
 o profissional que **comprou** o lead. Na listagem do marketplace e no detalhe de
 profissional não-comprador, ``contact`` vem ``None`` e o resumo do customer
 (``CustomerSummary``) **não** inclui telefone/email.
+
+Fase 11 (extras do lead): ``budget_range`` (faixa de orçamento), ``latitude``/
+``longitude`` (coordenadas do serviço, p/ mapa + distância) e ``media`` (fotos).
 """
 
 from __future__ import annotations
 
 import uuid
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.models.enums import CategoryTier, LeadStatus, LeadType, LeadUrgency
+
+# Faixas de orçamento (valores controlados; o frontend mapeia para rótulos R$).
+BudgetRange = Literal["ate_100", "100_300", "300_500", "500_1000", "acima_1000"]
 
 # Aliases pedidos pela tarefa (apontam para os schemas canônicos do contrato).
 __all__ = [
@@ -32,6 +39,7 @@ __all__ = [
     "LeadContact",
     "CategorySummary",
     "CustomerSummary",
+    "LeadMediaOut",
     "LeadListResponse",
 ]
 
@@ -56,6 +64,9 @@ class LeadCreate(BaseModel):
     city: str = Field(min_length=1, max_length=120)
     state: str = Field(min_length=2, max_length=2)
     neighborhood: str | None = Field(default=None, max_length=120)
+    budget_range: BudgetRange | None = None
+    latitude: float | None = Field(default=None, ge=-90, le=90)
+    longitude: float | None = Field(default=None, ge=-180, le=180)
 
 
 class LeadUpdate(BaseModel):
@@ -71,6 +82,7 @@ class LeadUpdate(BaseModel):
     description: str | None = Field(default=None, min_length=1)
     urgency: LeadUrgency | None = None
     neighborhood: str | None = Field(default=None, max_length=120)
+    budget_range: BudgetRange | None = None
 
 
 # --------------------------------------------------------------------------- #
@@ -113,6 +125,16 @@ class LeadContact(BaseModel):
     phone: str | None = None
 
 
+class LeadMediaOut(BaseModel):
+    """Foto do lead — URL presignada (GET) acessível pelo navegador."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    url: str
+    position: int
+
+
 # --------------------------------------------------------------------------- #
 # Saída
 # --------------------------------------------------------------------------- #
@@ -122,7 +144,8 @@ class LeadRead(BaseModel):
     ``contact`` só é preenchido para o customer dono ou o profissional comprador
     (montado no service — não vem direto do ORM). ``affordable`` é a flag de
     saldo da listagem do profissional (§5.3 item 6); ``None`` quando não se aplica
-    (ex.: visão do próprio customer).
+    (ex.: visão do próprio customer). ``distance_km`` só é montado para o
+    profissional quando ele e o lead têm coordenadas.
     """
 
     model_config = ConfigDict(from_attributes=True)
@@ -137,6 +160,9 @@ class LeadRead(BaseModel):
     city: str
     state: str
     neighborhood: str | None
+    budget_range: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
     status: LeadStatus
     credits_cost: int
     expires_at: datetime | None
@@ -149,6 +175,8 @@ class LeadRead(BaseModel):
     is_purchased: bool = False
     contact: LeadContact | None = None
     affordable: bool | None = None
+    media: list[LeadMediaOut] = []
+    distance_km: float | None = None
 
 
 class LeadListResponse(BaseModel):

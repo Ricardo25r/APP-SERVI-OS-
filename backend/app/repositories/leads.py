@@ -64,6 +64,7 @@ class LeadRepository:
                 selectinload(Lead.category),
                 selectinload(Lead.customer),
                 selectinload(Lead.purchase),
+                selectinload(Lead.media),
             )
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
@@ -119,6 +120,7 @@ class LeadRepository:
                 selectinload(Lead.category),
                 selectinload(Lead.customer),
                 selectinload(Lead.purchase),
+                selectinload(Lead.media),
             )
             .order_by(Lead.created_at.desc())
             .limit(limit)
@@ -209,6 +211,7 @@ class LeadRepository:
                 selectinload(Lead.category),
                 selectinload(Lead.customer),
                 selectinload(Lead.purchase),
+                selectinload(Lead.media),
             )
             .order_by(Lead.created_at.desc())
             .limit(limit)
