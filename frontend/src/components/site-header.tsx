@@ -83,10 +83,10 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
+      <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 sm:px-6">
         <Link
           href="/"
-          className="flex items-center gap-2 text-xl font-extrabold tracking-tight"
+          className="flex shrink-0 items-center gap-2 text-xl font-extrabold tracking-tight"
         >
           <Image
             src="/brand/symbol.png"
@@ -101,55 +101,63 @@ export function SiteHeader() {
           </span>
         </Link>
 
-        <nav className="flex items-center gap-1 sm:gap-2">
-          {/* Evita flash de conteúdo errado antes da hidratação. */}
-          {!hasHydrated ? null : isAuthenticated && user ? (
-            <>
+        {/* Evita flash de conteúdo errado antes da hidratação. */}
+        {!hasHydrated ? (
+          <span className="flex-1" />
+        ) : isAuthenticated && user ? (
+          <>
+            {/* Links (desktop); no mobile a navegação fica na BottomNav. */}
+            <nav className="hidden min-w-0 flex-1 items-center gap-1 overflow-x-auto whitespace-nowrap [scrollbar-width:none] lg:flex [&::-webkit-scrollbar]:hidden">
               {links.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
                   className={cn(
-                    buttonVariants({ variant: "ghost", size: "sm" })
+                    buttonVariants({ variant: "ghost", size: "sm" }),
+                    "shrink-0"
                   )}
                 >
                   {link.label}
                 </Link>
               ))}
+            </nav>
 
-              <div className="ml-2 hidden items-center gap-2 sm:flex">
-                <span className="text-sm font-medium">{user.name}</span>
+            {/* Usuário + Sair — sempre visíveis à direita. */}
+            <div className="ml-auto flex shrink-0 items-center gap-2 lg:ml-2">
+              <div className="hidden items-center gap-2 sm:flex">
+                <span className="max-w-[9rem] truncate text-sm font-medium">
+                  {user.name}
+                </span>
                 {role ? (
                   <Badge variant="secondary">{ROLE_LABEL[role]}</Badge>
                 ) : null}
               </div>
-
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleLogout}
-                className="ml-2"
+                className="shrink-0"
               >
                 Sair
               </Button>
-            </>
-          ) : (
-            <>
-              <Link
-                href="/login"
-                className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
-              >
-                Entrar
-              </Link>
-              <Link
-                href="/register"
-                className={cn(buttonVariants({ size: "sm" }))}
-              >
-                Cadastrar
-              </Link>
-            </>
-          )}
-        </nav>
+            </div>
+          </>
+        ) : (
+          <div className="ml-auto flex shrink-0 items-center gap-2">
+            <Link
+              href="/login"
+              className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
+            >
+              Entrar
+            </Link>
+            <Link
+              href="/register"
+              className={cn(buttonVariants({ size: "sm" }))}
+            >
+              Cadastrar
+            </Link>
+          </div>
+        )}
       </div>
     </header>
   );
