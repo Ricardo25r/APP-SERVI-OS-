@@ -99,7 +99,7 @@ export function CategoryGrid({ hrefFor }: CategoryGridProps) {
                 height={88}
                 alt=""
                 aria-hidden
-                className="h-11 w-11 rounded-xl object-cover"
+                className="h-11 w-11 rounded-xl object-cover object-top"
               />
             ) : (
               <IconChip icon={item.icon} color={chipColorForIndex(i)} />
