@@ -1,21 +1,29 @@
 /**
- * `CustomerHome` — Home logada do contratante (dashboard).
+ * `CustomerHome` — Home logada do contratante (Tela 01 / Dashboard).
  *
- * Saudação personalizada + busca + CTA "Nova solicitação" (→ /leads/new) +
- * grid de Categorias populares + atalhos (Minhas solicitações, Mensagens).
- * Visual de dashboard com cards. Somente camada visual; usa rotas existentes.
+ * Hero azul (saudação + busca + CTA "Nova solicitação" + selos de confiança +
+ * mascote) → Categorias populares → "Como funciona" (3 passos) → Atalhos.
+ * Segue o design system (tokens, sem cor hardcoded) e os primitivos do app
+ * (SearchInput, SectionHeader, IconChip, CategoryGrid). Somente camada visual;
+ * usa as rotas existentes.
  */
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  Plus,
-  ClipboardList,
-  MessageSquare,
-  Star,
   ChevronRight,
+  ClipboardList,
+  CreditCard,
+  Handshake,
+  Inbox,
+  MessageSquare,
+  PencilLine,
+  Plus,
+  ShieldCheck,
+  Star,
   type LucideIcon,
 } from "lucide-react";
 
@@ -25,6 +33,38 @@ import { SectionHeader } from "@/components/ui/section-header";
 import { IconChip } from "@/components/ui/icon-chip";
 import type { User } from "@/types";
 import { CategoryGrid } from "@/modules/home/category-grid";
+
+const TRUST: { icon: LucideIcon; label: string }[] = [
+  { icon: ShieldCheck, label: "Profissionais verificados" },
+  { icon: Star, label: "Avaliações reais" },
+  { icon: CreditCard, label: "Pagamento seguro" },
+];
+
+const STEPS: {
+  icon: LucideIcon;
+  color: "blue" | "orange" | "green";
+  title: string;
+  desc: string;
+}[] = [
+  {
+    icon: PencilLine,
+    color: "blue",
+    title: "Descreva o serviço",
+    desc: "Conte o que você precisa em menos de 1 minuto.",
+  },
+  {
+    icon: Inbox,
+    color: "orange",
+    title: "Receba propostas",
+    desc: "Profissionais da sua região entram em contato.",
+  },
+  {
+    icon: Handshake,
+    color: "green",
+    title: "Contrate o melhor",
+    desc: "Compare avaliações e escolha com segurança.",
+  },
+];
 
 interface Shortcut {
   href: string;
@@ -72,34 +112,66 @@ export function CustomerHome({ user }: { user: User }) {
 
   return (
     <main className="mx-auto max-w-5xl px-4 pb-16 pt-6 sm:px-6">
-      {/* Saudação + busca + CTA */}
-      <section className="rounded-2xl bg-primary px-5 py-6 text-primary-foreground sm:px-8 sm:py-8">
-        <p className="text-sm font-medium text-primary-foreground/80">
-          Olá{firstName ? `, ${firstName}` : ""}
-        </p>
-        <h1 className="mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl">
-          O que você precisa hoje?
-        </h1>
+      {/* Hero: saudação + busca + CTA + selos + mascote */}
+      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-blue-700 px-5 py-6 text-primary-foreground sm:px-8 sm:py-8">
+        {/* Brilho decorativo */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-primary-foreground/10 blur-3xl"
+        />
 
-        <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-          <form onSubmit={handleSearch} className="flex-1">
-            <SearchInput
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Buscar serviço (ex.: faxina, eletricista)"
-              aria-label="Buscar serviço"
-              className="h-11 bg-card text-foreground"
-            />
-          </form>
-          <Link href="/leads/new" className="shrink-0">
-            <Button
-              size="lg"
-              className="w-full bg-brand font-semibold text-brand-foreground hover:bg-brand/90"
-            >
-              <Plus className="mr-2 h-4 w-4" aria-hidden />
-              Nova solicitação
-            </Button>
-          </Link>
+        {/* Mascote (decorativo, desktop) */}
+        <Image
+          src="/brand/mascote-profissional.webp"
+          width={300}
+          height={440}
+          alt=""
+          aria-hidden
+          priority
+          className="pointer-events-none absolute -bottom-3 right-3 hidden h-44 w-auto drop-shadow-xl sm:block lg:right-10 lg:h-52"
+        />
+
+        <div className="relative z-10 max-w-xl">
+          <p className="text-sm font-medium text-primary-foreground/80">
+            Olá{firstName ? `, ${firstName}` : ""}
+          </p>
+          <h1 className="mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl">
+            O que você precisa hoje?
+          </h1>
+
+          <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+            <form onSubmit={handleSearch} className="flex-1">
+              <SearchInput
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Buscar serviço (ex.: faxina, eletricista)"
+                aria-label="Buscar serviço"
+                className="h-11 bg-card text-foreground"
+              />
+            </form>
+            <Link href="/leads/new" className="shrink-0">
+              <Button
+                size="lg"
+                className="w-full bg-brand font-semibold text-brand-foreground hover:bg-brand/90"
+              >
+                <Plus className="mr-2 h-4 w-4" aria-hidden />
+                Nova solicitação
+              </Button>
+            </Link>
+          </div>
+
+          {/* Selos de confiança */}
+          <ul className="mt-5 flex flex-wrap gap-x-5 gap-y-2">
+            {TRUST.map(({ icon: Icon, label }) => (
+              <li
+                key={label}
+                className="flex items-center gap-1.5 text-xs font-medium text-primary-foreground/90"
+              >
+                <Icon className="h-4 w-4 text-brand" aria-hidden />
+                {label}
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
@@ -120,8 +192,33 @@ export function CustomerHome({ user }: { user: User }) {
         />
       </section>
 
-      {/* Atalhos */}
+      {/* Como funciona */}
       <section className="pb-4">
+        <SectionHeader title="Como funciona" className="mb-4" />
+        <div className="grid gap-3 sm:grid-cols-3">
+          {STEPS.map((step, i) => (
+            <div
+              key={step.title}
+              className="relative rounded-xl border bg-card p-4"
+            >
+              <span
+                aria-hidden
+                className="absolute right-3 top-3 text-2xl font-extrabold text-muted-foreground/15"
+              >
+                {i + 1}
+              </span>
+              <IconChip icon={step.icon} color={step.color} />
+              <p className="mt-3 text-sm font-bold tracking-tight">
+                {step.title}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">{step.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Atalhos */}
+      <section className="pb-4 pt-4">
         <SectionHeader title="Atalhos" className="mb-4" />
         <div className="grid gap-3 sm:grid-cols-3">
           {SHORTCUTS.map((item) => (
