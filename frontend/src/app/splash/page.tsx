@@ -131,7 +131,7 @@ export default function SplashPage() {
         <CityBackdrop />
 
         {/* Marca + claim */}
-        <div className="relative z-20 mt-12 flex flex-col items-center px-6 text-center">
+        <div className="relative z-20 mt-24 flex flex-col items-center px-6 text-center">
           <span className="relative inline-block text-6xl font-extrabold tracking-tight drop-shadow">
             <Image
               src="/brand/logo-casa-branca.png"

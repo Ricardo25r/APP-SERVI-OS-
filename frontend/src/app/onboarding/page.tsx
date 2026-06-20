@@ -14,15 +14,11 @@
  */
 
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   BadgeCheck,
   ChevronRight,
-  Droplets,
-  Hammer,
-  Paintbrush,
-  Plug,
-  Search,
   ShieldCheck,
   Star,
   TrendingUp,
@@ -36,52 +32,54 @@ import { useRedirectAuthenticated } from "@/modules/auth";
 /* ---------------------------------- Slides --------------------------------- */
 
 const PROS = [
-  { name: "Eletricista", rating: "4,9", tone: "bg-blue-100 text-blue-700" },
-  { name: "Encanador", rating: "4,8", tone: "bg-success/15 text-success" },
-  { name: "Pintor", rating: "4,7", tone: "bg-orange-100 text-brand" },
-  { name: "Pedreiro", rating: "4,9", tone: "bg-blue-100 text-blue-700" },
+  { name: "Eletricista", rating: "4,9", img: "/brand/avatar-1.png" },
+  { name: "Encanador", rating: "4,8", img: "/brand/avatar-3.png" },
+  { name: "Pintor", rating: "4,7", img: "/brand/avatar-2.png" },
+  { name: "Pedreiro", rating: "4,9", img: "/brand/avatar-4.png" },
 ];
 
-/** Slide 1 — lista de profissionais + categorias flutuantes. */
+/** Slide 1 — lista de profissionais (fotos) + categorias flutuantes + lupa. */
 function IllustrationFind() {
   const chips = [
-    { icon: Paintbrush, cls: "bg-blue-100 text-blue-700", pos: "left-0 top-6" },
-    { icon: Plug, cls: "bg-orange-100 text-brand", pos: "left-2 top-32" },
-    { icon: Droplets, cls: "bg-success/15 text-success", pos: "right-0 top-10" },
-    { icon: Hammer, cls: "bg-purple-100 text-purple-700", pos: "right-1 top-36" },
+    { src: "/brand/icon-rolo.png", pos: "left-0 top-6" },
+    { src: "/brand/icon-tomada.png", pos: "left-1 top-32" },
+    { src: "/brand/icon-torneira.png", pos: "right-0 top-10" },
+    { src: "/brand/icon-tijolo.png", pos: "right-1 top-36" },
   ];
   return (
     <div className="relative mx-auto h-72 w-full max-w-xs">
-      {chips.map(({ icon: Icon, cls, pos }, i) => (
-        <span
+      {chips.map((c, i) => (
+        <Image
           key={i}
+          src={c.src}
+          width={96}
+          height={96}
+          alt=""
+          aria-hidden
           className={cn(
-            "absolute inline-flex h-12 w-12 items-center justify-center rounded-2xl shadow-sm",
-            cls,
-            pos
+            "absolute h-12 w-12 object-contain drop-shadow-sm",
+            c.pos
           )}
-        >
-          <Icon className="h-6 w-6" aria-hidden />
-        </span>
+        />
       ))}
 
-      {/* "Telefone" com a lista */}
+      {/* "Telefone" com a lista de profissionais */}
       <div className="absolute left-1/2 top-1 h-[17rem] w-44 -translate-x-1/2 rounded-[1.75rem] border-4 border-foreground/10 bg-card p-2 shadow-xl">
         <div className="mx-auto mb-2 mt-1 h-1.5 w-10 rounded-full bg-foreground/10" />
         <div className="space-y-2">
           {PROS.map((p) => (
             <div
               key={p.name}
-              className="flex items-center gap-2 rounded-xl border border-border/60 bg-background p-2"
+              className="flex items-center gap-2 rounded-xl border border-border/60 bg-background p-1.5"
             >
-              <span
-                className={cn(
-                  "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold",
-                  p.tone
-                )}
-              >
-                {p.name[0]}
-              </span>
+              <Image
+                src={p.img}
+                width={56}
+                height={56}
+                alt=""
+                aria-hidden
+                className="h-7 w-7 shrink-0 rounded-full object-cover"
+              />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-[11px] font-semibold text-foreground">
                   {p.name}
@@ -97,10 +95,15 @@ function IllustrationFind() {
         </div>
       </div>
 
-      {/* Lupa */}
-      <span className="absolute bottom-6 left-1/2 inline-flex h-14 w-14 translate-x-6 items-center justify-center rounded-full border-4 border-primary bg-card shadow-lg">
-        <Search className="h-6 w-6 text-primary" aria-hidden />
-      </span>
+      {/* Lupa (grande, sobre o telefone) */}
+      <Image
+        src="/brand/icon-lupa.png"
+        width={140}
+        height={140}
+        alt=""
+        aria-hidden
+        className="absolute bottom-5 left-1/2 h-20 w-20 translate-x-10 object-contain drop-shadow-lg"
+      />
     </div>
   );
 }
