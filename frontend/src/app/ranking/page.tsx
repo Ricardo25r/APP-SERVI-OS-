@@ -16,13 +16,14 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectOption } from "@/components/ui/select";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { BRAZIL_STATES } from "@/modules/profile/constants";
+import { MyRankCard } from "@/modules/gamification/my-rank-card";
 import { RankingTable } from "@/modules/gamification/ranking-table";
 import type { RankingFilters } from "@/modules/gamification/types";
 
 const RANKING_LIMIT = 50;
 
 export default function RankingPage() {
-  const { user, isAuthenticated, hasHydrated } = useRequireAuth();
+  const { user, role, isAuthenticated, hasHydrated } = useRequireAuth();
 
   // Estado do formulário (rascunho) vs. filtros aplicados (usados na query).
   const [cityDraft, setCityDraft] = useState("");
@@ -75,6 +76,8 @@ export default function RankingPage() {
         </div>
       </header>
 
+      {role === "professional" && <MyRankCard className="mb-6" />}
+
       <form
         onSubmit={handleSubmit}
         className="mb-6 grid gap-4 rounded-2xl border bg-card p-4 shadow-sm sm:grid-cols-[1fr_auto_auto] sm:items-end"
@@ -121,7 +124,7 @@ export default function RankingPage() {
         </div>
       </form>
 
-      <RankingTable filters={applied} />
+      <RankingTable filters={applied} currentUserId={user.id} />
     </main>
   );
 }

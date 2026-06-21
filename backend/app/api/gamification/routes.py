@@ -24,6 +24,7 @@ from app.models import User
 from app.schemas.gamification import (
     LevelsResponse,
     MyGamificationOut,
+    MyRankOut,
     RankingResponse,
 )
 from app.services.gamification import GamificationService
@@ -63,6 +64,20 @@ async def ranking(
     doc 08). Público (não exige autenticação)."""
     service = GamificationService(db)
     return await service.ranking(limit=limit, city=city, state=state)
+
+
+@router.get(
+    "/ranking/me",
+    response_model=MyRankOut,
+    summary="Minha posição no ranking (usuário autenticado)",
+)
+async def my_rank(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> MyRankOut:
+    """Posição do usuário logado no ranking de profissionais por XP."""
+    service = GamificationService(db)
+    return await service.my_rank(current_user)
 
 
 @router.get(

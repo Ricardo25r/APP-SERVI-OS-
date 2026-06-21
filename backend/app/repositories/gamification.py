@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import uuid
 
-from sqlalchemy import Select, select
+from sqlalchemy import Select, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import ProfessionalProfile, User, XpTransaction
@@ -102,3 +102,33 @@ class GamificationRepository:
         ).limit(limit)
         result = await self.db.execute(stmt)
         return [(row[0], row[1]) for row in result.all()]
+
+    # ------------------------------------------------------------------ #
+    # Posição no ranking (contagens para o "Nº X de Y")
+    # ------------------------------------------------------------------ #
+    async def count_professionals(self) -> int:
+        """Total de profissionais ativos (denominador do ranking)."""
+        result = await self.db.execute(
+            select(func.count())
+            .select_from(ProfessionalProfile)
+            .join(User, ProfessionalProfile.user_id == User.id)
+            .where(
+                ProfessionalProfile.deleted_at.is_(None),
+                User.deleted_at.is_(None),
+            )
+        )
+        return int(result.scalar_one())
+
+    async def count_professionals_with_more_xp(self, xp: int) -> int:
+        """Quantos profissionais ativos têm XP estritamente maior que ``xp``."""
+        result = await self.db.execute(
+            select(func.count())
+            .select_from(ProfessionalProfile)
+            .join(User, ProfessionalProfile.user_id == User.id)
+            .where(
+                ProfessionalProfile.deleted_at.is_(None),
+                User.deleted_at.is_(None),
+                ProfessionalProfile.xp > xp,
+            )
+        )
+        return int(result.scalar_one())

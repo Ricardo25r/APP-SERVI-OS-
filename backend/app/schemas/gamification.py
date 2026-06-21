@@ -18,6 +18,7 @@ __all__ = [
     "XpTransactionOut",
     "LevelInfo",
     "MyGamificationOut",
+    "MyRankOut",
     "RankingItem",
     "RankingResponse",
     "LevelsResponse",
@@ -81,6 +82,24 @@ class MyGamificationOut(BaseModel):
     # progresso DENTRO do nível, não a partir do zero absoluto.
     level_min_xp: int = 0
     recent_transactions: list[XpTransactionOut]
+
+
+# --------------------------------------------------------------------------- #
+# /ranking/me — minha posição
+# --------------------------------------------------------------------------- #
+class MyRankOut(BaseModel):
+    """Posição do usuário no ranking de profissionais por XP.
+
+    ``is_ranked=False`` para quem não tem perfil profissional (customer): ``rank``
+    nulo, mas ``total`` ainda informa quantos profissionais existem.
+    """
+
+    is_ranked: bool
+    rank: int | None = None
+    total: int
+    xp: int
+    level: int
+    level_name: str
 
 
 # --------------------------------------------------------------------------- #

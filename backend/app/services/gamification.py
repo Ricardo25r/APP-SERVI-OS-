@@ -42,6 +42,7 @@ from app.repositories.gamification import GamificationRepository
 from app.schemas.gamification import (
     LevelInfo,
     MyGamificationOut,
+    MyRankOut,
     RankingItem,
     RankingResponse,
     XpTransactionOut,
@@ -181,6 +182,39 @@ class GamificationService:
             recent_transactions=[
                 XpTransactionOut.model_validate(t) for t in txs
             ],
+        )
+
+    # ------------------------------------------------------------------ #
+    # /ranking/me — minha posição no ranking
+    # ------------------------------------------------------------------ #
+    async def my_rank(self, current_user: User) -> MyRankOut:
+        """Posição do ``current_user`` no ranking de profissionais por XP.
+
+        ``rank = (profissionais com mais XP) + 1`` (empates compartilham a
+        posição). Customer (sem perfil profissional) → ``is_ranked=False``."""
+        total = await self.repo.count_professionals()
+        profile = await self.repo.get_professional_profile_by_user(
+            current_user.id
+        )
+        if profile is None:
+            return MyRankOut(
+                is_ranked=False,
+                rank=None,
+                total=total,
+                xp=0,
+                level=LEVELS[0][0],
+                level_name=LEVELS[0][1],
+            )
+        xp = profile.xp or 0
+        level_num, level_name = level_for_xp(xp)
+        ahead = await self.repo.count_professionals_with_more_xp(xp)
+        return MyRankOut(
+            is_ranked=True,
+            rank=ahead + 1,
+            total=total,
+            xp=xp,
+            level=level_num,
+            level_name=level_name,
         )
 
     # ------------------------------------------------------------------ #

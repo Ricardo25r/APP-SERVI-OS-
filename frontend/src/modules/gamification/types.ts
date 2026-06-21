@@ -46,6 +46,7 @@ export interface GamificationLevel {
 
 /** Item do ranking (`GET /gamification/ranking`). */
 export interface RankingItem {
+  user_id?: string | null;
   name?: string | null;
   headline?: string | null;
   city?: string | null;
@@ -54,6 +55,16 @@ export interface RankingItem {
   level?: number | null;
   level_name?: string | null;
   rating?: number | null;
+}
+
+/** Minha posição no ranking (`GET /gamification/ranking/me`). */
+export interface MyRank {
+  is_ranked: boolean;
+  rank: number | null;
+  total: number;
+  xp: number;
+  level: number;
+  level_name?: string | null;
 }
 
 /** Filtros opcionais do ranking. */

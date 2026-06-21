@@ -26,6 +26,8 @@ export const rankingKey = (filters: RankingFilters) =>
 
 interface RankingTableProps {
   filters?: RankingFilters;
+  /** Id do usuário logado — destaca a própria linha/pódio ("Você"). */
+  currentUserId?: string;
   className?: string;
 }
 
@@ -63,9 +65,11 @@ function locationLabel(item: RankingItem): string | null {
 function PodiumCard({
   item,
   position,
+  isMe = false,
 }: {
   item: RankingItem;
   position: 1 | 2 | 3;
+  isMe?: boolean;
 }) {
   const style = PODIUM_STYLE[position];
   const name = item.name?.trim() || "Profissional";
@@ -79,6 +83,7 @@ function PodiumCard({
       className={cn(
         "flex flex-col items-center rounded-2xl border bg-card p-4 text-center shadow-sm",
         position === 1 && "border-brand/40",
+        isMe && "ring-2 ring-brand ring-offset-2 ring-offset-background",
         style.order
       )}
     >
@@ -103,6 +108,11 @@ function PodiumCard({
       <p className="mt-3 line-clamp-1 text-sm font-bold text-foreground">
         {name}
       </p>
+      {isMe && (
+        <span className="mt-1 inline-flex rounded-full bg-brand px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand-foreground">
+          Você
+        </span>
+      )}
       {item.headline?.trim() && (
         <p className="line-clamp-1 text-xs text-muted-foreground">
           {item.headline}
@@ -138,9 +148,11 @@ function PodiumCard({
 function RankingRow({
   item,
   position,
+  isMe = false,
 }: {
   item: RankingItem;
   position: number;
+  isMe?: boolean;
 }) {
   const name = item.name?.trim() || "Profissional";
   const location = locationLabel(item);
@@ -149,7 +161,12 @@ function RankingRow({
   const rating = typeof item.rating === "number" ? item.rating : 0;
 
   return (
-    <li className="flex items-center gap-3 rounded-xl border bg-card p-3 shadow-sm sm:gap-4 sm:p-4">
+    <li
+      className={cn(
+        "flex items-center gap-3 rounded-xl border bg-card p-3 shadow-sm sm:gap-4 sm:p-4",
+        isMe && "border-brand/50 bg-brand/[0.05]"
+      )}
+    >
       <span
         aria-hidden
         className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-bold tabular-nums text-muted-foreground sm:h-10 sm:w-10"
@@ -161,8 +178,13 @@ function RankingRow({
       <Avatar name={name} size="md" className="hidden shrink-0 sm:inline-flex" />
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold text-foreground sm:text-base">
-          {name}
+        <p className="flex items-center gap-2 text-sm font-semibold text-foreground sm:text-base">
+          <span className="truncate">{name}</span>
+          {isMe && (
+            <span className="shrink-0 rounded-full bg-brand px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand-foreground">
+              Você
+            </span>
+          )}
         </p>
         {item.headline?.trim() && (
           <p className="truncate text-xs text-muted-foreground sm:text-sm">
@@ -194,7 +216,11 @@ function RankingRow({
   );
 }
 
-export function RankingTable({ filters = {}, className }: RankingTableProps) {
+export function RankingTable({
+  filters = {},
+  currentUserId,
+  className,
+}: RankingTableProps) {
   const { data, isLoading, isError, error } = useQuery<RankingItem[]>({
     queryKey: rankingKey(filters),
     queryFn: () => fetchRanking(filters),
@@ -244,6 +270,7 @@ export function RankingTable({ filters = {}, className }: RankingTableProps) {
             key={`podium-${item.name ?? "pro"}-${idx}`}
             item={item}
             position={(idx + 1) as 1 | 2 | 3}
+            isMe={!!currentUserId && item.user_id === currentUserId}
           />
         ))}
       </ul>
@@ -261,6 +288,7 @@ export function RankingTable({ filters = {}, className }: RankingTableProps) {
                 key={`row-${item.name ?? "pro"}-${idx}`}
                 item={item}
                 position={idx + 4}
+                isMe={!!currentUserId && item.user_id === currentUserId}
               />
             ))}
           </ul>

@@ -15,6 +15,7 @@ import { apiGet } from "@/services/api";
 import type {
   GamificationLevel,
   GamificationMe,
+  MyRank,
   RankingFilters,
   RankingItem,
 } from "./types";
@@ -64,4 +65,9 @@ export async function fetchRanking(
 
   const data = await apiGet<unknown>(path);
   return unwrapList<RankingItem>(data);
+}
+
+/** Posição do usuário logado no ranking (Nº X de Y). */
+export function fetchMyRank(): Promise<MyRank> {
+  return apiGet<MyRank>("/gamification/ranking/me");
 }
