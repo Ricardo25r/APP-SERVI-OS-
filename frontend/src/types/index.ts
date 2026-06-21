@@ -46,6 +46,8 @@ export interface User {
   status: UserStatus;
   last_login_at: string | null;
   created_at: string;
+  /** URL (presignada) da foto de perfil; ausente = usa iniciais. */
+  avatar_url?: string | null;
   /** Flags opcionais devolvidas por `GET /auth/me`. */
   has_customer_profile?: boolean;
   has_professional_profile?: boolean;

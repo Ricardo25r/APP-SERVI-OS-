@@ -10,8 +10,16 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    EmailStr,
+    Field,
+    computed_field,
+    field_validator,
+)
 
+from app.core.storage import presigned_get_url
 from app.models import UserRole, UserStatus
 
 # Papéis permitidos no auto-cadastro (admin NUNCA via /register — §4).
@@ -105,6 +113,18 @@ class UserOut(BaseModel):
     status: UserStatus
     last_login_at: datetime | None
     created_at: datetime
+    # Chave interna da foto (não exposta); a URL presignada vem em avatar_url.
+    avatar_key: str | None = Field(default=None, exclude=True)
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def avatar_url(self) -> str | None:
+        if not self.avatar_key:
+            return None
+        try:
+            return presigned_get_url(self.avatar_key)
+        except Exception:  # noqa: BLE001 - URL é best-effort
+            return None
 
 
 class MeOut(UserOut):

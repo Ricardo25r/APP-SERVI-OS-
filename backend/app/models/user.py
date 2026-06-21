@@ -63,6 +63,8 @@ class User(UUIDPKMixin, TimestampMixin, SoftDeleteMixin, Base):
     last_login_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
+    # Chave da foto de perfil no storage (MinIO); URL presignada exposta no schema.
+    avatar_key: Mapped[str | None] = mapped_column(String(512), nullable=True)
 
     # Relacionamentos (§2.1).
     customer_profile: Mapped[CustomerProfile | None] = relationship(

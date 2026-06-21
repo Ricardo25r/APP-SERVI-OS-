@@ -15,12 +15,14 @@ from __future__ import annotations
 
 import uuid
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import get_current_user, require_roles
+from app.core.storage import upload_bytes
 from app.database.session import get_db
 from app.models import User, UserRole
+from app.schemas.auth import UserOut
 from app.schemas.users import (
     CategoriesOut,
     CustomerProfileIn,
@@ -35,6 +37,45 @@ from app.schemas.users import (
 from app.services.users import UserProfileService
 
 router = APIRouter()
+
+_MAX_AVATAR_BYTES = 5 * 1024 * 1024
+_ALLOWED_AVATAR_TYPES = {"image/jpeg", "image/png", "image/webp"}
+_AVATAR_EXT = {"image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp"}
+
+
+@router.post(
+    "/me/avatar",
+    response_model=UserOut,
+    summary="Atualizar foto de perfil",
+)
+async def upload_avatar(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> User:
+    """Foto de perfil do usuário autenticado (JPG/PNG/WEBP, até 5 MB)."""
+    if file.content_type not in _ALLOWED_AVATAR_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail="Formato inválido. Use JPG, PNG ou WEBP.",
+        )
+    data = await file.read()
+    if not data:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Arquivo vazio."
+        )
+    if len(data) > _MAX_AVATAR_BYTES:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail="Imagem muito grande (máximo 5 MB).",
+        )
+    ext = _AVATAR_EXT.get(file.content_type, "")
+    key = f"avatars/{current_user.id}/{uuid.uuid4().hex}{ext}"
+    upload_bytes(data, key, content_type=file.content_type)
+    current_user.avatar_key = key
+    await db.commit()
+    await db.refresh(current_user)
+    return current_user
 
 
 # --------------------------------------------------------------------------- #

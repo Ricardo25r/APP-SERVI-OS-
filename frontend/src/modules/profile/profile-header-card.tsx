@@ -8,7 +8,8 @@
  */
 "use client";
 
-import { Mail, Phone } from "lucide-react";
+import { useRef, useState, type ChangeEvent } from "react";
+import { Camera, Loader2, Mail, Phone } from "lucide-react";
 
 import { Avatar } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,6 +17,8 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { StarRating } from "@/modules/reviews/star-rating";
 import { LevelBadge } from "@/modules/gamification/level-badge";
 import { formatXp } from "@/modules/gamification/utils";
+import { apiUpload } from "@/services/api";
+import { useAuthStore } from "@/store/auth";
 import type { User, UserRole } from "@/types";
 
 const ROLE_LABEL: Record<UserRole, string> = {
@@ -39,11 +42,54 @@ interface ProfileHeaderCardProps {
 }
 
 export function ProfileHeaderCard({ user, reputation }: ProfileHeaderCardProps) {
+  const setUser = useAuthStore((s) => s.setUser);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
+  async function onPickAvatar(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = ""; // permite reenviar a mesma foto depois
+    if (!file || !file.type.startsWith("image/")) return;
+    setUploading(true);
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const updated = await apiUpload<User>("/users/me/avatar", form);
+      setUser({ ...user, ...updated });
+    } catch {
+      /* mantém o avatar atual em caso de falha */
+    } finally {
+      setUploading(false);
+    }
+  }
+
   return (
     <Card className="overflow-hidden">
       <CardContent className="space-y-4 p-5 sm:p-6">
         <div className="flex items-center gap-4">
-          <Avatar name={user.name} size="lg" />
+          <div className="relative shrink-0">
+            <Avatar src={user.avatar_url} name={user.name} size="lg" />
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              disabled={uploading}
+              aria-label="Alterar foto"
+              className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-brand text-brand-foreground shadow ring-2 ring-card transition-colors hover:bg-brand/90 disabled:opacity-60"
+            >
+              {uploading ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
+              ) : (
+                <Camera className="h-3.5 w-3.5" aria-hidden />
+              )}
+            </button>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={onPickAvatar}
+            />
+          </div>
           <div className="min-w-0 flex-1 space-y-1">
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="truncate text-lg font-bold leading-tight tracking-tight">

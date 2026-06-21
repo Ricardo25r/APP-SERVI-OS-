@@ -67,6 +67,7 @@ const Avatar = React.forwardRef<HTMLSpanElement, AvatarProps>(
             alt={name ?? "Avatar"}
             width={px}
             height={px}
+            unoptimized
             className="h-full w-full object-cover"
           />
         ) : (
