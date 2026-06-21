@@ -14,6 +14,7 @@ import Link from "next/link";
 import {
   Briefcase,
   ChevronRight,
+  Loader2,
   MapPin,
   MessageSquare,
   Plus,
@@ -26,17 +27,24 @@ import {
 import { Button } from "@/components/ui/button";
 import { IconChip } from "@/components/ui/icon-chip";
 import { cn } from "@/lib/utils";
-import { apiGet } from "@/services/api";
+import { apiGet, apiPost } from "@/services/api";
 import type {
   CreditWallet,
   Lead,
+  LeadContact,
+  LeadPurchase,
   Paginated,
   ProfessionalProfile,
   User,
 } from "@/types";
 
 import { categoryVisual } from "@/modules/leads/category-icon";
-import { normalizeLeadsResponse } from "@/modules/leads/marketplace/utils";
+import { ContactCard } from "@/modules/leads/marketplace/contact-card";
+import {
+  normalizeLeadsResponse,
+  purchaseErrorMessage,
+  type PurchaseErrorInfo,
+} from "@/modules/leads/marketplace/utils";
 
 type Filter = "todos" | "hoje" | "novos";
 
@@ -104,6 +112,44 @@ export function ProfessionalHome({ user }: { user: User }) {
   const [filter, setFilter] = React.useState<Filter>("todos");
 
   const firstName = user.name?.trim().split(/\s+/)[0] ?? "";
+
+  // Compra/desbloqueio inline (mesmo fluxo do marketplace).
+  const [buyingId, setBuyingId] = React.useState<string | null>(null);
+  const [contacts, setContacts] = React.useState<
+    Record<string, LeadContact>
+  >({});
+  const [errors, setErrors] = React.useState<
+    Record<string, PurchaseErrorInfo>
+  >({});
+
+  const handleBuy = React.useCallback(async (lead: Lead) => {
+    setBuyingId(lead.id);
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next[lead.id];
+      return next;
+    });
+    try {
+      const purchase = await apiPost<LeadPurchase>("/lead-purchases/", {
+        lead_id: lead.id,
+      });
+      const contact = purchase.contact ?? purchase.lead?.contact;
+      if (contact) {
+        setContacts((prev) => ({ ...prev, [lead.id]: contact }));
+      }
+      setSummary((s) => ({ ...s, contatos: (s.contatos ?? 0) + 1 }));
+      try {
+        const wallet = await apiGet<CreditWallet>("/credits/balance");
+        setSummary((s) => ({ ...s, balance: wallet.balance ?? s.balance }));
+      } catch {
+        /* saldo é informativo */
+      }
+    } catch (err) {
+      setErrors((prev) => ({ ...prev, [lead.id]: purchaseErrorMessage(err) }));
+    } finally {
+      setBuyingId(null);
+    }
+  }, []);
 
   React.useEffect(() => {
     let active = true;
@@ -293,7 +339,14 @@ export function ProfessionalHome({ user }: { user: User }) {
           <ul className="space-y-2">
             {visibleLeads.map((lead) => (
               <li key={lead.id}>
-                <LeadRow lead={lead} />
+                <LeadRow
+                  lead={lead}
+                  balance={summary.balance}
+                  buying={buyingId === lead.id}
+                  contact={contacts[lead.id]}
+                  error={errors[lead.id] ?? null}
+                  onBuy={handleBuy}
+                />
               </li>
             ))}
           </ul>
@@ -356,7 +409,21 @@ function StatTile({
   );
 }
 
-function LeadRow({ lead }: { lead: Lead }) {
+function LeadRow({
+  lead,
+  balance,
+  buying,
+  contact,
+  error,
+  onBuy,
+}: {
+  lead: Lead;
+  balance: number | null;
+  buying: boolean;
+  contact?: LeadContact;
+  error?: PurchaseErrorInfo | null;
+  onBuy: (lead: Lead) => void;
+}) {
   const visual = categoryVisual({
     slug: lead.category?.slug,
     name: lead.category?.name,
@@ -365,53 +432,94 @@ function LeadRow({ lead }: { lead: Lead }) {
     .filter(Boolean)
     .join(", ");
   const isNew = isRecent(lead.created_at);
+  const canAfford =
+    lead.affordable ?? (balance === null ? true : balance >= lead.credits_cost);
+  const purchased = Boolean(contact);
 
   return (
-    <Link
-      href={`/marketplace/${lead.id}`}
-      className="flex items-center gap-3 rounded-xl border bg-card p-3 shadow-sm transition-colors hover:bg-accent/40"
-    >
-      <IconChip icon={visual.icon} color={visual.color} size="md" aria-hidden />
+    <div className="rounded-xl border bg-card p-3 shadow-sm">
+      <div className="flex items-center gap-3">
+        <IconChip icon={visual.icon} color={visual.color} size="md" aria-hidden />
 
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2 text-[11px]">
-          {isNew && (
-            <span className="font-bold uppercase tracking-wide text-brand">
-              Novo
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 text-[11px]">
+            {isNew && (
+              <span className="font-bold uppercase tracking-wide text-brand">
+                Novo
+              </span>
+            )}
+            <span className="text-muted-foreground">
+              {whenLabel(lead.created_at)}
             </span>
+          </div>
+          <Link
+            href={`/marketplace/${lead.id}`}
+            className="mt-0.5 block truncate text-sm font-bold text-foreground hover:text-primary"
+          >
+            {lead.title}
+          </Link>
+          {location && (
+            <p className="mt-0.5 inline-flex items-center gap-1 truncate text-xs text-muted-foreground">
+              <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden />
+              <span className="truncate">{location}</span>
+            </p>
           )}
-          <span className="text-muted-foreground">
-            {whenLabel(lead.created_at)}
-          </span>
         </div>
-        <p className="mt-0.5 truncate text-sm font-bold text-foreground">
-          {lead.title}
-        </p>
-        {location && (
-          <p className="mt-0.5 inline-flex items-center gap-1 truncate text-xs text-muted-foreground">
-            <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden />
-            <span className="truncate">{location}</span>
+
+        <div className="shrink-0 text-right">
+          <p className="text-sm font-bold tabular-nums text-brand">
+            {lead.credits_cost}
+            <span className="ml-1 text-[11px] font-medium text-muted-foreground">
+              créditos
+            </span>
           </p>
-        )}
+          {lead.distance_km != null && (
+            <p className="mt-0.5 inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+              <Ruler className="h-3 w-3" aria-hidden />
+              {lead.distance_km.toLocaleString("pt-BR")} km
+            </p>
+          )}
+          {!purchased && (
+            <button
+              type="button"
+              onClick={() => onBuy(lead)}
+              disabled={buying || !canAfford}
+              title={!canAfford ? "Saldo insuficiente" : undefined}
+              className="mt-1 inline-flex items-center justify-center gap-1 rounded-lg bg-brand px-2.5 py-1 text-xs font-bold text-brand-foreground transition-colors hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {buying && <Loader2 className="h-3 w-3 animate-spin" aria-hidden />}
+              {buying ? "..." : "Desbloquear"}
+            </button>
+          )}
+        </div>
       </div>
 
-      <div className="shrink-0 text-right">
-        <p className="text-sm font-bold tabular-nums text-brand">
-          {lead.credits_cost}
-          <span className="ml-1 text-[11px] font-medium text-muted-foreground">
-            créditos
-          </span>
-        </p>
-        {lead.distance_km != null && (
-          <p className="mt-0.5 inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-            <Ruler className="h-3 w-3" aria-hidden />
-            {lead.distance_km.toLocaleString("pt-BR")} km
-          </p>
-        )}
-        <span className="mt-1 inline-flex items-center justify-center rounded-lg bg-brand px-2.5 py-1 text-xs font-bold text-brand-foreground">
-          Desbloquear
-        </span>
-      </div>
-    </Link>
+      {error && !purchased && (
+        <div className="mt-2 rounded-lg border border-destructive/40 bg-destructive/5 p-2 text-xs text-destructive">
+          <p>{error.message}</p>
+          {error.offerCredits && (
+            <Link
+              href="/credits"
+              className="mt-0.5 inline-block font-semibold underline underline-offset-4"
+            >
+              Adicionar créditos
+            </Link>
+          )}
+        </div>
+      )}
+
+      {contact && (
+        <div className="mt-2 space-y-2">
+          <ContactCard contact={contact} />
+          <Link
+            href="/conversas"
+            className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+          >
+            Abrir conversa
+            <ChevronRight className="h-3.5 w-3.5" aria-hidden />
+          </Link>
+        </div>
+      )}
+    </div>
   );
 }
