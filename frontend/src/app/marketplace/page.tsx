@@ -170,7 +170,7 @@ export default function MarketplacePage() {
       />
 
       <SectionHeader
-        title="Leads disponíveis"
+        title="Oportunidades disponíveis"
         actionLabel="Minhas compras"
         actionHref="/purchases"
         className="mb-4"

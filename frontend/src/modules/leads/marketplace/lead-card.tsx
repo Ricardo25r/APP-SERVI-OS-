@@ -166,7 +166,7 @@ export function LeadCard({
               {buying && (
                 <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
               )}
-              {buying ? "Comprando..." : `Comprar lead (${lead.credits_cost})`}
+              {buying ? "Desbloqueando..." : "Desbloquear contato"}
             </Button>
           )}
         </div>

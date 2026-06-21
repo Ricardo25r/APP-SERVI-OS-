@@ -254,7 +254,7 @@ export function ProfessionalHome({ user }: { user: User }) {
           icon={Briefcase}
           color="blue"
           value={loading ? "—" : String(leadsToday)}
-          label="Leads hoje"
+          label="Novas hoje"
         />
         <StatTile
           icon={Unlock}
@@ -287,7 +287,7 @@ export function ProfessionalHome({ user }: { user: User }) {
       <section className="space-y-3">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-base font-bold tracking-tight sm:text-lg">
-            Leads disponíveis
+            Oportunidades disponíveis
           </h2>
           <Link
             href="/marketplace"

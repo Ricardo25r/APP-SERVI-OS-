@@ -138,7 +138,7 @@ export default function MarketplaceLeadDetailPage() {
     <>
       <AppHeader
         mode="title"
-        title="Detalhes do lead"
+        title="Detalhes da oportunidade"
         backHref="/marketplace"
         className="lg:hidden"
       />
@@ -224,7 +224,7 @@ export default function MarketplaceLeadDetailPage() {
                 <p className="text-sm text-foreground">
                   Para ver os dados de contato, use seus créditos. Após
                   desbloquear, você terá{" "}
-                  <span className="font-semibold text-brand">24h</span> para
+                  <span className="font-semibold text-brand">1 hora</span> para
                   iniciar o contato.
                 </p>
               </div>

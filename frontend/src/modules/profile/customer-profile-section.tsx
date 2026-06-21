@@ -22,7 +22,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { CitySelect } from "@/components/ui/city-select";
 import { Label } from "@/components/ui/label";
 import { Select, SelectOption } from "@/components/ui/select";
 import { apiGet, apiPatch, apiPost, ApiError } from "@/services/api";
@@ -151,20 +151,7 @@ export function CustomerProfileSection() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-[1fr_auto]">
-            <div className="space-y-2">
-              <Label htmlFor="customer-city">Cidade</Label>
-              <Input
-                id="customer-city"
-                placeholder="Ex.: Ariquemes"
-                value={form.city}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, city: e.target.value }))
-                }
-                disabled={mutation.isPending}
-                autoComplete="address-level2"
-              />
-            </div>
+          <div className="grid gap-4 sm:grid-cols-[auto_1fr]">
             <div className="space-y-2">
               <Label htmlFor="customer-state">Estado (UF)</Label>
               <Select
@@ -172,7 +159,7 @@ export function CustomerProfileSection() {
                 className="sm:w-28"
                 value={form.state}
                 onChange={(e) =>
-                  setForm((f) => ({ ...f, state: e.target.value }))
+                  setForm((f) => ({ ...f, state: e.target.value, city: "" }))
                 }
                 disabled={mutation.isPending}
               >
@@ -183,6 +170,16 @@ export function CustomerProfileSection() {
                   </SelectOption>
                 ))}
               </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="customer-city">Cidade</Label>
+              <CitySelect
+                id="customer-city"
+                uf={form.state}
+                value={form.city}
+                onChange={(city) => setForm((f) => ({ ...f, city }))}
+                disabled={mutation.isPending}
+              />
             </div>
           </div>
 
