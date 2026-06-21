@@ -12,11 +12,11 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, MessagesSquare } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 import { Avatar } from "@/components/ui/avatar";
-import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
 
 import { fetchConversations } from "./api";
@@ -80,11 +80,25 @@ export function ConversationList({
 
   if (conversations.length === 0) {
     return (
-      <EmptyState
-        icon={MessagesSquare}
-        title="Você ainda não tem conversas"
-        description="As conversas aparecem aqui quando um contato é estabelecido em uma solicitação ou oportunidade."
-      />
+      <div className="flex flex-col items-center gap-3 rounded-2xl border bg-card px-6 py-12 text-center shadow-sm">
+        <Image
+          src="/brand/mascote-tudo.png"
+          width={160}
+          height={220}
+          alt=""
+          aria-hidden
+          className="h-28 w-auto opacity-90 drop-shadow-sm"
+        />
+        <div className="space-y-1">
+          <p className="font-semibold text-foreground">
+            Você ainda não tem conversas
+          </p>
+          <p className="text-sm text-muted-foreground">
+            As conversas aparecem aqui quando um contato é estabelecido em uma
+            solicitação ou oportunidade.
+          </p>
+        </div>
+      </div>
     );
   }
 

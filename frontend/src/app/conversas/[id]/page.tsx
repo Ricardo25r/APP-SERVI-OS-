@@ -15,7 +15,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ChevronRight } from "lucide-react";
 
 import { AppHeader } from "@/components/app-shell/app-header";
 import { Avatar } from "@/components/ui/avatar";
@@ -60,6 +60,14 @@ export default function ConversaThreadPage() {
 
   const name = conversation ? counterpartName(conversation) : "Conversa";
   const leadTitle = conversation ? conversationLeadTitle(conversation) : null;
+  const leadId = conversation?.lead?.id;
+  // Link para o detalhe do serviço conforme o papel de quem vê.
+  const leadHref =
+    leadId && user.role === "professional"
+      ? `/marketplace/${leadId}`
+      : leadId && user.role === "customer"
+        ? `/leads/${leadId}`
+        : null;
 
   return (
     <>
@@ -100,22 +108,48 @@ export default function ConversaThreadPage() {
             <Avatar name={name} size="md" />
             <div className="min-w-0">
               <p className="truncate font-semibold text-foreground">{name}</p>
-              {leadTitle && (
-                <p className="truncate text-xs text-muted-foreground">
-                  {leadTitle}
-                </p>
-              )}
+              {leadTitle ? (
+                leadHref ? (
+                  <Link
+                    href={leadHref}
+                    className="flex items-center gap-1 truncate text-xs text-muted-foreground hover:text-primary"
+                  >
+                    {leadTitle}
+                    <ChevronRight className="h-3 w-3 shrink-0" aria-hidden />
+                  </Link>
+                ) : (
+                  <p className="truncate text-xs text-muted-foreground">
+                    {leadTitle}
+                  </p>
+                )
+              ) : null}
             </div>
           </header>
 
-          {/* No mobile, mostra o título do lead logo abaixo do AppHeader. */}
-          {leadTitle && (
-            <div className="border-b bg-muted/30 px-4 py-2 lg:hidden">
-              <p className="truncate text-xs text-muted-foreground">
-                {leadTitle}
-              </p>
-            </div>
-          )}
+          {/* No mobile, mostra o serviço (lead) logo abaixo do AppHeader. */}
+          {leadTitle ? (
+            leadHref ? (
+              <Link
+                href={leadHref}
+                className="flex items-center justify-between gap-2 border-b bg-muted/30 px-4 py-2 lg:hidden"
+              >
+                <span className="truncate text-xs text-muted-foreground">
+                  <span className="font-medium text-foreground">Solicitação:</span>{" "}
+                  {leadTitle}
+                </span>
+                <ChevronRight
+                  className="h-4 w-4 shrink-0 text-muted-foreground"
+                  aria-hidden
+                />
+              </Link>
+            ) : (
+              <div className="border-b bg-muted/30 px-4 py-2 lg:hidden">
+                <p className="truncate text-xs text-muted-foreground">
+                  {leadTitle}
+                </p>
+              </div>
+            )
+          ) : null}
 
           <MessageThread conversationId={id} currentUserId={user.id} />
           <MessageInput conversationId={id} currentUserId={user.id} />

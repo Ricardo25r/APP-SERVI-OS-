@@ -16,13 +16,13 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import Image from "next/image";
 import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { Loader2, MessageSquare } from "lucide-react";
+import { Check, CheckCheck, Loader2 } from "lucide-react";
 
-import { IconChip } from "@/components/ui/icon-chip";
 import { cn } from "@/lib/utils";
 
 import { fetchMessages } from "./api";
@@ -109,13 +109,20 @@ export function MessageThread({
     return (
       <div
         className={cn(
-          "flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center text-sm text-muted-foreground",
+          "flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center",
           className
         )}
       >
-        <IconChip icon={MessageSquare} color="blue" size="md" />
+        <Image
+          src="/brand/mascote-tudo.png"
+          width={160}
+          height={220}
+          alt=""
+          aria-hidden
+          className="h-28 w-auto opacity-90 drop-shadow-sm"
+        />
         <div className="space-y-0.5">
-          <p className="font-semibold text-foreground">Nenhuma mensagem ainda</p>
+          <p className="font-semibold text-foreground">Comece a conversa</p>
           <p className="text-xs text-muted-foreground">
             Envie a primeira mensagem abaixo.
           </p>
@@ -188,11 +195,21 @@ function MessageBubble({ message, mine }: MessageBubbleProps) {
         </p>
         <span
           className={cn(
-            "mt-1 block text-right text-[10px]",
+            "mt-1 flex items-center justify-end gap-1 text-[10px]",
             mine ? "text-primary-foreground/70" : "text-muted-foreground"
           )}
         >
           {formatTime(message.created_at)}
+          {mine ? (
+            message.read_at ? (
+              <CheckCheck
+                className="h-3.5 w-3.5 text-brand"
+                aria-label="Lida"
+              />
+            ) : (
+              <Check className="h-3.5 w-3.5" aria-label="Enviada" />
+            )
+          ) : null}
         </span>
       </div>
     </div>
