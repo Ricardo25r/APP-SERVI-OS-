@@ -69,12 +69,13 @@ class LeadPurchaseRepository:
             selectinload(Lead.category),
             selectinload(Lead.customer),
             selectinload(Lead.purchase),
+            selectinload(Lead.media),
         )
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
     async def get_with_relations(self, lead_id: uuid.UUID) -> Lead | None:
-        """Recarrega o lead com ``category``/``customer``/``purchase`` (eager)."""
+        """Recarrega o lead com category/customer/purchase/media (eager)."""
         stmt = (
             select(Lead)
             .where(Lead.id == lead_id, Lead.deleted_at.is_(None))
@@ -82,6 +83,7 @@ class LeadPurchaseRepository:
                 selectinload(Lead.category),
                 selectinload(Lead.customer),
                 selectinload(Lead.purchase),
+                selectinload(Lead.media),
             )
         )
         result = await self.db.execute(stmt)
@@ -101,6 +103,7 @@ class LeadPurchaseRepository:
                 selectinload(LeadPurchase.lead).selectinload(Lead.category),
                 selectinload(LeadPurchase.lead).selectinload(Lead.customer),
                 selectinload(LeadPurchase.lead).selectinload(Lead.purchase),
+                selectinload(LeadPurchase.lead).selectinload(Lead.media),
             )
         )
         result = await self.db.execute(stmt)
@@ -126,6 +129,7 @@ class LeadPurchaseRepository:
                 selectinload(LeadPurchase.lead).selectinload(Lead.category),
                 selectinload(LeadPurchase.lead).selectinload(Lead.customer),
                 selectinload(LeadPurchase.lead).selectinload(Lead.purchase),
+                selectinload(LeadPurchase.lead).selectinload(Lead.media),
             )
             .order_by(LeadPurchase.purchased_at.desc())
             .limit(limit)
