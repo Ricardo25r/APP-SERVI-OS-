@@ -32,7 +32,7 @@ Validação executada com Docker + Python 3.13 + Node 24:
 - [ ] **Docker Desktop** instalado e rodando (`docker --version`, `docker compose version`).
 - [ ] **Python 3.12+** disponível — no Windows via launcher: `py -3.12 --version` (ou `py --version`).
 - [ ] **Node 20+** e npm: `node --version` (>= 20), `npm --version`.
-- [ ] Repositório clonado em `C:\TrampoJa`.
+- [ ] Repositório clonado em `C:\FazTudo`.
 
 ---
 
@@ -83,7 +83,7 @@ Validação executada com Docker + Python 3.13 + Node 24:
 
 ## 3) Backend — FastAPI + health
 
-> Rodar a partir de `C:\TrampoJa\backend`. Quando o backend roda **localmente** (fora do compose), use `localhost` nas variáveis de host (db/redis/minio).
+> Rodar a partir de `C:\FazTudo\backend`. Quando o backend roda **localmente** (fora do compose), use `localhost` nas variáveis de host (db/redis/minio).
 
 - [ ] Criar e ativar o virtualenv (Windows / launcher `py`):
   ```powershell
@@ -144,7 +144,7 @@ Validação executada com Docker + Python 3.13 + Node 24:
 
 ## 6) Frontend — Next.js
 
-> Rodar a partir de `C:\TrampoJa\frontend`. Requer `frontend/.env.local` (passo 1).
+> Rodar a partir de `C:\FazTudo\frontend`. Requer `frontend/.env.local` (passo 1).
 
 - [ ] Instalar dependências e fazer o build de produção:
   ```powershell

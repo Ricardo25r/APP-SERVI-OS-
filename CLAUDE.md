@@ -39,4 +39,4 @@ Na prática: projetar/validar primeiro no viewport de celular (bottom-nav, FAB, 
 ## 🧭 Método
 
 - **Uma fase por vez** (ver `docs/00-CHECKLIST-EXECUCAO.md`). Cada fase: código + migrations + testes + documentação + checklist. **Fases 1–10 concluídas** + UI adaptada aos mockups (`design-system/telas-referencia/`); refino contínuo das telas mobile.
-- Identificadores de infra usam o slug `faztudo`. A pasta local no PC do dono é `C:\TrampoJa` (apenas o caminho).
+- Identificadores de infra usam o slug `faztudo`. A pasta local no PC do dono é `C:\FazTudo` (apenas o caminho).

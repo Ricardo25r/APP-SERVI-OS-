@@ -5,7 +5,7 @@
 >
 > - Projeto: **FazTudo** — Marketplace Inteligente de Prestadores de Serviços Locais
 > - Repositório: https://github.com/Ricardo25r/APP-SERVI-OS-
-> - Pasta local: `C:\TrampoJa`
+> - Pasta local: `C:\FazTudo`
 > - Última atualização: **2026-06-18**
 > - Fase atual: **✅ TODAS AS 10 FASES CONCLUÍDAS e validadas** + Design System oficial. E2E no Postgres: cadastro→perfil→créditos→lead→compra→chat→avaliação→reputação→XP/nível→admin. **111 testes** backend + frontend builda (23 rotas). ✅ **Auditoria final concluída** (20/20 E2E; críticos de segurança corrigidos) — ver `docs/AUDITORIA-FINAL.md`.
 
