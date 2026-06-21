@@ -95,6 +95,9 @@ class Settings(BaseSettings):
     FRONTEND_URL: str = "http://localhost:3000"
     # Janela (min) p/ o profissional iniciar o contato após desbloquear o lead.
     CONTACT_WINDOW_MINUTES: int = 60
+    # Worker que devolve ao mercado os leads comprados e não contatados a tempo.
+    CONTACT_RECYCLE_ENABLED: bool = True
+    CONTACT_RECYCLE_INTERVAL_SECONDS: int = 120
 
     @property
     def cors_origins_list(self) -> list[str]:

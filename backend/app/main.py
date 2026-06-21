@@ -6,9 +6,11 @@ e monta o router agregador (`/api/v1`).
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import time
 import uuid
+from datetime import UTC, datetime
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -19,6 +21,8 @@ from app.core import alerts, metrics
 from app.core.config import settings
 from app.core.exceptions import register_exception_handlers
 from app.core.logging import setup_logging
+from app.database.session import async_session_maker
+from app.services.lead_recycle import recycle_expired_purchases
 
 setup_logging()
 
@@ -90,3 +94,26 @@ app.include_router(api_router)
 async def root() -> dict[str, str]:
     """Endpoint raiz informativo."""
     return {"app": "FazTudo API", "docs": "/docs", "health": "/api/v1/health"}
+
+
+@app.on_event("startup")
+async def _start_recycle_worker() -> None:
+    """Worker em background: devolve ao mercado leads comprados e não contatados
+    dentro da janela (``contact_deadline``). Best-effort; nunca derruba o app."""
+    if not settings.CONTACT_RECYCLE_ENABLED:
+        return
+
+    async def _loop() -> None:
+        interval = max(settings.CONTACT_RECYCLE_INTERVAL_SECONDS, 30)
+        while True:
+            await asyncio.sleep(interval)
+            try:
+                async with async_session_maker() as session:
+                    await recycle_expired_purchases(
+                        session, now=datetime.now(UTC)
+                    )
+            except Exception:  # noqa: BLE001 - worker best-effort
+                logger.exception("Falha no worker de reciclo de leads")
+
+    asyncio.create_task(_loop())
+    logger.info("Worker de reciclo de leads iniciado.")

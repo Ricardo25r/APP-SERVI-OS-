@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import uuid
 from collections.abc import AsyncGenerator
+from datetime import UTC, datetime, timedelta
 
 import httpx
 import pytest
@@ -22,6 +23,8 @@ from app.models import (
     Base,
     Category,
     CategoryTier,
+    Conversation,
+    ConversationStatus,
     CreditWallet,
     CustomerProfile,
     Lead,
@@ -29,6 +32,7 @@ from app.models import (
     LeadStatus,
     LeadType,
     LeadUrgency,
+    Message,
     Notification,
     ProfessionalCategory,
     ProfessionalProfile,
@@ -37,6 +41,7 @@ from app.models import (
     UserStatus,
 )
 from app.services.gamification import level_for_xp
+from app.services.lead_recycle import recycle_expired_purchases
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
@@ -374,3 +379,92 @@ async def test_purchase_sets_contact_deadline(
     )
     assert r.status_code == 201, r.text
     assert r.json()["purchase"]["contact_deadline"] is not None
+
+
+# --------------------------------------------------------------------------- #
+# Reciclo de lead não contatado (worker)
+# --------------------------------------------------------------------------- #
+@pytest.mark.asyncio
+async def test_recycle_expired_lead_returns_to_market(session_maker) -> None:
+    async with session_maker() as s:
+        customer = await _make_customer(s, email="rec@t.com")
+        cat = await _make_category(s, slug="rec-cat")
+        pro, profile = await _make_professional(
+            s, email="recpro@t.com", category_ids=[cat.id], balance=0
+        )
+        lead = await _make_lead(s, customer=customer, category=cat, credits_cost=3)
+        s.add(
+            LeadPurchase(
+                lead_id=lead.id, professional_id=profile.id, credits_used=3,
+                contact_deadline=datetime.now(UTC) - timedelta(minutes=5),
+            )
+        )
+        lead.status = LeadStatus.purchased
+        s.add(
+            Conversation(
+                lead_id=lead.id, customer_id=customer.id,
+                professional_id=pro.id, status=ConversationStatus.active,
+            )
+        )
+        await s.commit()
+        lead_id, profile_id = lead.id, profile.id
+
+    async with session_maker() as s:
+        assert await recycle_expired_purchases(s, now=datetime.now(UTC)) == 1
+
+    async with session_maker() as s:
+        lead_row = (
+            await s.execute(select(Lead).where(Lead.id == lead_id))
+        ).scalar_one()
+        assert lead_row.status == LeadStatus.open  # voltou ao mercado
+        purchase = (
+            await s.execute(
+                select(LeadPurchase).where(LeadPurchase.lead_id == lead_id)
+            )
+        ).scalar_one_or_none()
+        assert purchase is None  # compra removida (libera o lead p/ recompra)
+        wallet = (
+            await s.execute(
+                select(CreditWallet).where(
+                    CreditWallet.professional_id == profile_id
+                )
+            )
+        ).scalar_one()
+        assert wallet.balance == 3  # créditos devolvidos
+
+
+@pytest.mark.asyncio
+async def test_recycle_skips_contacted_lead(session_maker) -> None:
+    async with session_maker() as s:
+        customer = await _make_customer(s, email="rec2@t.com")
+        cat = await _make_category(s, slug="rec2-cat")
+        pro, profile = await _make_professional(
+            s, email="rec2pro@t.com", category_ids=[cat.id], balance=0
+        )
+        lead = await _make_lead(s, customer=customer, category=cat, credits_cost=3)
+        s.add(
+            LeadPurchase(
+                lead_id=lead.id, professional_id=profile.id, credits_used=3,
+                contact_deadline=datetime.now(UTC) - timedelta(minutes=5),
+            )
+        )
+        lead.status = LeadStatus.purchased
+        conv = Conversation(
+            lead_id=lead.id, customer_id=customer.id,
+            professional_id=pro.id, status=ConversationStatus.active,
+        )
+        s.add(conv)
+        await s.flush()
+        s.add(Message(conversation_id=conv.id, sender_id=pro.id, message="Olá!"))
+        await s.commit()
+        lead_id = lead.id
+
+    async with session_maker() as s:
+        # Já houve contato (mensagem do profissional) → não recicla.
+        assert await recycle_expired_purchases(s, now=datetime.now(UTC)) == 0
+
+    async with session_maker() as s:
+        lead_row = (
+            await s.execute(select(Lead).where(Lead.id == lead_id))
+        ).scalar_one()
+        assert lead_row.status == LeadStatus.purchased

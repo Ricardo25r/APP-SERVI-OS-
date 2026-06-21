@@ -30,6 +30,7 @@ from app.core.exceptions import NotFoundError
 from app.core.ratelimit import rate_limit
 from app.database.session import get_db
 from app.models import ErrorLog, User, UserRole
+from app.services.lead_recycle import recycle_expired_purchases
 
 router = APIRouter()
 
@@ -66,6 +67,16 @@ async def report_client_error(
     db.add(log)
     await db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post("/recycle-leads", summary="Reciclar leads não contatados (admin)")
+async def recycle_leads(
+    _admin: User = Depends(require_roles(UserRole.admin)),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Dispara manualmente o reciclo de leads comprados e não contatados."""
+    recycled = await recycle_expired_purchases(db, now=datetime.now(UTC))
+    return {"recycled": recycled}
 
 
 @router.get("/overview", summary="Visão geral de monitoramento (admin)")
