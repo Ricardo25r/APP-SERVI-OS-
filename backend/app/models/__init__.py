@@ -42,6 +42,7 @@ from app.models.mixins import (
     TimestampMixin,
     UUIDPKMixin,
 )
+from app.models.notification import Notification
 from app.models.payment_order import PaymentOrder
 from app.models.professional_category import ProfessionalCategory
 from app.models.professional_profile import ProfessionalProfile
@@ -75,6 +76,7 @@ __all__ = [
     "Review",
     "Conversation",
     "Message",
+    "Notification",
     "XpTransaction",
     "Achievement",
     "UserAchievement",

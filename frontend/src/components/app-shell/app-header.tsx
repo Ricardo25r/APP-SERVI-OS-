@@ -8,6 +8,7 @@ import { Bell, ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { Avatar } from "@/components/ui/avatar";
+import { fetchUnreadCount } from "@/modules/notifications/api";
 
 /**
  * `AppHeader` — barra azul (`bg-primary`) sticky no topo, em 2 modos:
@@ -60,6 +61,27 @@ const AppHeader = React.forwardRef<HTMLElement, AppHeaderProps>(
   ) => {
     const router = useRouter();
     const { user } = useAuth();
+    const [unread, setUnread] = React.useState(0);
+    const showBell = mode === "home" && showNotifications;
+
+    // Contador de não lidas para o sino (polling leve quando autenticado).
+    React.useEffect(() => {
+      if (!showBell || !user) return;
+      let active = true;
+      const tick = () =>
+        fetchUnreadCount()
+          .then((c) => {
+            if (active) setUnread(c);
+          })
+          .catch(() => {});
+      void tick();
+      const id = setInterval(() => void tick(), 30000);
+      return () => {
+        active = false;
+        clearInterval(id);
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [showBell, user?.id]);
 
     const handleBack = () => {
       if (backHref) {
@@ -114,9 +136,14 @@ const AppHeader = React.forwardRef<HTMLElement, AppHeaderProps>(
                   <Link
                     href="/notificacoes"
                     aria-label="Notificações"
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-full text-primary-foreground/90 transition-colors hover:bg-primary-foreground/10"
+                    className="relative inline-flex h-9 w-9 items-center justify-center rounded-full text-primary-foreground/90 transition-colors hover:bg-primary-foreground/10"
                   >
                     <Bell className="h-5 w-5" aria-hidden />
+                    {unread > 0 ? (
+                      <span className="absolute right-1.5 top-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-bold leading-none text-brand-foreground">
+                        {unread > 9 ? "9+" : unread}
+                      </span>
+                    ) : null}
                   </Link>
                 ) : null}
                 <Link href="/profile" aria-label="Meu perfil" className="ml-1">

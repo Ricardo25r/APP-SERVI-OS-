@@ -59,6 +59,7 @@ from app.services.chat import ChatService
 from app.services.credits import CreditService
 from app.services.gamification import GamificationService
 from app.services.leads import LeadService
+from app.services.notifications import add_notification
 
 __all__ = ["LeadPurchaseService"]
 
@@ -155,10 +156,23 @@ class LeadPurchaseService:
             # (UNIQUE lead_id) e **não** commita — o commit único abaixo cobre
             # compra + conversa. Falhas aqui revertem tudo (except externo), sem
             # deixar crédito debitado sem chat (e vice-versa).
-            await ChatService(self.db).get_or_create_for_lead(
+            conversation = await ChatService(self.db).get_or_create_for_lead(
                 lead_id=lead.id,
                 customer_id=lead.customer_id,
                 professional_id=current_user.id,
+            )
+
+            # (6.1.1) Notifica o contratante que o lead foi adquirido (mesma txn).
+            add_notification(
+                self.db,
+                user_id=lead.customer_id,
+                type="lead",
+                title="Seu lead foi adquirido",
+                body=(
+                    f'{current_user.name} comprou seu lead "{lead.title}". '
+                    "Abra a conversa para combinar o serviço."
+                ),
+                href=f"/conversas/{conversation.id}",
             )
 
             # (6.2) Gamificação (Fase 9 — gamification-engine doc 08 §Atividades).

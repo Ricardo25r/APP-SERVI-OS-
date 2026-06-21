@@ -60,6 +60,7 @@ from app.schemas.reviews import (
     ReviewOut,
 )
 from app.services.gamification import GamificationService
+from app.services.notifications import add_notification
 
 __all__ = ["ReviewService", "REPUTATION_SCALE"]
 
@@ -121,6 +122,19 @@ class ReviewService:
         # é profissional) atualiza xp/level; para um alvo customer só registra a
         # transação (auditoria) — clientes ainda não acumulam nível no MVP.
         await self._award_review_xp(target_id, data.score)
+
+        # Notifica o alvo sobre a avaliação recebida (mesma transação).
+        add_notification(
+            self.db,
+            user_id=target_id,
+            type="review",
+            title="Você recebeu uma avaliação",
+            body=(
+                f"{current_user.name} avaliou você com "
+                f"{data.score} {'estrela' if data.score == 1 else 'estrelas'}."
+            ),
+            href="/avaliacoes",
+        )
 
         await self.db.commit()
         await self.db.refresh(review)

@@ -54,6 +54,7 @@ from app.schemas.chat import (
     ConversationParticipant,
     MessageOut,
 )
+from app.services.notifications import add_notification
 
 __all__ = ["ChatService"]
 
@@ -225,6 +226,7 @@ class ChatService:
         )
         self.repo.add_message(msg)
         conversation.last_message_at = now
+        self._notify_new_message(conversation, current_user, text[:140])
         await self.repo.flush()
         await self.db.commit()
         await self.db.refresh(msg)
@@ -267,6 +269,9 @@ class ChatService:
         )
         self.repo.add_message(msg)
         conversation.last_message_at = now
+        self._notify_new_message(
+            conversation, current_user, "Enviou uma imagem"
+        )
         await self.repo.flush()
         await self.db.commit()
         await self.db.refresh(msg)
@@ -281,6 +286,26 @@ class ChatService:
         if m.media_key:
             out.media_url = presigned_get_url(m.media_key)
         return out
+
+    def _notify_new_message(
+        self, conversation: Conversation, sender: User, preview: str
+    ) -> None:
+        """Notifica a contraparte sobre a nova mensagem (mesma transação)."""
+        recipient_id = (
+            conversation.professional_id
+            if sender.id == conversation.customer_id
+            else conversation.customer_id
+        )
+        if recipient_id == sender.id:
+            return
+        add_notification(
+            self.db,
+            user_id=recipient_id,
+            type="message",
+            title=f"Nova mensagem de {sender.name}",
+            body=preview,
+            href=f"/conversas/{conversation.id}",
+        )
 
     async def _get_participant_conversation(
         self, current_user: User, conversation_id: uuid.UUID

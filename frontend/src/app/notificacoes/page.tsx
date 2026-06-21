@@ -1,18 +1,10 @@
 /**
  * Página **Central de Notificações** (`/notificacoes`) — Tela 19 do design.
  *
- * Protegida (`useRequireAuth`): exige sessão. O sino do `AppHeader` já aponta
- * para esta rota.
- *
- * ⚠️ PLACEHOLDER — o backend ainda NÃO tem endpoint de notificações
- * (o `notification-engine` é uma fase futura; ver `docs/AUDITORIA-FINAL.md` e
- * `contrato-fases-2-5.md` §7). Por isso a lista usa **dados mock locais**
- * representativos (novo lead, mensagem, créditos, avaliação, sistema, etc.).
- *
- * Estrutura pronta para plugar `GET /notifications` no futuro: basta trocar o
- * array `MOCK_NOTIFICATIONS` por um fetch (`apiGet<NotificationItem[]>(...)`)
- * mantendo o shape de `NotificationItem`. As abas/filtros e a renderização já
- * operam sobre esse tipo.
+ * Protegida (`useRequireAuth`). Consome o **notification-engine** real
+ * (`GET /notifications`, `POST /notifications/{id}/read`, `.../read-all`).
+ * Mapeia o `type` do backend para ícone/cor/categoria e formata o tempo
+ * relativo. Abas: Todas / Não lidas / Leads / Sistema. Apenas tokens.
  */
 "use client";
 
@@ -23,10 +15,10 @@ import {
   BellOff,
   CheckCheck,
   CreditCard,
+  Loader2,
   MessageSquare,
   Sparkles,
   Star,
-  Timer,
   UserPlus,
   type LucideIcon,
 } from "lucide-react";
@@ -37,124 +29,79 @@ import { AppHeader } from "@/components/app-shell/app-header";
 import { Button } from "@/components/ui/button";
 import { IconChip } from "@/components/ui/icon-chip";
 import { EmptyState } from "@/components/ui/empty-state";
-
-/* ------------------------------------------------------------------ */
-/* Tipos (espelham o futuro shape de `GET /notifications`)            */
-/* ------------------------------------------------------------------ */
+import {
+  fetchNotifications,
+  markAllNotificationsRead,
+  markNotificationRead,
+  type ApiNotification,
+} from "@/modules/notifications/api";
 
 type NotificationCategory = "lead" | "system";
-
-/** Cor tonal do `IconChip` (mapeada para tokens no primitivo). */
 type ChipColor = "blue" | "orange" | "green" | "muted";
 
 interface NotificationItem {
   id: string;
-  /** Categoria usada nas abas (Leads × Sistema). */
   category: NotificationCategory;
   icon: LucideIcon;
   iconColor: ChipColor;
   title: string;
   description: string;
-  /** Rótulo de tempo já formatado (ex.: "agora", "5 min", "Ontem"). */
   time: string;
   read: boolean;
-  /** Destino opcional ao clicar (rota interna existente). */
   href?: string;
 }
 
-/* ------------------------------------------------------------------ */
-/* Dados mock (placeholder até o notification-engine)                 */
-/* ------------------------------------------------------------------ */
+/* Mapeia o `type` do backend para ícone/cor/categoria. */
+const TYPE_VISUAL: Record<
+  string,
+  { icon: LucideIcon; color: ChipColor; category: NotificationCategory }
+> = {
+  message: { icon: MessageSquare, color: "orange", category: "lead" },
+  lead: { icon: UserPlus, color: "blue", category: "lead" },
+  review: { icon: Star, color: "orange", category: "lead" },
+  credits: { icon: CreditCard, color: "green", category: "system" },
+  system: { icon: Sparkles, color: "blue", category: "system" },
+};
 
-// TODO(notification-engine): substituir por `apiGet<NotificationItem[]>("/notifications")`
-// e mapear a resposta para `NotificationItem` (category/icon/iconColor derivados
-// do `type` retornado pelo backend). Mantém-se este array como fallback de dev.
-const MOCK_NOTIFICATIONS: NotificationItem[] = [
-  {
-    id: "n1",
-    category: "lead",
-    icon: UserPlus,
-    iconColor: "blue",
-    title: "Novo lead disponível",
-    description:
-      "Instalação de chuveiro elétrico em Ariquemes/RO — abra para ver os detalhes.",
-    time: "agora",
-    read: false,
-    href: "/marketplace",
-  },
-  {
-    id: "n2",
-    category: "lead",
-    icon: MessageSquare,
-    iconColor: "orange",
-    title: "Nova mensagem",
-    description: "Maria enviou uma mensagem sobre a solicitação de pintura.",
-    time: "12 min",
-    read: false,
-    href: "/conversas",
-  },
-  {
-    id: "n3",
-    category: "lead",
-    icon: Timer,
-    iconColor: "orange",
-    title: "Lead expirando em breve",
-    description:
-      'A oportunidade "Conserto de vazamento" expira em 2 horas. Garanta a sua.',
-    time: "1 h",
-    read: false,
-    href: "/marketplace",
-  },
-  {
-    id: "n4",
-    category: "system",
-    icon: CreditCard,
-    iconColor: "green",
-    title: "Créditos adicionados",
-    description: "Você recebeu 50 créditos na sua carteira. Bom trabalho!",
-    time: "3 h",
-    read: true,
-    href: "/credits",
-  },
-  {
-    id: "n5",
-    category: "lead",
-    icon: Star,
-    iconColor: "orange",
-    title: "Avaliação recebida",
-    description: "João avaliou seu serviço com 5 estrelas. Veja o comentário.",
-    time: "Ontem",
-    read: true,
-    href: "/avaliacoes",
-  },
-  {
-    id: "n6",
-    category: "system",
-    icon: CheckCheck,
-    iconColor: "green",
-    title: "Serviço concluído",
-    description:
-      'A solicitação "Montagem de móveis" foi marcada como concluída.',
-    time: "Ontem",
-    read: true,
-    href: "/leads",
-  },
-  {
-    id: "n7",
-    category: "system",
-    icon: Sparkles,
-    iconColor: "blue",
-    title: "Promoção especial",
-    description: "Pacote de créditos com 15% de desconto até o fim da semana.",
-    time: "2 dias",
-    read: true,
-    href: "/credits",
-  },
-];
+function visualFor(type: string) {
+  return (
+    TYPE_VISUAL[type] ?? {
+      icon: Bell,
+      color: "muted" as ChipColor,
+      category: "system" as NotificationCategory,
+    }
+  );
+}
 
-/* ------------------------------------------------------------------ */
-/* Abas / filtros                                                     */
-/* ------------------------------------------------------------------ */
+/** Tempo relativo curto (agora / 5 min / 2 h / Ontem / dd/mm). */
+function relativeTime(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const diffMin = Math.floor((Date.now() - d.getTime()) / 60000);
+  if (diffMin < 1) return "agora";
+  if (diffMin < 60) return `${diffMin} min`;
+  const h = Math.floor(diffMin / 60);
+  if (h < 24) return `${h} h`;
+  const days = Math.floor(h / 24);
+  if (days === 1) return "Ontem";
+  if (days < 7) return `${days} dias`;
+  return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+}
+
+function toItem(n: ApiNotification): NotificationItem {
+  const v = visualFor(n.type);
+  return {
+    id: n.id,
+    category: v.category,
+    icon: v.icon,
+    iconColor: v.color,
+    title: n.title,
+    description: n.body,
+    time: relativeTime(n.created_at),
+    read: n.read,
+    href: n.href ?? undefined,
+  };
+}
 
 type TabId = "all" | "unread" | "lead" | "system";
 
@@ -173,23 +120,36 @@ function filterByTab(items: NotificationItem[], tab: TabId): NotificationItem[] 
       return items.filter((n) => n.category === "lead");
     case "system":
       return items.filter((n) => n.category === "system");
-    case "all":
     default:
       return items;
   }
 }
 
-/* ------------------------------------------------------------------ */
-/* Página                                                             */
-/* ------------------------------------------------------------------ */
-
 export default function NotificacoesPage() {
   const { isAuthenticated, hasHydrated } = useRequireAuth();
 
-  // Estado local: lista (mock) + aba ativa. Quando o notification-engine
-  // existir, `items` virá de um fetch e `markAllRead`/clique chamarão a API.
-  const [items, setItems] = React.useState<NotificationItem[]>(MOCK_NOTIFICATIONS);
+  const [items, setItems] = React.useState<NotificationItem[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
   const [tab, setTab] = React.useState<TabId>("all");
+
+  const load = React.useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await fetchNotifications();
+      setItems(data.items.map(toItem));
+    } catch {
+      setError("Não foi possível carregar as notificações.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    if (!hasHydrated || !isAuthenticated) return;
+    void load();
+  }, [hasHydrated, isAuthenticated, load]);
 
   const unreadCount = React.useMemo(
     () => items.filter((n) => !n.read).length,
@@ -197,17 +157,26 @@ export default function NotificacoesPage() {
   );
   const visible = React.useMemo(() => filterByTab(items, tab), [items, tab]);
 
-  function markAllRead() {
+  async function markAllRead() {
     setItems((prev) => prev.map((n) => ({ ...n, read: true })));
+    try {
+      await markAllNotificationsRead();
+    } catch {
+      void load(); // reverte ao estado real em caso de falha
+    }
   }
 
-  function markRead(id: string) {
+  async function markRead(id: string) {
     setItems((prev) =>
       prev.map((n) => (n.id === id ? { ...n, read: true } : n))
     );
+    try {
+      await markNotificationRead(id);
+    } catch {
+      /* já refletido localmente; silencioso */
+    }
   }
 
-  // Evita render de conteúdo protegido antes da sessão ser restaurada.
   if (!hasHydrated || !isAuthenticated) {
     return (
       <>
@@ -224,7 +193,6 @@ export default function NotificacoesPage() {
       <AppHeader mode="title" title="Notificações" backHref="/" />
 
       <main className="mx-auto w-full max-w-2xl px-4 py-6 sm:px-6 sm:py-8">
-        {/* Cabeçalho da seção + ação "marcar todas como lidas" */}
         <div className="mb-4 flex items-center justify-between gap-3">
           <div className="min-w-0">
             <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
@@ -251,7 +219,6 @@ export default function NotificacoesPage() {
           </Button>
         </div>
 
-        {/* Abas (segmented) — Todas / Não lidas / Leads / Sistema */}
         <div
           role="tablist"
           aria-label="Filtrar notificações"
@@ -260,9 +227,7 @@ export default function NotificacoesPage() {
           {TABS.map((t) => {
             const active = t.id === tab;
             const count =
-              t.id === "unread"
-                ? unreadCount
-                : filterByTab(items, t.id).length;
+              t.id === "unread" ? unreadCount : filterByTab(items, t.id).length;
             return (
               <button
                 key={t.id}
@@ -295,8 +260,24 @@ export default function NotificacoesPage() {
           })}
         </div>
 
-        {/* Lista */}
-        {visible.length === 0 ? (
+        {loading ? (
+          <div className="flex items-center justify-center gap-2 rounded-xl border bg-card py-16 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+            <span>Carregando notificações...</span>
+          </div>
+        ) : error ? (
+          <div className="rounded-xl border border-destructive/40 bg-destructive/10 p-6 text-center">
+            <p className="text-sm text-destructive">{error}</p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-4"
+              onClick={() => void load()}
+            >
+              Tentar novamente
+            </Button>
+          </div>
+        ) : visible.length === 0 ? (
           <EmptyState
             icon={tab === "unread" ? CheckCheck : BellOff}
             title={
@@ -319,23 +300,10 @@ export default function NotificacoesPage() {
             ))}
           </ul>
         )}
-
-        {/* Aviso de placeholder (some quando o engine real estiver plugado) */}
-        <p className="mt-6 flex items-start gap-1.5 text-xs text-muted-foreground">
-          <Bell className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
-          <span>
-            Prévia de notificações. O envio em tempo real chega com o módulo de
-            notificações.
-          </span>
-        </p>
       </main>
     </>
   );
 }
-
-/* ------------------------------------------------------------------ */
-/* Item da lista                                                      */
-/* ------------------------------------------------------------------ */
 
 function NotificationRow({
   item,
@@ -353,7 +321,9 @@ function NotificationRow({
           <p
             className={cn(
               "truncate text-sm",
-              item.read ? "font-medium text-foreground" : "font-bold text-foreground"
+              item.read
+                ? "font-medium text-foreground"
+                : "font-bold text-foreground"
             )}
           >
             {item.title}
@@ -362,12 +332,13 @@ function NotificationRow({
             {item.time}
           </span>
         </div>
-        <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">
-          {item.description}
-        </p>
+        {item.description ? (
+          <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">
+            {item.description}
+          </p>
+        ) : null}
       </div>
 
-      {/* Indicador de não lida */}
       {!item.read ? (
         <span
           aria-label="Não lida"
@@ -382,8 +353,6 @@ function NotificationRow({
     !item.read && "border-brand/30 bg-brand/[0.03]"
   );
 
-  // Se há destino, vira link (e marca como lida ao clicar); senão, botão que
-  // apenas marca como lida.
   if (item.href) {
     return (
       <Link href={item.href} onClick={onRead} className={className}>
