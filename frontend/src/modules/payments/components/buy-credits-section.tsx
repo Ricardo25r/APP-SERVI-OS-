@@ -52,24 +52,19 @@ export function BuyCreditsSection({ onPaid, className }: BuyCreditsSectionProps)
     [packagesQuery.data]
   );
 
-  // Calcula preço por crédito, desconto (vs. o pior preço) e a melhor oferta.
-  const metas = useMemo<PackageMeta[]>(() => {
-    if (packages.length === 0) return [];
-    const perCreditOf = (p: CreditPackage) => p.price_cents / p.credits;
-    const worst = Math.max(...packages.map(perCreditOf));
-    const list = packages.map((pkg) => {
-      const perCredit = perCreditOf(pkg);
-      const discount = Math.round((1 - perCredit / worst) * 100);
-      return { pkg, perCredit, discount, highlight: false };
-    });
-    // A maior economia vira "melhor oferta".
-    let best = list[0];
-    for (const m of list) if (m.discount > best.discount) best = m;
-    if (best.discount > 0) best.highlight = true;
-    return list;
-  }, [packages]);
+  // Preço por crédito (exibição) + selo de desconto e destaque vindos do backend.
+  const metas = useMemo<PackageMeta[]>(
+    () =>
+      packages.map((pkg) => ({
+        pkg,
+        perCredit: pkg.price_cents / pkg.credits,
+        discount: pkg.discount_percent ?? 0,
+        highlight: Boolean(pkg.is_popular),
+      })),
+    [packages]
+  );
 
-  // Seleção padrão: a melhor oferta (ou o primeiro pacote).
+  // Seleção padrão: o pacote "mais escolhido" (ou o primeiro).
   useEffect(() => {
     if (selectedId || metas.length === 0) return;
     const def = metas.find((m) => m.highlight) ?? metas[0];
@@ -149,7 +144,7 @@ export function BuyCreditsSection({ onPaid, className }: BuyCreditsSectionProps)
                         </span>
                         {highlight ? (
                           <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary">
-                            Melhor oferta
+                            Mais escolhido
                           </span>
                         ) : discount > 0 ? (
                           <span className="rounded-full bg-brand/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand">

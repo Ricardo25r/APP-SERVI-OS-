@@ -42,6 +42,13 @@ class CreditPackage(UUIDPKMixin, TimestampMixin, Base):
         server_default=text("true"),
         index=True,
     )
+    # Vitrine (Tela 05): selo "X% OFF" (marketing) e destaque "Mais escolhido".
+    discount_percent: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default=text("0")
+    )
+    is_popular: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default=text("false")
+    )
 
     # Relacionamentos (§2.2).
     orders: Mapped[list[PaymentOrder]] = relationship(

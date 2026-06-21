@@ -54,6 +54,8 @@ class CreditPackageRead(BaseModel):
     price_cents: int
     currency: str
     active: bool
+    discount_percent: int = 0
+    is_popular: bool = False
 
 
 class PaymentOrderRead(BaseModel):

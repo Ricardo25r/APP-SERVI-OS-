@@ -37,13 +37,13 @@ INITIAL_CATEGORIES: tuple[tuple[str, str, CategoryTier], ...] = (
     ("domestica", "Doméstica", CategoryTier.premium),
 )
 
-# (name, credits, price_cents) — §6 (preços em centavos de BRL).
-INITIAL_PACKAGES: tuple[tuple[str, int, int], ...] = (
-    ("Starter", 10, 1990),
-    ("Profissional", 50, 6990),
-    ("Avançado", 100, 11990),
-    ("Elite", 250, 24990),
-    ("Empresarial", 500, 44990),
+# (name, credits, price_cents, discount_percent, is_popular) — §6 + vitrine Tela 05.
+INITIAL_PACKAGES: tuple[tuple[str, int, int, int, bool], ...] = (
+    ("Starter", 10, 1490, 0, True),
+    ("Profissional", 50, 5990, 10, False),
+    ("Avançado", 100, 9990, 20, False),
+    ("Elite", 250, 19990, 25, False),
+    ("Empresarial", 500, 29990, 30, False),
 )
 
 
@@ -80,32 +80,44 @@ async def seed_packages() -> dict[str, int]:
     2× não duplica. Retorna ``{"created": n, "skipped": m}``.
     """
     created = 0
-    skipped = 0
+    updated = 0
 
     async with async_session_maker() as session:
-        result = await session.execute(select(CreditPackage.name))
-        existing_names = set(result.scalars().all())
+        result = await session.execute(select(CreditPackage))
+        by_name = {p.name: p for p in result.scalars().all()}
 
-        for name, credits, price_cents in INITIAL_PACKAGES:
-            if name in existing_names:
-                skipped += 1
-                continue
-            session.add(
-                CreditPackage(
-                    name=name,
-                    credits=credits,
-                    price_cents=price_cents,
-                    currency="BRL",
-                    active=True,
+        for name, credits, price_cents, discount_percent, is_popular in (
+            INITIAL_PACKAGES
+        ):
+            pkg = by_name.get(name)
+            if pkg is None:
+                session.add(
+                    CreditPackage(
+                        name=name,
+                        credits=credits,
+                        price_cents=price_cents,
+                        currency="BRL",
+                        active=True,
+                        discount_percent=discount_percent,
+                        is_popular=is_popular,
+                    )
                 )
-            )
-            created += 1
+                created += 1
+            else:
+                # Atualiza preço/selos (idempotente — reaplica os valores atuais).
+                pkg.credits = credits
+                pkg.price_cents = price_cents
+                pkg.discount_percent = discount_percent
+                pkg.is_popular = is_popular
+                pkg.active = True
+                updated += 1
 
-        if created:
-            await session.commit()
+        await session.commit()
 
-    logger.info("Seed de pacotes concluído: %d criados, %d ignorados.", created, skipped)
-    return {"created": created, "skipped": skipped}
+    logger.info(
+        "Seed de pacotes concluído: %d criados, %d atualizados.", created, updated
+    )
+    return {"created": created, "updated": updated}
 
 
 async def _main() -> None:
@@ -113,7 +125,7 @@ async def _main() -> None:
     cats = await seed_categories()
     pkgs = await seed_packages()
     print(f"Categorias: {cats['created']} criadas, {cats['skipped']} ignoradas.")
-    print(f"Pacotes: {pkgs['created']} criados, {pkgs['skipped']} ignorados.")
+    print(f"Pacotes: {pkgs['created']} criados, {pkgs['updated']} atualizados.")
 
 
 if __name__ == "__main__":

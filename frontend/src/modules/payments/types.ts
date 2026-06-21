@@ -24,6 +24,10 @@ export interface CreditPackage {
   /** Moeda ISO-4217 (ex.: "BRL"). */
   currency: string;
   active: boolean;
+  /** Selo "X% OFF" (marketing). 0 = sem selo. */
+  discount_percent?: number;
+  /** Destaque "Mais escolhido". */
+  is_popular?: boolean;
 }
 
 /** `PaymentOrderRead` — pedido de compra de um pacote. */
