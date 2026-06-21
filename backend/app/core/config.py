@@ -62,8 +62,9 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
-    # CORS
-    CORS_ORIGINS: str = "http://localhost:3000"
+    # CORS — web (localhost:3000) + app nativo Capacitor (WebView usa
+    # https://localhost no Android e capacitor://localhost no iOS).
+    CORS_ORIGINS: str = "http://localhost:3000,https://localhost,capacitor://localhost"
 
     # Pagamentos / Fase 6
     PAYMENT_PROVIDER: str = "dev"  # dev | mercadopago | stripe ...

@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 import { SiteHeader } from "@/components/site-header";
 import { AppChrome } from "@/components/app-shell/app-chrome";
+import { CapacitorInit } from "@/components/capacitor-init";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -35,6 +36,7 @@ export default function RootLayout({
     >
       <body className="font-sans">
         <Providers>
+          <CapacitorInit />
           <SiteHeader />
           <AppChrome>{children}</AppChrome>
         </Providers>
