@@ -16,6 +16,7 @@ import {
   CheckCheck,
   CreditCard,
   Loader2,
+  LifeBuoy,
   MessageSquare,
   Sparkles,
   Star,
@@ -60,6 +61,7 @@ const TYPE_VISUAL: Record<
   lead: { icon: UserPlus, color: "blue", category: "lead" },
   review: { icon: Star, color: "orange", category: "lead" },
   credits: { icon: CreditCard, color: "green", category: "system" },
+  support: { icon: LifeBuoy, color: "blue", category: "system" },
   system: { icon: Sparkles, color: "blue", category: "system" },
 };
 

@@ -14,12 +14,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.alerts import notify_support_ticket
 from app.core.exceptions import NotFoundError
-from app.models import SupportTicket, User
+from app.models import SupportTicket, User, UserRole
 from app.schemas.support import (
     SupportTicketAdminOut,
     SupportTicketCreate,
     SupportTicketOut,
 )
+from app.services.notifications import add_notification
 
 __all__ = ["SupportService"]
 
@@ -40,6 +41,26 @@ class SupportService:
             message=data.message.strip(),
         )
         self.db.add(ticket)
+
+        # Notifica os admins in-app sobre o novo chamado (mesma transação).
+        admins = (
+            await self.db.execute(
+                select(User).where(
+                    User.role == UserRole.admin,
+                    User.deleted_at.is_(None),
+                )
+            )
+        ).scalars().all()
+        for admin in admins:
+            add_notification(
+                self.db,
+                user_id=admin.id,
+                type="support",
+                title="Novo chamado de suporte",
+                body=f"{user.name}: {data.subject.strip()}",
+                href="/admin/chamados",
+            )
+
         await self.db.commit()
         await self.db.refresh(ticket)
 
