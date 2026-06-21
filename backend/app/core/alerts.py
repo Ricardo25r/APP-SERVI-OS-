@@ -160,6 +160,26 @@ async def send_test_alert() -> str:
     return "sent"
 
 
+def notify_support_ticket(
+    *,
+    subject: str,
+    message: str,
+    user_name: str,
+    user_email: str,
+    ticket_id: str,
+) -> None:
+    """Agenda um e-mail ao suporte quando um chamado é aberto (sem throttle)."""
+    mail_subject = f"[FazTudo] Novo chamado: {subject}"
+    body = (
+        "Um novo chamado de suporte foi aberto no FazTudo.\n\n"
+        f"De: {user_name} <{user_email}>\n"
+        f"Assunto: {subject}\n"
+        f"Chamado: {ticket_id}\n\n"
+        f"Mensagem:\n{message}\n"
+    )
+    _fire(_dispatch(f"ticket:{ticket_id}", mail_subject, body, force=True))
+
+
 def alerts_status() -> dict:
     """Status (sem segredos) dos alertas, para exibir no painel."""
     return {

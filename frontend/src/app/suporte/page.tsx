@@ -31,6 +31,7 @@ import { SectionHeader } from "@/components/ui/section-header";
 import { SettingsRow, SettingsRowList } from "@/components/ui/settings-row";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { LoadingState } from "@/modules/profile/feedback";
+import { SupportTicketSection } from "@/modules/support/ticket-section";
 
 /** Telefone/e-mail de contato (placeholder — ajustar quando houver oficiais). */
 const WHATSAPP_NUMBER = "5569999999999";
@@ -107,6 +108,9 @@ export default function SuportePage() {
         </CardContent>
       </Card>
 
+      {/* Formulário real de chamado + meus chamados */}
+      <SupportTicketSection />
+
       {/* Atalhos de atendimento */}
       <Card className="overflow-hidden p-2">
         <SettingsRowList>
@@ -122,7 +126,7 @@ export default function SuportePage() {
             iconColor="orange"
             title="Abrir chamado"
             description="Relate um problema específico para nossa equipe"
-            href={emailHref}
+            href="#abrir-chamado"
           />
           <SettingsRow
             icon={Headphones}
