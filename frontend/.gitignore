@@ -24,6 +24,9 @@ yarn-error.log*
 
 # local env files
 .env*.local
+# env públicos (somente NEXT_PUBLIC_*) versionados — re-inclui após o ignore raiz
+!.env.development
+!.env.production
 
 # typescript
 *.tsbuildinfo
