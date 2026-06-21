@@ -61,7 +61,7 @@ Critério de sucesso: qualquer dev clona o repositório, sobe a infra, roda back
 ### Monorepo
 
 ```
-TrampoJa/
+FazTudo/
 ├── backend/                 # API FastAPI (Python 3.12+, async)
 ├── frontend/                # App Next.js 14 (TypeScript, App Router)
 ├── infra/                   # scripts de infraestrutura (init db, bucket MinIO, etc.)

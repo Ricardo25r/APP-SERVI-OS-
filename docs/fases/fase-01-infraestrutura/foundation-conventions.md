@@ -5,7 +5,7 @@
 ## Layout do monorepo
 
 ```
-TrampoJa/
+FazTudo/
 ├── backend/                 # API FastAPI (Python)
 ├── frontend/                # App Next.js (TypeScript)
 ├── infra/                   # scripts de infraestrutura (init db, etc.)

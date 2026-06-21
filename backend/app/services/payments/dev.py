@@ -60,7 +60,7 @@ class DevPaymentProvider(PaymentProvider):
         """Gera valores fake determinísticos a partir do pedido (§3.3)."""
         external_reference = f"dev_{order.id}"
         order_hex = order.id.hex[:8]
-        pix_code = f"00020126DEV{order_hex}5204000053039865802BR6009TRAMPOJA"
+        pix_code = f"00020126DEV{order_hex}5204000053039865802BR6007FAZTUDO"
         checkout_url = f"{settings.PAYMENT_DEV_CHECKOUT_BASE}/{order.id}"
         return ChargeResult(
             external_reference=external_reference,

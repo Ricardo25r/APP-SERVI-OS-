@@ -14,7 +14,7 @@ Não é um catálogo — é um **marketplace de oportunidades (leads)**: o profi
 Monorepo:
 
 ```
-TrampoJa/
+FazTudo/
 ├── backend/                 # API FastAPI (Python 3.12+, async) — health check em /api/v1/health
 ├── frontend/                # App Next.js 14 (TypeScript, App Router) — landing "FazTudo"
 ├── infra/                   # scripts de infraestrutura (init db, bucket MinIO, etc.)
