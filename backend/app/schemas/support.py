@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -13,6 +14,7 @@ __all__ = [
     "SupportTicketListResponse",
     "SupportTicketAdminOut",
     "SupportTicketAdminListResponse",
+    "SupportTicketStatusUpdate",
 ]
 
 
@@ -21,6 +23,12 @@ class SupportTicketCreate(BaseModel):
 
     subject: str = Field(min_length=3, max_length=160)
     message: str = Field(min_length=10, max_length=4000)
+
+
+class SupportTicketStatusUpdate(BaseModel):
+    """Atualização de status pelo admin (aberto/resolvido)."""
+
+    status: Literal["open", "closed"]
 
 
 class SupportTicketOut(BaseModel):

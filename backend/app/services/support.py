@@ -7,10 +7,13 @@ admin pode listar todos os chamados e o usuário vê os seus.
 
 from __future__ import annotations
 
+import uuid
+
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.alerts import notify_support_ticket
+from app.core.exceptions import NotFoundError
 from app.models import SupportTicket, User
 from app.schemas.support import (
     SupportTicketAdminOut,
@@ -96,3 +99,31 @@ class SupportService:
             for t, u in rows
         ]
         return items, int(total)
+
+    async def set_status(
+        self, ticket_id: uuid.UUID, status: str
+    ) -> SupportTicketAdminOut:
+        """Atualiza o status de um chamado (admin) e devolve com dados do autor."""
+        row = (
+            await self.db.execute(
+                select(SupportTicket, User)
+                .join(User, SupportTicket.user_id == User.id)
+                .where(SupportTicket.id == ticket_id)
+            )
+        ).first()
+        if row is None:
+            raise NotFoundError("Chamado não encontrado.")
+        ticket, user = row
+        ticket.status = status
+        await self.db.commit()
+        await self.db.refresh(ticket)
+        return SupportTicketAdminOut(
+            id=ticket.id,
+            subject=ticket.subject,
+            message=ticket.message,
+            status=ticket.status,
+            created_at=ticket.created_at,
+            user_id=ticket.user_id,
+            user_name=user.name,
+            user_email=user.email,
+        )

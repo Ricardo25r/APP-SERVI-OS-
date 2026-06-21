@@ -9,6 +9,8 @@ Prefixo ``/support`` (sob ``/api/v1``).
 
 from __future__ import annotations
 
+import uuid
+
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,9 +19,11 @@ from app.database.session import get_db
 from app.models import User, UserRole
 from app.schemas.support import (
     SupportTicketAdminListResponse,
+    SupportTicketAdminOut,
     SupportTicketCreate,
     SupportTicketListResponse,
     SupportTicketOut,
+    SupportTicketStatusUpdate,
 )
 from app.services.support import SupportService
 
@@ -69,3 +73,18 @@ async def all_tickets(
     """Lista todos os chamados (somente admin), com dados do autor."""
     items, total = await SupportService(db).list_all(page=page, page_size=page_size)
     return SupportTicketAdminListResponse(items=items, total=total)
+
+
+@router.patch(
+    "/tickets/{ticket_id}",
+    response_model=SupportTicketAdminOut,
+    summary="Atualizar status do chamado (admin)",
+)
+async def update_ticket_status(
+    ticket_id: uuid.UUID,
+    payload: SupportTicketStatusUpdate,
+    _admin: User = Depends(require_roles(UserRole.admin)),
+    db: AsyncSession = Depends(get_db),
+) -> SupportTicketAdminOut:
+    """Marca um chamado como resolvido (closed) ou reabre (open)."""
+    return await SupportService(db).set_status(ticket_id, payload.status)

@@ -13,6 +13,7 @@ import {
   ClipboardList,
   CreditCard,
   Gift,
+  LifeBuoy,
   ScrollText,
   Tags,
   Users,
@@ -71,6 +72,12 @@ const SHORTCUTS: Shortcut[] = [
     label: "Monitoramento",
     description: "Métricas, saúde do sistema e erros capturados (com traceback).",
     icon: Activity,
+  },
+  {
+    href: "/admin/chamados",
+    label: "Chamados",
+    description: "Veja e responda os chamados de suporte dos usuários.",
+    icon: LifeBuoy,
   },
 ];
 
