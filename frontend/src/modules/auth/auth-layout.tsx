@@ -201,6 +201,24 @@ export function AuthLayout({
             </CardFooter>
           ) : null}
         </Card>
+
+        <p className="mt-4 text-center text-xs text-muted-foreground">
+          Ao continuar, você concorda com os{" "}
+          <Link
+            href="/termos"
+            className="font-medium text-primary hover:underline"
+          >
+            Termos de uso
+          </Link>{" "}
+          e a{" "}
+          <Link
+            href="/privacidade"
+            className="font-medium text-primary hover:underline"
+          >
+            Política de privacidade
+          </Link>
+          .
+        </p>
       </section>
     </main>
   );

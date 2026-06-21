@@ -20,6 +20,7 @@ import {
   ClipboardList,
   Clock,
   CreditCard,
+  FileText,
   HelpCircle,
   Mail,
   MessageCircle,
@@ -305,6 +306,13 @@ export default function SuportePage() {
             title="Central de ajuda"
             description="Acesse as dúvidas frequentes e resolva você mesmo"
             href="#faq"
+          />
+          <SettingsRow
+            icon={FileText}
+            iconColor="blue"
+            title="Termos e privacidade"
+            description="Termos de uso e Política de privacidade (LGPD)"
+            href="/termos"
           />
         </SettingsRowList>
       </Card>
