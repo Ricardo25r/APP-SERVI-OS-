@@ -16,19 +16,56 @@ from __future__ import annotations
 import time
 from datetime import UTC, datetime, timedelta
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, status
+from pydantic import BaseModel, Field
 from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.responses import Response
 
 from app.core import metrics
 from app.core.alerts import alerts_status, send_test_alert
 from app.core.config import settings
 from app.core.deps import require_roles
 from app.core.exceptions import NotFoundError
+from app.core.ratelimit import rate_limit
 from app.database.session import get_db
 from app.models import ErrorLog, User, UserRole
 
 router = APIRouter()
+
+
+class ClientErrorIn(BaseModel):
+    """Erro de runtime do frontend reportado pelo navegador."""
+
+    message: str = Field(max_length=4000)
+    name: str | None = Field(default=None, max_length=160)
+    stack: str | None = Field(default=None, max_length=12000)
+    url: str | None = Field(default=None, max_length=512)
+
+
+@router.post(
+    "/client-error",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+    summary="Reportar erro de runtime do frontend",
+    dependencies=[Depends(rate_limit("clienterr", limit=30, window_seconds=60))],
+)
+async def report_client_error(
+    payload: ClientErrorIn,
+    db: AsyncSession = Depends(get_db),
+) -> Response:
+    """Grava um erro do navegador em ``error_logs`` (aparece no painel admin)."""
+    log = ErrorLog(
+        error_type=(payload.name or "ClientError")[:160],
+        message=(payload.message or "Erro no frontend")[:4000],
+        traceback=payload.stack,
+        path=payload.url,
+        method="CLIENT",
+        status_code=0,
+    )
+    db.add(log)
+    await db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.get("/overview", summary="Visão geral de monitoramento (admin)")
