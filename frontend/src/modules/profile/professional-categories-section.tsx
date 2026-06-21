@@ -44,18 +44,27 @@ export function ProfessionalCategoriesSection() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [saved, setSaved] = useState(false);
 
-  // Catálogo público de categorias.
+  // Catálogo público de categorias (aceita lista crua ou envelope {items}).
   const allCategories = useQuery<Category[]>({
     queryKey: ALL_CATEGORIES_KEY,
-    queryFn: () => apiGet<Category[]>("/categories/"),
+    queryFn: async () => {
+      const data = await apiGet<Category[] | { items: Category[] }>(
+        "/categories/"
+      );
+      return Array.isArray(data) ? data : data.items ?? [];
+    },
     staleTime: 5 * 60 * 1000,
   });
 
-  // Categorias atualmente vinculadas ao profissional.
+  // Categorias do profissional — o backend devolve { categories: [...] }.
   const myCategories = useQuery<Category[]>({
     queryKey: MY_CATEGORIES_KEY,
-    queryFn: () =>
-      apiGet<Category[]>("/users/me/professional-profile/categories"),
+    queryFn: async () => {
+      const data = await apiGet<{ categories: Category[] }>(
+        "/users/me/professional-profile/categories"
+      );
+      return data.categories ?? [];
+    },
   });
 
   // Hidrata a seleção quando as categorias atuais chegam.
@@ -66,10 +75,13 @@ export function ProfessionalCategoriesSection() {
   }, [myCategories.data]);
 
   const mutation = useMutation({
-    mutationFn: (categoryIds: string[]) =>
-      apiPut<Category[]>("/users/me/professional-profile/categories", {
-        category_ids: categoryIds,
-      }),
+    mutationFn: async (categoryIds: string[]) => {
+      const data = await apiPut<{ categories: Category[] }>(
+        "/users/me/professional-profile/categories",
+        { category_ids: categoryIds }
+      );
+      return data.categories ?? [];
+    },
     onSuccess: (data) => {
       queryClient.setQueryData(MY_CATEGORIES_KEY, data);
       setSaved(true);
