@@ -371,8 +371,8 @@ export function ProfessionalHome({ user }: { user: User }) {
           </span>
         </div>
         <Image
-          src="/brand/mascote-profissional.webp"
-          width={140}
+          src="/brand/mascote-trio.webp"
+          width={240}
           height={180}
           alt=""
           aria-hidden
@@ -485,10 +485,18 @@ function LeadRow({
               onClick={() => onBuy(lead)}
               disabled={buying || !canAfford}
               title={!canAfford ? "Saldo insuficiente" : undefined}
-              className="mt-1 inline-flex items-center justify-center gap-1 rounded-lg bg-brand px-2.5 py-1 text-xs font-bold text-brand-foreground transition-colors hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-50"
+              className="mt-1 inline-flex flex-col items-center justify-center rounded-lg bg-brand px-3 py-1.5 leading-tight text-brand-foreground transition-colors hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {buying && <Loader2 className="h-3 w-3 animate-spin" aria-hidden />}
-              {buying ? "..." : "Desbloquear"}
+              {buying ? (
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+              ) : (
+                <>
+                  <span className="text-xs font-bold">Desbloquear</span>
+                  <span className="text-[10px] font-medium opacity-90">
+                    ver contato
+                  </span>
+                </>
+              )}
             </button>
           )}
         </div>
