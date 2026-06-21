@@ -22,7 +22,7 @@
  * login.
  */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm, type FieldErrors, type Resolver } from "react-hook-form";
@@ -116,8 +116,18 @@ export default function RecuperarSenhaPage() {
   const router = useRouter();
 
   const [stage, setStage] = useState<Stage>("request");
-  // Token dev devolvido pelo backend fora de produção (habilita o passo 2).
+  // Token vindo do backend (dev) OU do link do e-mail (?token=) — habilita o passo 2.
   const [resetToken, setResetToken] = useState<string | null>(null);
+
+  // Quem chega pelo link do e-mail (/recuperar-senha?token=...) vai direto
+  // para a etapa de definir a nova senha.
+  useEffect(() => {
+    const t = new URLSearchParams(window.location.search).get("token");
+    if (t) {
+      setResetToken(t);
+      setStage("reset");
+    }
+  }, []);
 
   if (!hasHydrated) {
     return (

@@ -31,6 +31,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.exceptions import AuthError, ConflictError
+from app.core.mailer import send_email
 from app.core.security import (
     create_access_token,
     create_password_reset_token,
@@ -230,19 +231,37 @@ class AuthService:
         lança 404, independentemente de o usuário existir. Isso impede que um
         atacante enumere e-mails cadastrados pela resposta da API.
 
-        Token: por conveniência de dev/MVP (ainda sem envio de e-mail), o
-        ``reset_token`` é incluído no corpo apenas quando
-        ``settings.APP_ENV != "production"`` E o usuário existe. Em produção o
-        token NUNCA é retornado.
-
-        TODO: quando o notification-engine existir, enviar o token por e-mail
-        (sempre, sem expô-lo na resposta).
+        E-mail: quando o usuário existe, envia o link de redefinição por e-mail
+        (best-effort, via SMTP configurado). Por conveniência de dev/MVP, o
+        ``reset_token`` também é incluído no corpo apenas quando
+        ``settings.APP_ENV != "production"``. Em produção o token NUNCA é
+        retornado — só chega pelo e-mail.
         """
         reset_token: str | None = None
         user = await self.users.get_by_email(data.email)
-        if user is not None and settings.APP_ENV != "production":
-            reset_token = create_password_reset_token(user.id)
+        if user is not None:
+            token = create_password_reset_token(user.id)
+            self._send_reset_email(user, token)
+            if settings.APP_ENV != "production":
+                reset_token = token
         return PasswordResetRequestOut(reset_token=reset_token)
+
+    @staticmethod
+    def _send_reset_email(user: User, token: str) -> None:
+        """Envia o e-mail de redefinição com o link (best-effort, não bloqueia)."""
+        base = settings.FRONTEND_URL.rstrip("/")
+        link = f"{base}/recuperar-senha?token={token}"
+        body = (
+            f"Olá, {user.name}.\n\n"
+            "Recebemos um pedido para redefinir a senha da sua conta no "
+            "FazTudo.\n"
+            "Para criar uma nova senha, acesse o link abaixo (válido por 30 "
+            "minutos):\n\n"
+            f"{link}\n\n"
+            "Se você não fez esse pedido, ignore este e-mail — sua senha "
+            "continua a mesma.\n"
+        )
+        send_email(user.email, "[FazTudo] Redefinição de senha", body)
 
     async def password_reset_confirm(self, data: PasswordResetConfirmIn) -> None:
         """Valida o token de reset, troca a senha e revoga todos os refresh."""

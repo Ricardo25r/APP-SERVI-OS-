@@ -91,6 +91,8 @@ class Settings(BaseSettings):
     SMTP_STARTTLS: bool = True
     # URL do painel (link nos e-mails de alerta).
     MONITORING_URL: str = "http://localhost:3000/admin/monitoramento"
+    # URL pública do app (base p/ links em e-mails transacionais, ex.: reset).
+    FRONTEND_URL: str = "http://localhost:3000"
 
     @property
     def cors_origins_list(self) -> list[str]:
