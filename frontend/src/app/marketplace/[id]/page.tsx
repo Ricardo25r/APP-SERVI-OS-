@@ -77,6 +77,7 @@ export default function MarketplaceLeadDetailPage() {
   const [buying, setBuying] = useState(false);
   const [buyError, setBuyError] = useState<string | null>(null);
   const [contact, setContact] = useState<LeadContact | null>(null);
+  const [deadline, setDeadline] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -108,6 +109,7 @@ export default function MarketplaceLeadDetailPage() {
       });
       const c = purchase.contact ?? purchase.lead?.contact ?? null;
       if (c) setContact(c);
+      if (purchase.contact_deadline) setDeadline(purchase.contact_deadline);
       void load();
     } catch (err) {
       setBuyError(purchaseErrorMessage(err).message);
@@ -316,6 +318,16 @@ export default function MarketplaceLeadDetailPage() {
                 <p className="text-sm font-bold text-success">
                   Contato liberado
                 </p>
+                {deadline ? (
+                  <p className="text-xs font-semibold text-brand">
+                    Inicie o contato até{" "}
+                    {new Date(deadline).toLocaleTimeString("pt-BR", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                    .
+                  </p>
+                ) : null}
                 <p className="text-sm text-foreground">{contact.name}</p>
                 {contact.phone ? (
                   <a

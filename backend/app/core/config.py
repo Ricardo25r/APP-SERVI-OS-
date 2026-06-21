@@ -93,6 +93,8 @@ class Settings(BaseSettings):
     MONITORING_URL: str = "http://localhost:3000/admin/monitoramento"
     # URL pública do app (base p/ links em e-mails transacionais, ex.: reset).
     FRONTEND_URL: str = "http://localhost:3000"
+    # Janela (min) p/ o profissional iniciar o contato após desbloquear o lead.
+    CONTACT_WINDOW_MINUTES: int = 60
 
     @property
     def cors_origins_list(self) -> list[str]:

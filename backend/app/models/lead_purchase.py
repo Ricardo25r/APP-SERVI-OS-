@@ -45,6 +45,10 @@ class LeadPurchase(UUIDPKMixin, CreatedAtMixin, Base):
     purchased_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
+    # Prazo p/ iniciar o contato após desbloquear (purchased_at + janela).
+    contact_deadline: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
     lead: Mapped[Lead] = relationship("Lead", back_populates="purchase")
     professional: Mapped[ProfessionalProfile] = relationship(

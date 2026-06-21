@@ -29,10 +29,12 @@ antes de qualquer ``commit``, e fazemos ``rollback`` da transação inteira.
 from __future__ import annotations
 
 import uuid
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.core.exceptions import (
     ConflictError,
     NotFoundError,
@@ -126,6 +128,8 @@ class LeadPurchaseService:
                 lead_id=lead.id,
                 professional_id=profile.id,
                 credits_used=lead.credits_cost,
+                contact_deadline=datetime.now(UTC)
+                + timedelta(minutes=settings.CONTACT_WINDOW_MINUTES),
             )
             self.repo.add(purchase)
             try:
@@ -285,6 +289,7 @@ class LeadPurchaseService:
             credits_used=purchase.credits_used,
             purchased_at=purchase.purchased_at,
             created_at=purchase.created_at,
+            contact_deadline=purchase.contact_deadline,
             lead=lead_read,
             contact=contact,
         )

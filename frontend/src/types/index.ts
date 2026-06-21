@@ -206,6 +206,8 @@ export interface LeadPurchase {
   professional_id: string;
   credits_used: number;
   purchased_at: string;
+  /** Prazo p/ iniciar o contato após desbloquear (purchased_at + janela). */
+  contact_deadline?: string | null;
   lead?: Lead;
   contact?: LeadContact;
 }

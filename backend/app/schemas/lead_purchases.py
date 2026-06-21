@@ -62,6 +62,7 @@ class LeadPurchaseRead(BaseModel):
     credits_used: int
     purchased_at: datetime
     created_at: datetime
+    contact_deadline: datetime | None = None
 
     # Campos compostos montados no service.
     lead: LeadRead | None = None
