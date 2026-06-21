@@ -18,6 +18,7 @@ import { Trophy } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useRequireAuth } from "@/hooks/use-auth";
+import { LevelJourney } from "@/modules/gamification/level-journey";
 import { XpHistory } from "@/modules/gamification/xp-history";
 import { XpProgress } from "@/modules/gamification/xp-progress";
 
@@ -48,6 +49,7 @@ export default function GamificacaoPage() {
       {isProfessional ? (
         <div className="space-y-6">
           <XpProgress />
+          <LevelJourney />
           <XpHistory />
         </div>
       ) : (

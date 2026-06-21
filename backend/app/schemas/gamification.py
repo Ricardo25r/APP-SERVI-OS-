@@ -77,6 +77,9 @@ class MyGamificationOut(BaseModel):
     next_level_name: str | None = None
     next_level_xp: int | None = None
     xp_for_next_level: int
+    # XP mínimo do nível atual (piso da faixa) — para a barra refletir o
+    # progresso DENTRO do nível, não a partir do zero absoluto.
+    level_min_xp: int = 0
     recent_transactions: list[XpTransactionOut]
 
 

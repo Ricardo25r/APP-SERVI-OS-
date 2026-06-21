@@ -156,6 +156,10 @@ class GamificationService:
         xp = profile.xp if profile is not None else 0
         level_num, level_name = level_for_xp(xp)
 
+        level_min_xp = next(
+            (entry[2] for entry in LEVELS if entry[0] == level_num), 0
+        )
+
         nxt = _next_level_threshold(level_num)
         if nxt is None:
             next_level = next_name = next_xp = None
@@ -173,6 +177,7 @@ class GamificationService:
             next_level_name=next_name,
             next_level_xp=next_xp,
             xp_for_next_level=xp_for_next,
+            level_min_xp=level_min_xp,
             recent_transactions=[
                 XpTransactionOut.model_validate(t) for t in txs
             ],
