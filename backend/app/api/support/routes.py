@@ -15,6 +15,7 @@ from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import get_current_user, require_roles
+from app.core.ratelimit import rate_limit
 from app.database.session import get_db
 from app.models import User, UserRole
 from app.schemas.support import (
@@ -35,6 +36,7 @@ router = APIRouter()
     response_model=SupportTicketOut,
     status_code=status.HTTP_201_CREATED,
     summary="Abrir chamado de suporte",
+    dependencies=[Depends(rate_limit("support", limit=5, window_seconds=60))],
 )
 async def create_ticket(
     payload: SupportTicketCreate,

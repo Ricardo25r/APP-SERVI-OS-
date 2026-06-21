@@ -26,6 +26,7 @@ from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import get_current_user
+from app.core.ratelimit import rate_limit
 from app.database.session import get_db
 from app.models import User
 from app.schemas.auth import (
@@ -50,6 +51,7 @@ router = APIRouter()
     response_model=AuthResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Cadastrar usuário (customer/professional)",
+    dependencies=[Depends(rate_limit("register", limit=5, window_seconds=60))],
 )
 async def register(
     payload: RegisterIn,
@@ -65,6 +67,7 @@ async def register(
     "/login",
     response_model=AuthResponse,
     summary="Autenticar por email e senha",
+    dependencies=[Depends(rate_limit("login", limit=10, window_seconds=60))],
 )
 async def login(
     payload: LoginIn,
@@ -128,6 +131,7 @@ async def me(
     "/password-reset/request",
     response_model=PasswordResetRequestOut,
     summary="Solicitar reset de senha (resposta genérica, anti-enumeração)",
+    dependencies=[Depends(rate_limit("pwreset", limit=5, window_seconds=300))],
 )
 async def password_reset_request(
     payload: PasswordResetRequestIn,
