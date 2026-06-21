@@ -47,6 +47,7 @@ export interface ChatLastMessage {
   message?: string | null;
   created_at?: string | null;
   sender_id?: string | null;
+  media_url?: string | null;
 }
 
 /** Resposta paginada da lista de conversas. */
@@ -61,6 +62,8 @@ export interface ChatMessage {
   sender_id: string;
   message: string;
   created_at: string;
+  /** URL presignada da imagem anexada (quando houver). */
+  media_url?: string | null;
   read_at?: string | null;
   /** Algumas mensagens podem ser de sistema (centralizadas/discretas). */
   is_system?: boolean | null;

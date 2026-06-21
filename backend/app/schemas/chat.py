@@ -83,6 +83,7 @@ class MessageOut(BaseModel):
     conversation_id: uuid.UUID
     sender_id: uuid.UUID
     message: str
+    media_url: str | None = None
     read_at: datetime | None = None
     created_at: datetime
 

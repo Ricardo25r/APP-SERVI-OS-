@@ -50,8 +50,10 @@ export function lastMessageText(conversation: Conversation): string | null {
   const last = conversation.last_message;
   if (!last) return null;
   if (typeof last === "string") return last.trim() || null;
-  const text = (last as ChatLastMessage).message;
-  return text?.trim() || null;
+  const obj = last as ChatLastMessage;
+  if (obj.message?.trim()) return obj.message.trim();
+  if (obj.media_url) return "Imagem";
+  return null;
 }
 
 /** Timestamp da última mensagem (quando vier como objeto). */

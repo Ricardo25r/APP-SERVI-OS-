@@ -23,7 +23,7 @@ import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, ForeignKey, Index, Text
+from sqlalchemy import DateTime, ForeignKey, Index, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -55,6 +55,8 @@ class Message(UUIDPKMixin, CreatedAtMixin, Base):
         index=True,
     )
     message: Mapped[str] = mapped_column(Text, nullable=False)
+    # Chave do objeto no storage (imagem anexada). Opcional — Fase 13.
+    media_key: Mapped[str | None] = mapped_column(String(512), nullable=True)
     read_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )

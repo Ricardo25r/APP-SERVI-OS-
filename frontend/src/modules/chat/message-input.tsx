@@ -12,13 +12,13 @@
 
 import { useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2, SendHorizontal } from "lucide-react";
+import { ImagePlus, Loader2, SendHorizontal } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
-import { sendMessage } from "./api";
+import { sendMessage, sendMessageImage } from "./api";
 import { conversationsKey } from "./conversation-list";
 import { messagesKey } from "./message-thread";
 import type { ChatMessage } from "./types";
@@ -40,6 +40,8 @@ export function MessageInput({
   const [value, setValue] = useState("");
   const [error, setError] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const fileRef = useRef<HTMLInputElement | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const key = messagesKey(conversationId);
 
@@ -77,6 +79,23 @@ export function MessageInput({
       void queryClient.invalidateQueries({ queryKey: conversationsKey });
     },
   });
+
+  async function onPickImage(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = ""; // permite reenviar a mesma imagem depois
+    if (!file || !file.type.startsWith("image/")) return;
+    setUploadingImage(true);
+    setError(null);
+    try {
+      await sendMessageImage(conversationId, file);
+      await queryClient.invalidateQueries({ queryKey: key });
+      await queryClient.invalidateQueries({ queryKey: conversationsKey });
+    } catch (err) {
+      setError(chatErrorMessage(err, "Não foi possível enviar a imagem."));
+    } finally {
+      setUploadingImage(false);
+    }
+  }
 
   function submit() {
     const trimmed = value.trim();
@@ -119,6 +138,28 @@ export function MessageInput({
           submit();
         }}
       >
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={onPickImage}
+        />
+        <Button
+          type="button"
+          size="icon"
+          variant="outline"
+          onClick={() => fileRef.current?.click()}
+          disabled={uploadingImage || mutation.isPending}
+          aria-label="Anexar imagem"
+          className="shrink-0 rounded-xl"
+        >
+          {uploadingImage ? (
+            <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+          ) : (
+            <ImagePlus className="h-4 w-4" aria-hidden />
+          )}
+        </Button>
         <Textarea
           ref={textareaRef}
           value={value}

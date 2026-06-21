@@ -14,7 +14,7 @@
  * - `POST /chat/conversations/{id}/messages`    → envia mensagem ({message}).
  */
 
-import { apiGet, apiPost } from "@/services/api";
+import { apiGet, apiPost, apiUpload } from "@/services/api";
 
 import type {
   ChatMessage,
@@ -74,5 +74,20 @@ export function sendMessage(
   return apiPost<ChatMessage>(
     `/chat/conversations/${conversationId}/messages`,
     body
+  );
+}
+
+/** Envia uma imagem (com legenda opcional) na conversa. Multipart. */
+export function sendMessageImage(
+  conversationId: string,
+  file: File,
+  caption = ""
+): Promise<ChatMessage> {
+  const form = new FormData();
+  form.append("file", file);
+  if (caption.trim()) form.append("caption", caption.trim());
+  return apiUpload<ChatMessage>(
+    `/chat/conversations/${conversationId}/messages/image`,
+    form
   );
 }

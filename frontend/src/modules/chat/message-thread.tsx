@@ -190,9 +190,28 @@ function MessageBubble({ message, mine }: MessageBubbleProps) {
             : "rounded-bl-md bg-muted text-foreground"
         )}
       >
-        <p className="whitespace-pre-wrap break-words leading-relaxed">
-          {message.message}
-        </p>
+        {message.media_url ? (
+          <a
+            href={message.media_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block"
+          >
+            <Image
+              src={message.media_url}
+              width={400}
+              height={400}
+              unoptimized
+              alt="Imagem enviada"
+              className="mb-1 max-h-64 w-full rounded-lg object-cover"
+            />
+          </a>
+        ) : null}
+        {message.message ? (
+          <p className="whitespace-pre-wrap break-words leading-relaxed">
+            {message.message}
+          </p>
+        ) : null}
         <span
           className={cn(
             "mt-1 flex items-center justify-end gap-1 text-[10px]",

@@ -40,6 +40,7 @@ from app.core.exceptions import (
     NotFoundError,
     PermissionDeniedError,
 )
+from app.core.storage import presigned_get_url, upload_bytes
 from app.models import (
     Conversation,
     ConversationStatus,
@@ -186,7 +187,7 @@ class ChatService:
         messages, total = await self.repo.list_messages(
             conversation.id, limit=limit, offset=offset
         )
-        items = [MessageOut.model_validate(m) for m in messages]
+        items = [self._message_out(m) for m in messages]
         return items, total
 
     # ------------------------------------------------------------------ #
@@ -227,11 +228,60 @@ class ChatService:
         await self.repo.flush()
         await self.db.commit()
         await self.db.refresh(msg)
-        return MessageOut.model_validate(msg)
+        return self._message_out(msg)
+
+    async def send_media_message(
+        self,
+        current_user: User,
+        conversation_id: uuid.UUID,
+        *,
+        filename: str,
+        content_type: str | None,
+        data: bytes,
+        caption: str = "",
+    ) -> MessageOut:
+        """Envia uma mensagem com **imagem anexada** (upload no storage).
+
+        Mesmas regras do envio de texto (participante + conversa ativa). A legenda
+        é opcional; mensagem só-imagem fica com ``message`` vazio.
+        """
+        conversation = await self._get_participant_conversation(
+            current_user, conversation_id
+        )
+        if conversation.status != ConversationStatus.active:
+            raise DomainValidationError(
+                "Conversa arquivada não aceita novas mensagens."
+            )
+        ext = ""
+        if "." in filename:
+            ext = "." + filename.rsplit(".", 1)[1].lower()[:8]
+        key = f"chat/{conversation.id}/{uuid.uuid4().hex}{ext}"
+        upload_bytes(data, key, content_type)
+        now = datetime.now(UTC)
+        msg = Message(
+            conversation_id=conversation.id,
+            sender_id=current_user.id,
+            message=(caption or "").strip(),
+            media_key=key,
+            created_at=now,
+        )
+        self.repo.add_message(msg)
+        conversation.last_message_at = now
+        await self.repo.flush()
+        await self.db.commit()
+        await self.db.refresh(msg)
+        return self._message_out(msg)
 
     # ------------------------------------------------------------------ #
     # Helpers internos
     # ------------------------------------------------------------------ #
+    def _message_out(self, m: Message) -> MessageOut:
+        """``MessageOut`` com a URL presignada da imagem (quando houver)."""
+        out = MessageOut.model_validate(m)
+        if m.media_key:
+            out.media_url = presigned_get_url(m.media_key)
+        return out
+
     async def _get_participant_conversation(
         self, current_user: User, conversation_id: uuid.UUID
     ) -> Conversation:
@@ -281,7 +331,7 @@ class ChatService:
         )
 
         last = await self.repo.last_message(conversation.id)
-        last_message = MessageOut.model_validate(last) if last is not None else None
+        last_message = self._message_out(last) if last is not None else None
         unread = await self.repo.count_unread_for_user(
             conversation.id, viewer.id
         )

@@ -19,7 +19,16 @@ from __future__ import annotations
 
 import uuid
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    File,
+    Form,
+    HTTPException,
+    Query,
+    UploadFile,
+    status,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import get_current_user
@@ -112,4 +121,50 @@ async def send_message(
     service = ChatService(db)
     return await service.send_message(
         current_user, conversation_id, message=payload.message
+    )
+
+
+# Limites de upload de imagem no chat.
+_MAX_IMAGE_BYTES = 5 * 1024 * 1024  # 5 MB
+_ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
+
+
+@router.post(
+    "/conversations/{conversation_id}/messages/image",
+    response_model=MessageOut,
+    status_code=status.HTTP_201_CREATED,
+    summary="Enviar imagem na conversa",
+)
+async def send_message_image(
+    conversation_id: uuid.UUID,
+    file: UploadFile = File(...),
+    caption: str = Form(default=""),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> MessageOut:
+    """Envia uma imagem (JPG/PNG/WEBP/GIF, até 5 MB) como mensagem. Valida
+    participante (403) e conversa ativa (422)."""
+    if file.content_type not in _ALLOWED_IMAGE_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail="Formato não suportado (use JPG, PNG, WEBP ou GIF).",
+        )
+    data = await file.read()
+    if not data:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Arquivo vazio."
+        )
+    if len(data) > _MAX_IMAGE_BYTES:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail="Imagem muito grande (máximo 5 MB).",
+        )
+    service = ChatService(db)
+    return await service.send_media_message(
+        current_user,
+        conversation_id,
+        filename=file.filename or "foto.jpg",
+        content_type=file.content_type,
+        data=data,
+        caption=caption,
     )
