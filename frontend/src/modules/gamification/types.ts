@@ -57,6 +57,22 @@ export interface RankingItem {
   rating?: number | null;
 }
 
+/** Uma conquista + status do usuário (`GET /gamification/achievements`). */
+export interface Achievement {
+  slug: string;
+  name: string;
+  description?: string | null;
+  xp_reward: number;
+  earned: boolean;
+  earned_at?: string | null;
+}
+
+export interface AchievementsResponse {
+  items: Achievement[];
+  earned_count: number;
+  total: number;
+}
+
 /** Minha posição no ranking (`GET /gamification/ranking/me`). */
 export interface MyRank {
   is_ranked: boolean;

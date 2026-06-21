@@ -22,14 +22,34 @@ from app.core.deps import get_current_user
 from app.database.session import get_db
 from app.models import User
 from app.schemas.gamification import (
+    AchievementsResponse,
     LevelsResponse,
     MyGamificationOut,
     MyRankOut,
     RankingResponse,
 )
+from app.services.achievements import AchievementService
 from app.services.gamification import GamificationService
 
 router = APIRouter()
+
+
+@router.get(
+    "/achievements",
+    response_model=AchievementsResponse,
+    summary="Minhas conquistas (catálogo + status)",
+)
+async def my_achievements(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> AchievementsResponse:
+    """Catálogo de conquistas com o status do usuário (concede recém-ganhas)."""
+    items = await AchievementService(db).evaluate_and_list(current_user)
+    return AchievementsResponse(
+        items=items,
+        earned_count=sum(1 for i in items if i.earned),
+        total=len(items),
+    )
 
 
 @router.get(

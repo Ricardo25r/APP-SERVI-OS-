@@ -22,6 +22,8 @@ __all__ = [
     "RankingItem",
     "RankingResponse",
     "LevelsResponse",
+    "AchievementOut",
+    "AchievementsResponse",
 ]
 
 
@@ -124,4 +126,26 @@ class RankingResponse(BaseModel):
     """Envelope do ranking (top N + filtros aplicados)."""
 
     items: list[RankingItem]
+    total: int
+
+
+# --------------------------------------------------------------------------- #
+# Conquistas / medalhas
+# --------------------------------------------------------------------------- #
+class AchievementOut(BaseModel):
+    """Uma conquista do catálogo + status do usuário (ganha ou não)."""
+
+    slug: str
+    name: str
+    description: str | None = None
+    xp_reward: int
+    earned: bool
+    earned_at: datetime | None = None
+
+
+class AchievementsResponse(BaseModel):
+    """Catálogo de conquistas com o status do usuário."""
+
+    items: list[AchievementOut]
+    earned_count: int
     total: int

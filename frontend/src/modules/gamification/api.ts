@@ -13,6 +13,7 @@
 import { apiGet } from "@/services/api";
 
 import type {
+  AchievementsResponse,
   GamificationLevel,
   GamificationMe,
   MyRank,
@@ -70,4 +71,9 @@ export async function fetchRanking(
 /** Posição do usuário logado no ranking (Nº X de Y). */
 export function fetchMyRank(): Promise<MyRank> {
   return apiGet<MyRank>("/gamification/ranking/me");
+}
+
+/** Conquistas do usuário (catálogo + status; concede recém-ganhas). */
+export function fetchAchievements(): Promise<AchievementsResponse> {
+  return apiGet<AchievementsResponse>("/gamification/achievements");
 }
