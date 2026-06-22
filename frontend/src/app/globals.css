@@ -86,3 +86,13 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* iOS: evita o auto-zoom ao focar campos com fonte < 16px (mantém a tela
+   enquadrada). Só em telas pequenas; no desktop o text-sm dos componentes vale. */
+@media (max-width: 640px) {
+  input:not([type="checkbox"]):not([type="radio"]),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}

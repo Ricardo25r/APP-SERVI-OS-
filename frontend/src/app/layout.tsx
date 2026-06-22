@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Montserrat } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
@@ -21,6 +21,16 @@ export const metadata: Metadata = {
     icon: "/brand/logo-icon.png",
     apple: "/brand/logo-icon.png",
   },
+};
+
+// App-like: trava o zoom (mantém a tela enquadrada) e respeita o notch.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+  themeColor: "#0D47A1",
 };
 
 export default function RootLayout({
