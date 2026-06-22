@@ -17,14 +17,12 @@ import {
   Loader2,
   MapPin,
   MessageSquare,
-  Plus,
   Ruler,
   Star,
   Unlock,
   type LucideIcon,
 } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { IconChip } from "@/components/ui/icon-chip";
 import { cn } from "@/lib/utils";
@@ -210,13 +208,31 @@ export function ProfessionalHome({ user }: { user: User }) {
             Aqui estão as oportunidades para você.
           </p>
         </div>
-        <Link
-          href="/profile"
-          className="hidden shrink-0 items-center gap-1 rounded-full border px-3 py-1.5 text-sm font-semibold text-foreground transition-colors hover:bg-accent sm:inline-flex"
-        >
-          Ver meu perfil
-          <ChevronRight className="h-4 w-4" aria-hidden />
-        </Link>
+        <div className="flex shrink-0 flex-col items-end gap-2">
+          {/* Chip de saldo — comprar créditos fica no FAB / aba Créditos */}
+          <Link
+            href="/credits"
+            className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 text-sm font-bold tabular-nums text-primary transition-colors hover:bg-primary/10"
+          >
+            <Image
+              src="/brand/moedas.png"
+              alt=""
+              width={18}
+              height={18}
+              aria-hidden
+              className="h-4 w-4 object-contain"
+            />
+            {loading ? "—" : summary.balance ?? 0}
+            <span className="font-medium text-muted-foreground">créditos</span>
+          </Link>
+          <Link
+            href="/profile"
+            className="hidden items-center gap-1 rounded-full border px-3 py-1.5 text-sm font-semibold text-foreground transition-colors hover:bg-accent sm:inline-flex"
+          >
+            Ver meu perfil
+            <ChevronRight className="h-4 w-4" aria-hidden />
+          </Link>
+        </div>
       </header>
 
       {/* Banner de nível (promo) — topo da home */}
@@ -244,36 +260,6 @@ export function ProfessionalHome({ user }: { user: User }) {
           className="pointer-events-none absolute bottom-0 right-1 h-32 w-auto select-none object-contain object-bottom drop-shadow-xl sm:right-3 sm:h-44"
         />
       </Link>
-
-      {/* Seus créditos */}
-      <div className="flex items-center justify-between gap-4 rounded-2xl border border-primary/15 bg-primary/5 p-5 sm:p-6">
-        <div className="min-w-0">
-          <p className="text-sm font-medium text-muted-foreground">
-            Seus créditos
-          </p>
-          <p className="mt-0.5 text-3xl font-bold tracking-tight tabular-nums text-primary">
-            {loading ? (
-              <span className="inline-block h-8 w-20 animate-pulse rounded bg-muted align-middle" />
-            ) : (
-              <>
-                {summary.balance ?? 0}
-                <span className="ml-1.5 text-base font-medium text-muted-foreground">
-                  créditos
-                </span>
-              </>
-            )}
-          </p>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            Saldo disponível
-          </p>
-        </div>
-        <Link href="/credits" className="shrink-0">
-          <Button className="gap-1.5 bg-brand font-semibold text-brand-foreground hover:bg-brand/90">
-            <Plus className="h-4 w-4" aria-hidden />
-            Comprar créditos
-          </Button>
-        </Link>
-      </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
