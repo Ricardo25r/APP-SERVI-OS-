@@ -76,7 +76,7 @@ export function LeadCard({ lead, onCancel }: LeadCardProps) {
       {/* Ações. */}
       <div className="mt-auto flex flex-wrap gap-2 border-t pt-3">
         <Link
-          href={`/leads/${lead.id}`}
+          href={`/leads/detalhe?id=${lead.id}`}
           className={cn(
             buttonVariants({ variant: "outline", size: "sm" }),
             "inline-flex items-center gap-1.5"

@@ -74,7 +74,7 @@ export default function ConversasPage() {
             <SelectedConversation
               conversation={selected}
               currentUserId={user.id}
-              onOpenFull={() => router.push(`/conversas/${selected.id}`)}
+              onOpenFull={() => router.push(`/conversas/conversa?id=${selected.id}`)}
             />
           ) : (
             <div className="flex flex-1 flex-col items-center justify-center gap-1 p-8 text-center text-sm text-muted-foreground">

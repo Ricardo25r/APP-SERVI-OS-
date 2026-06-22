@@ -213,7 +213,7 @@ function ConversationListItem({
   return (
     <li>
       <Link
-        href={`/conversas/${conversation.id}`}
+        href={`/conversas/conversa?id=${conversation.id}`}
         aria-current={selected ? "true" : undefined}
         className={baseClass}
       >

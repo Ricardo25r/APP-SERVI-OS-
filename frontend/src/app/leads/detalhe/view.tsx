@@ -7,7 +7,7 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Coins, MapPin, MessageSquare, Pencil } from "lucide-react";
@@ -62,8 +62,8 @@ const STATUS_HINT: Record<LeadStatus, { text: string; cls: string }> = {
 export default function LeadDetailPage() {
   const auth = useRequireAuth("customer");
   const router = useRouter();
-  const params = useParams<{ id: string }>();
-  const id = params?.id;
+  const searchParams = useSearchParams();
+  const id = searchParams.get("id") ?? undefined;
 
   const [lead, setLead] = useState<Lead | null>(null);
   const [loading, setLoading] = useState(true);

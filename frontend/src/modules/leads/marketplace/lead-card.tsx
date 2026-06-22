@@ -13,12 +13,14 @@
  */
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Coins, Loader2, MapPin, Ruler } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { IconChip } from "@/components/ui/icon-chip";
 import { cn } from "@/lib/utils";
 import type { Lead, LeadContact } from "@/types";
@@ -64,6 +66,9 @@ export function LeadCard({
     Boolean
   );
 
+  const [confirming, setConfirming] = useState(false);
+  const creditsLabel = `${lead.credits_cost} ${lead.credits_cost === 1 ? "crédito" : "créditos"}`;
+
   return (
     <Card className="flex flex-col">
       <CardContent className="flex flex-1 flex-col gap-3 p-4">
@@ -77,7 +82,7 @@ export function LeadCard({
           />
           <div className="min-w-0 flex-1">
             <Link
-              href={`/marketplace/${lead.id}`}
+              href={`/marketplace/detalhe?id=${lead.id}`}
               className="block truncate text-base font-bold tracking-tight hover:text-primary"
             >
               {lead.title}
@@ -159,7 +164,7 @@ export function LeadCard({
             <Button
               size="sm"
               className="gap-1.5 bg-brand text-brand-foreground hover:bg-brand/90"
-              onClick={() => onBuy(lead)}
+              onClick={() => setConfirming(true)}
               disabled={buying || !canAfford}
               title={!canAfford ? "Saldo insuficiente" : undefined}
             >
@@ -172,12 +177,32 @@ export function LeadCard({
         </div>
 
         <Link
-          href={`/marketplace/${lead.id}`}
+          href={`/marketplace/detalhe?id=${lead.id}`}
           className="inline-flex items-center gap-1 self-start text-xs font-semibold text-primary hover:underline"
         >
           Ver detalhes
           <ArrowRight className="h-3.5 w-3.5" aria-hidden />
         </Link>
+
+        <ConfirmDialog
+          open={confirming}
+          title="Desbloquear contato"
+          description={
+            <>
+              Vão ser usados{" "}
+              <span className="font-semibold text-brand">{creditsLabel}</span>{" "}
+              para liberar o contato deste cliente. Você terá 1 hora para iniciar
+              o contato.
+            </>
+          }
+          confirmLabel={`Usar ${creditsLabel}`}
+          loading={buying}
+          onConfirm={() => {
+            setConfirming(false);
+            onBuy(lead);
+          }}
+          onCancel={() => setConfirming(false)}
+        />
       </CardContent>
     </Card>
   );

@@ -14,7 +14,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
   CalendarClock,
@@ -33,6 +33,7 @@ import {
 
 import { AppHeader } from "@/components/app-shell/app-header";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { IconChip } from "@/components/ui/icon-chip";
 import { cn } from "@/lib/utils";
 import { useRequireAuth } from "@/hooks/use-auth";
@@ -67,8 +68,8 @@ function formatWhen(iso: string): string {
 
 export default function MarketplaceLeadDetailPage() {
   const auth = useRequireAuth("professional");
-  const params = useParams<{ id: string }>();
-  const id = params?.id;
+  const searchParams = useSearchParams();
+  const id = searchParams.get("id") ?? undefined;
 
   const [lead, setLead] = useState<Lead | null>(null);
   const [loading, setLoading] = useState(true);
@@ -78,6 +79,7 @@ export default function MarketplaceLeadDetailPage() {
   const [buyError, setBuyError] = useState<string | null>(null);
   const [contact, setContact] = useState<LeadContact | null>(null);
   const [deadline, setDeadline] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState(false);
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -375,7 +377,7 @@ export default function MarketplaceLeadDetailPage() {
               </p>
             </div>
             <Button
-              onClick={handleBuy}
+              onClick={() => setConfirming(true)}
               disabled={buying || lead.affordable === false}
               className="gap-2 bg-brand text-brand-foreground hover:bg-brand/90"
             >
@@ -402,6 +404,28 @@ export default function MarketplaceLeadDetailPage() {
           ) : null}
         </div>
       ) : null}
+      <ConfirmDialog
+        open={confirming}
+        title="Desbloquear contato"
+        description={
+          <>
+            Vão ser usados{" "}
+            <span className="font-semibold text-brand">
+              {lead?.credits_cost}{" "}
+              {lead?.credits_cost === 1 ? "crédito" : "créditos"}
+            </span>{" "}
+            para liberar o contato deste cliente. Você terá 1 hora para iniciar o
+            contato.
+          </>
+        }
+        confirmLabel={`Usar ${lead?.credits_cost ?? ""} créditos`}
+        loading={buying}
+        onConfirm={() => {
+          setConfirming(false);
+          void handleBuy();
+        }}
+        onCancel={() => setConfirming(false)}
+      />
     </>
   );
 }

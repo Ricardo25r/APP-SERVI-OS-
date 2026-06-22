@@ -1,8 +1,9 @@
 /**
  * `ContactCard` — exibe o CONTATO LIBERADO do contratante após a compra
- * (nome / telefone / e-mail). NÃO deve ser renderizado antes da compra.
+ * (nome + telefone). NÃO deve ser renderizado antes da compra. O e-mail não é
+ * exibido de propósito: o contato é feito pelo telefone/WhatsApp.
  *
- * Inclui atalhos diretos (tel: / mailto:) para facilitar o primeiro contato.
+ * Inclui atalho direto (tel:) para facilitar o primeiro contato.
  */
 "use client";
 
@@ -39,15 +40,6 @@ export function ContactCard({ contact, className }: ContactCardProps) {
         ) : (
           <p className="text-muted-foreground">Telefone não informado</p>
         )}
-        <p>
-          <span className="text-muted-foreground">E-mail: </span>
-          <a
-            href={`mailto:${contact.email}`}
-            className="font-medium text-primary underline-offset-4 hover:underline"
-          >
-            {contact.email}
-          </a>
-        </p>
       </CardContent>
     </Card>
   );

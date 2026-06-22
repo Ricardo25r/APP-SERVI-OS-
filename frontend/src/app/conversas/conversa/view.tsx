@@ -13,7 +13,7 @@
 "use client";
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 
@@ -33,8 +33,8 @@ import type { Conversation } from "@/modules/chat";
 
 export default function ConversaThreadPage() {
   const { user, isAuthenticated, hasHydrated } = useRequireAuth();
-  const params = useParams<{ id: string }>();
-  const id = params?.id;
+  const searchParams = useSearchParams();
+  const id = searchParams.get("id") ?? undefined;
 
   const { data: conversation } = useQuery<Conversation>({
     queryKey: ["chat", "conversation", id],
@@ -64,9 +64,9 @@ export default function ConversaThreadPage() {
   // Link para o detalhe do serviço conforme o papel de quem vê.
   const leadHref =
     leadId && user.role === "professional"
-      ? `/marketplace/${leadId}`
+      ? `/marketplace/detalhe?id=${leadId}`
       : leadId && user.role === "customer"
-        ? `/leads/${leadId}`
+        ? `/leads/detalhe?id=${leadId}`
         : null;
 
   return (

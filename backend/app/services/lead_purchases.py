@@ -176,7 +176,7 @@ class LeadPurchaseService:
                     f'{current_user.name} comprou seu lead "{lead.title}". '
                     "Abra a conversa para combinar o serviço."
                 ),
-                href=f"/conversas/{conversation.id}",
+                href=f"/conversas/conversa?id={conversation.id}",
             )
 
             # (6.2) Gamificação (Fase 9 — gamification-engine doc 08 §Atividades).

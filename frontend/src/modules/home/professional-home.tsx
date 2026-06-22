@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { IconChip } from "@/components/ui/icon-chip";
 import { cn } from "@/lib/utils";
 import { apiGet, apiPost } from "@/services/api";
@@ -435,6 +436,8 @@ function LeadRow({
   const canAfford =
     lead.affordable ?? (balance === null ? true : balance >= lead.credits_cost);
   const purchased = Boolean(contact);
+  const [confirming, setConfirming] = React.useState(false);
+  const creditsLabel = `${lead.credits_cost} ${lead.credits_cost === 1 ? "crédito" : "créditos"}`;
 
   return (
     <div className="rounded-xl border bg-card p-3 shadow-sm">
@@ -453,7 +456,7 @@ function LeadRow({
             </span>
           </div>
           <Link
-            href={`/marketplace/${lead.id}`}
+            href={`/marketplace/detalhe?id=${lead.id}`}
             className="mt-0.5 block truncate text-sm font-bold text-foreground hover:text-primary"
           >
             {lead.title}
@@ -482,7 +485,7 @@ function LeadRow({
           {!purchased && (
             <button
               type="button"
-              onClick={() => onBuy(lead)}
+              onClick={() => setConfirming(true)}
               disabled={buying || !canAfford}
               title={!canAfford ? "Saldo insuficiente" : undefined}
               className="mt-1 inline-flex flex-col items-center justify-center rounded-lg bg-brand px-3 py-1.5 leading-tight text-brand-foreground transition-colors hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-50"
@@ -528,6 +531,26 @@ function LeadRow({
           </Link>
         </div>
       )}
+
+      <ConfirmDialog
+        open={confirming}
+        title="Desbloquear contato"
+        description={
+          <>
+            Vão ser usados{" "}
+            <span className="font-semibold text-brand">{creditsLabel}</span> para
+            liberar o contato deste cliente. Você terá 1 hora para iniciar o
+            contato.
+          </>
+        }
+        confirmLabel={`Usar ${creditsLabel}`}
+        loading={buying}
+        onConfirm={() => {
+          setConfirming(false);
+          onBuy(lead);
+        }}
+        onCancel={() => setConfirming(false)}
+      />
     </div>
   );
 }

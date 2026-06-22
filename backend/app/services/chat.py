@@ -304,7 +304,7 @@ class ChatService:
             type="message",
             title=f"Nova mensagem de {sender.name}",
             body=preview,
-            href=f"/conversas/{conversation.id}",
+            href=f"/conversas/conversa?id={conversation.id}",
         )
 
     async def _get_participant_conversation(
