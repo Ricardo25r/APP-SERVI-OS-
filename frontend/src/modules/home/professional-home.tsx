@@ -219,6 +219,32 @@ export function ProfessionalHome({ user }: { user: User }) {
         </Link>
       </header>
 
+      {/* Banner de nível (promo) — topo da home */}
+      <Link
+        href="/gamificacao"
+        className="relative block overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-[#0A357D] p-5 pr-32 text-primary-foreground shadow-sm transition-opacity hover:opacity-95 sm:pr-44"
+      >
+        <p className="text-base font-bold tracking-tight sm:text-lg">
+          Suba de nível e ganhe mais visibilidade
+        </p>
+        <p className="mt-0.5 max-w-[18rem] text-sm text-primary-foreground/80">
+          Compre leads e receba boas avaliações para evoluir.
+        </p>
+        <span className="mt-2 inline-flex items-center gap-1 text-sm font-bold text-brand">
+          Ver progresso
+          <ChevronRight className="h-4 w-4" aria-hidden />
+        </span>
+        <Image
+          src="/brand/mascote-profissional.webp"
+          width={220}
+          height={300}
+          alt=""
+          aria-hidden
+          priority
+          className="pointer-events-none absolute bottom-0 right-1 h-32 w-auto select-none object-contain object-bottom drop-shadow-xl sm:right-3 sm:h-44"
+        />
+      </Link>
+
       {/* Seus créditos */}
       <div className="flex items-center justify-between gap-4 rounded-2xl border border-primary/15 bg-primary/5 p-5 sm:p-6">
         <div className="min-w-0">
@@ -353,33 +379,6 @@ export function ProfessionalHome({ user }: { user: User }) {
           </ul>
         )}
       </section>
-
-      {/* Banner de gamificação */}
-      <Link
-        href="/gamificacao"
-        className="relative flex items-center gap-3 overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-[#0A357D] p-5 text-primary-foreground shadow-sm transition-opacity hover:opacity-95"
-      >
-        <div className="min-w-0 flex-1">
-          <p className="font-bold tracking-tight">
-            Suba de nível e ganhe mais visibilidade
-          </p>
-          <p className="mt-0.5 text-sm text-primary-foreground/80">
-            Compre leads e receba boas avaliações para evoluir.
-          </p>
-          <span className="mt-2 inline-flex items-center gap-1 text-sm font-bold text-brand">
-            Ver progresso
-            <ChevronRight className="h-4 w-4" aria-hidden />
-          </span>
-        </div>
-        <Image
-          src="/brand/mascote-trio.webp"
-          width={240}
-          height={180}
-          alt=""
-          aria-hidden
-          className="h-24 w-auto shrink-0 object-contain drop-shadow-xl"
-        />
-      </Link>
     </main>
   );
 }

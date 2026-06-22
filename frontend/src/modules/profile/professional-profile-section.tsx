@@ -15,9 +15,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Coins, Loader2, MapPin } from "lucide-react";
+import { Loader2, MapPin } from "lucide-react";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -311,8 +312,15 @@ export function ProfessionalProfileSection() {
       <Card>
         <CardContent className="flex flex-col gap-4 pt-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <Coins className="h-5 w-5" aria-hidden />
+            <span className="flex h-11 w-11 items-center justify-center">
+              <Image
+                src="/brand/moedas.png"
+                alt=""
+                width={44}
+                height={44}
+                aria-hidden
+                className="h-11 w-11 object-contain"
+              />
             </span>
             <div>
               <p className="text-sm text-muted-foreground">Saldo de créditos</p>

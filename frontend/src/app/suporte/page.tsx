@@ -1,14 +1,13 @@
 /**
  * Tela de **Suporte** (`/suporte`) — Tela 39 dos mockups.
  *
- * Protegida por `useRequireAuth()`. Estrutura fiel à referência:
- * - Cartão de boas-vindas com saudação personalizada + **atendente** (mascote).
+ * Protegida por `useRequireAuth()`. Estrutura enxuta (sem canais redundantes):
+ * - Cartão de boas-vindas com saudação + **atendente** (mascote) com brilho azul.
  * - Barra de busca que filtra as dúvidas frequentes.
  * - **Dúvidas frequentes**: grade de tópicos (filtro) + acordeão de perguntas.
- * - Ações: Fale com o suporte (WhatsApp), Abrir chamado (form real), Central de
- *   ajuda (FAQ).
- * - **Abrir um chamado** (form real, via `SupportTicketSection`) + Meus chamados.
- * - Outros canais (WhatsApp / E-mail / Horário).
+ * - **Horário de atendimento** (logo após as dúvidas).
+ * - Atalhos: Central de ajuda + Termos.
+ * - **Abrir um chamado** (form real, via `SupportTicketSection`) — por último.
  */
 "use client";
 
@@ -22,9 +21,6 @@ import {
   CreditCard,
   FileText,
   HelpCircle,
-  Mail,
-  MessageCircle,
-  MessageSquarePlus,
   Search,
   UserCircle,
   type LucideIcon,
@@ -32,19 +28,12 @@ import {
 
 import { cn } from "@/lib/utils";
 import { useRequireAuth } from "@/hooks/use-auth";
-import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { IconChip } from "@/components/ui/icon-chip";
 import { Input } from "@/components/ui/input";
-import { SectionHeader } from "@/components/ui/section-header";
 import { SettingsRow, SettingsRowList } from "@/components/ui/settings-row";
 import { LoadingState } from "@/modules/profile/feedback";
 import { SupportTicketSection } from "@/modules/support/ticket-section";
-
-/** Contatos de suporte (placeholder — ajustar quando houver oficiais). */
-const WHATSAPP_NUMBER = "5569999999999";
-const WHATSAPP_DISPLAY = "(69) 99999-9999";
-const SUPPORT_EMAIL = "suporte@faztudo.com.br";
 
 type ChipColor = "blue" | "orange" | "green" | "default";
 
@@ -153,23 +142,26 @@ export default function SuportePage() {
   }
 
   const firstName = user.name?.trim().split(/\s+/)[0] ?? "";
-  const whatsappHref = `https://wa.me/${WHATSAPP_NUMBER}`;
-  const emailHref = `mailto:${SUPPORT_EMAIL}`;
   const hasFilter = Boolean(topic || query.trim());
 
   return (
     <main className="mx-auto w-full max-w-3xl space-y-6 px-4 py-8 sm:px-6 sm:py-10">
       <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Suporte</h1>
 
-      {/* Boas-vindas com o atendente */}
-      <Card className="overflow-hidden border-primary/15 bg-primary/5">
+      {/* Boas-vindas com o atendente (azul + brilho atrás do mascote) */}
+      <Card className="overflow-hidden border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-primary/15">
         <CardContent className="relative min-h-[150px] p-5 pr-28 sm:p-6 sm:pr-36">
-          <h2 className="text-lg font-bold tracking-tight sm:text-xl">
+          <h2 className="text-lg font-bold tracking-tight text-primary sm:text-xl">
             Olá, {firstName}!
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Como podemos te ajudar hoje?
           </p>
+          {/* Halo azul para destacar o atendente */}
+          <span
+            aria-hidden
+            className="pointer-events-none absolute bottom-1 right-4 h-28 w-28 rounded-full bg-primary/30 blur-2xl sm:right-8 sm:h-36 sm:w-36"
+          />
           <Image
             src="/brand/atendente-suporte.png"
             alt="Atendente FazTudo"
@@ -277,29 +269,22 @@ export default function SuportePage() {
         </div>
       </section>
 
-      {/* Ações de atendimento */}
+      {/* Horário de atendimento (logo após as dúvidas) */}
+      <Card>
+        <CardContent className="flex items-center gap-3 p-4">
+          <IconChip icon={Clock} color="orange" size="md" />
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold">Horário de atendimento</p>
+            <p className="text-xs text-muted-foreground">
+              Segunda a sexta, das 8h às 18h (horário de Brasília)
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Atalhos */}
       <Card className="overflow-hidden p-2">
         <SettingsRowList>
-          <SettingsRow
-            icon={MessageCircle}
-            iconColor="green"
-            title="Fale com o suporte"
-            description="Nossa equipe está pronta para te atender"
-            href={whatsappHref}
-            trailing={
-              <span className="inline-flex items-center gap-1 whitespace-nowrap text-xs text-muted-foreground">
-                <Clock className="h-3.5 w-3.5" aria-hidden />
-                ~2 min
-              </span>
-            }
-          />
-          <SettingsRow
-            icon={MessageSquarePlus}
-            iconColor="orange"
-            title="Abrir chamado"
-            description="Descreva seu problema e retornaremos por e-mail"
-            href="#abrir-chamado"
-          />
           <SettingsRow
             icon={HelpCircle}
             iconColor="blue"
@@ -317,63 +302,8 @@ export default function SuportePage() {
         </SettingsRowList>
       </Card>
 
-      {/* Formulário real de chamado + meus chamados */}
+      {/* Abrir um chamado (form real) — por último */}
       <SupportTicketSection />
-
-      {/* Outros canais de atendimento */}
-      <section className="space-y-3">
-        <SectionHeader title="Outros canais de atendimento" as="h2" />
-
-        <Card>
-          <CardContent className="flex items-center gap-3 p-4">
-            <IconChip icon={MessageCircle} color="green" size="md" />
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold">WhatsApp</p>
-              <p className="truncate text-xs text-muted-foreground">
-                {WHATSAPP_DISPLAY}
-              </p>
-            </div>
-            <a
-              href={whatsappHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={buttonVariants({ size: "sm" })}
-            >
-              Abrir
-            </a>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="flex items-center gap-3 p-4">
-            <IconChip icon={Mail} color="blue" size="md" />
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold">E-mail</p>
-              <p className="truncate text-xs text-muted-foreground">
-                {SUPPORT_EMAIL}
-              </p>
-            </div>
-            <a
-              href={emailHref}
-              className={buttonVariants({ variant: "outline", size: "sm" })}
-            >
-              Enviar
-            </a>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="flex items-center gap-3 p-4">
-            <IconChip icon={Clock} color="orange" size="md" />
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold">Horário de atendimento</p>
-              <p className="text-xs text-muted-foreground">
-                Segunda a sexta, das 8h às 18h (horário de Brasília)
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </section>
     </main>
   );
 }
