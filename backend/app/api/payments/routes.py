@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import uuid
 
-from fastapi import APIRouter, Depends, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -72,7 +72,14 @@ async def create_order(
     db: AsyncSession = Depends(get_db),
 ) -> PaymentOrderRead:
     """Cria o pedido ``pending`` e gera a cobrança (pix/checkout). Não credita
-    (§4 #2). Erros: ``404`` pacote inexistente, ``422`` pacote inativo."""
+    (§4 #2). Erros: ``404`` pacote inexistente, ``422`` pacote inativo.
+
+    No modo beta (``PAYMENTS_ENABLED=false``) a compra fica indisponível (403)."""
+    if not settings.PAYMENTS_ENABLED:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Compra de créditos temporariamente indisponível.",
+        )
     service = PaymentService(db)
     return await service.create_order(current_user, payload.package_id)
 

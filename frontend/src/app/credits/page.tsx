@@ -26,6 +26,10 @@ import { TransactionList } from "@/modules/credits/transaction-list";
 import { messageFromError } from "@/modules/credits/utils";
 import { BuyCreditsSection } from "@/modules/payments";
 
+// Beta: quando NEXT_PUBLIC_PAYMENTS_ENABLED=false, a compra fica oculta
+// (o backend também recusa criar pedido). Default = habilitado.
+const paymentsEnabled = process.env.NEXT_PUBLIC_PAYMENTS_ENABLED !== "false";
+
 export default function CreditsPage() {
   const auth = useRequireAuth("professional");
 
@@ -70,7 +74,7 @@ export default function CreditsPage() {
     <main className="mx-auto max-w-2xl space-y-6 px-4 py-8 sm:px-6 sm:py-10">
       <header>
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-          Comprar créditos
+          {paymentsEnabled ? "Comprar créditos" : "Créditos"}
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Use seus créditos para desbloquear leads no marketplace.
@@ -111,8 +115,22 @@ export default function CreditsPage() {
         </CardContent>
       </Card>
 
-      {/* Comprar créditos (catálogo + pagamento + CTA). */}
-      <BuyCreditsSection onPaid={() => void load()} />
+      {/* Comprar créditos (catálogo + pagamento + CTA). No beta, fica oculto. */}
+      {paymentsEnabled ? (
+        <BuyCreditsSection onPaid={() => void load()} />
+      ) : (
+        <Card className="border-dashed">
+          <CardContent className="space-y-1 p-5 text-center sm:p-6">
+            <p className="text-sm font-semibold text-foreground">
+              Compra de créditos chegando em breve
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Durante o beta, profissionais já começam com créditos de cortesia
+              para desbloquear contatos. Em breve você poderá comprar mais.
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Histórico de movimentações. */}
       <Card>
