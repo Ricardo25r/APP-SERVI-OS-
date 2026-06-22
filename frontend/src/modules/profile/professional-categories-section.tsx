@@ -24,7 +24,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { apiGet, apiPut } from "@/services/api";
+import { ApiError, apiGet, apiPut } from "@/services/api";
 import type { Category } from "@/types";
 
 import { categoryImage } from "@/modules/leads/category-icon";
@@ -65,6 +65,9 @@ export function ProfessionalCategoriesSection() {
       );
       return data.categories ?? [];
     },
+    // 404 = perfil ainda não criado; não adianta repetir.
+    retry: (count, err) =>
+      !(err instanceof ApiError && err.status === 404) && count < 2,
   });
 
   // Hidrata a seleção quando as categorias atuais chegam.
@@ -116,6 +119,11 @@ export function ProfessionalCategoriesSection() {
 
   const isLoading = allCategories.isLoading || myCategories.isLoading;
   const loadError = allCategories.error ?? myCategories.error;
+  // 404 nas categorias do profissional = perfil ainda não foi criado.
+  const noProfile =
+    myCategories.isError &&
+    myCategories.error instanceof ApiError &&
+    myCategories.error.status === 404;
 
   return (
     <Card>
@@ -129,7 +137,14 @@ export function ProfessionalCategoriesSection() {
       <CardContent className="space-y-4">
         {isLoading && <LoadingState label="Carregando categorias..." />}
 
-        {!isLoading && (allCategories.isError || myCategories.isError) && (
+        {!isLoading && noProfile && (
+          <p className="rounded-xl border border-dashed bg-muted/30 px-4 py-4 text-sm text-muted-foreground">
+            Primeiro crie seu perfil acima (localização e disponibilidade).
+            Depois você escolhe aqui as categorias de atuação.
+          </p>
+        )}
+
+        {!isLoading && !noProfile && (allCategories.isError || myCategories.isError) && (
           <ErrorBanner
             message={errorMessage(
               loadError,
@@ -139,6 +154,7 @@ export function ProfessionalCategoriesSection() {
         )}
 
         {!isLoading &&
+          !noProfile &&
           !allCategories.isError &&
           !myCategories.isError &&
           (allCategories.data?.length ? (

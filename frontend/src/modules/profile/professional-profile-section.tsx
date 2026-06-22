@@ -158,6 +158,11 @@ export function ProfessionalProfileSection() {
     },
     onSuccess: (data) => {
       queryClient.setQueryData(PROFESSIONAL_PROFILE_KEY, data);
+      // Perfil criado/atualizado → recarrega as categorias do profissional
+      // (some o estado "crie o perfil primeiro" e mostra o seletor na hora).
+      void queryClient.invalidateQueries({
+        queryKey: ["professional-profile", "categories"],
+      });
       setSaved(true);
     },
   });
