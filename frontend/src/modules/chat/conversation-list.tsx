@@ -33,6 +33,20 @@ import {
 
 export const conversationsKey = ["chat", "conversations"] as const;
 
+/**
+ * Total de mensagens não lidas (soma de todas as conversas). Alimenta o badge
+ * do item "Mensagens" no menu inferior. Compartilha a query/cache da lista.
+ */
+export function useUnreadMessagesCount(enabled: boolean): number {
+  const { data } = useQuery<Conversation[]>({
+    queryKey: conversationsKey,
+    queryFn: fetchConversations,
+    enabled,
+    refetchInterval: 15000,
+  });
+  return (data ?? []).reduce((total, c) => total + (unreadCount(c) || 0), 0);
+}
+
 interface ConversationListProps {
   className?: string;
   /** Id da conversa selecionada (layout 2 colunas). */

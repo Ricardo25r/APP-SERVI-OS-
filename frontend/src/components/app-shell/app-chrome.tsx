@@ -5,6 +5,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { BottomNav } from "@/components/app-shell/bottom-nav";
+import { useUnreadMessagesCount } from "@/modules/chat";
 
 /**
  * `AppChrome` — wrapper client que envolve o conteúdo das páginas e adiciona
@@ -20,13 +21,14 @@ import { BottomNav } from "@/components/app-shell/bottom-nav";
 export function AppChrome({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, hasHydrated } = useAuth();
   const showBottomNav = hasHydrated && isAuthenticated;
+  const unreadMessages = useUnreadMessagesCount(showBottomNav);
 
   return (
     <>
       <div className={cn(showBottomNav ? "pb-20 lg:pb-0" : undefined)}>
         {children}
       </div>
-      <BottomNav />
+      <BottomNav unreadCount={unreadMessages} />
     </>
   );
 }

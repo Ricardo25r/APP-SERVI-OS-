@@ -164,6 +164,8 @@ class LeadPurchaseService:
                 lead_id=lead.id,
                 customer_id=lead.customer_id,
                 professional_id=current_user.id,
+                # Conversa nasce vazia (sem mensagem de sistema automática).
+                seed_system_message=False,
             )
 
             # (6.1.1) Notifica o contratante que o lead foi adquirido (mesma txn).

@@ -46,7 +46,6 @@ from app.models import (
     UserRole,
     UserStatus,
 )
-from app.services.chat import CONTACT_RELEASED_MESSAGE
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
@@ -227,7 +226,7 @@ async def _buy_lead(
 async def test_purchase_creates_conversation_with_system_message(
     client: httpx.AsyncClient, session_maker
 ) -> None:
-    """A compra do lead cria a conversa (customer/professional) + msg de sistema."""
+    """A compra do lead cria a conversa (customer/professional), VAZIA."""
     customer, pro, lead_id = await _seed_purchasable(session_maker)
     await _buy_lead(client, pro, lead_id)
 
@@ -245,9 +244,8 @@ async def test_purchase_creates_conversation_with_system_message(
                 select(Message).where(Message.conversation_id == conv.id)
             )
         ).scalars().all()
-        assert len(msgs) == 1
-        assert msgs[0].message == CONTACT_RELEASED_MESSAGE
-        assert msgs[0].sender_id == pro.id
+        # A conversa nasce VAZIA (sem mensagem de sistema automática).
+        assert len(msgs) == 0
 
     # Ambos os participantes veem a conversa na própria listagem.
     for participant, counterpart_name in (
@@ -264,7 +262,8 @@ async def test_purchase_creates_conversation_with_system_message(
         assert item["lead_id"] == str(lead_id)
         assert item["counterpart"]["name"] == counterpart_name
         assert item["lead"]["title"] == "Serviço de teste"
-        assert item["last_message"]["message"] == CONTACT_RELEASED_MESSAGE
+        # Sem mensagem de sistema → conversa ainda sem última mensagem.
+        assert not item.get("last_message")
 
 
 @pytest.mark.asyncio
@@ -300,16 +299,15 @@ async def test_both_participants_exchange_and_read_messages(
     assert send_pro.status_code == 201, send_pro.text
     assert send_pro.json()["sender_id"] == str(pro.id)
 
-    # Profissional abre o histórico: vê as 3 mensagens (sistema + 2) em ordem,
+    # Profissional abre o histórico: vê as 2 mensagens trocadas em ordem,
     # e a mensagem recebida do customer é marcada como lida.
     hist_pro = await client.get(
         f"/api/v1/chat/conversations/{conv_id}/messages", headers=_auth(pro)
     )
     assert hist_pro.status_code == 200, hist_pro.text
     items = hist_pro.json()["items"]
-    assert hist_pro.json()["total"] == 3
+    assert hist_pro.json()["total"] == 2
     assert [m["message"] for m in items] == [
-        CONTACT_RELEASED_MESSAGE,
         "Olá, pode vir amanhã?",
         "Posso sim, às 9h.",
     ]
