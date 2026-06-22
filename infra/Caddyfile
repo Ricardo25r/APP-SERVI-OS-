@@ -13,6 +13,12 @@
 		reverse_proxy backend:8000
 	}
 
+	# Mídia pública (avatares, fotos de serviço) servida pelo MinIO no mesmo
+	# domínio: /faztudo/<key> == bucket "faztudo" (objetos com leitura anônima).
+	handle /faztudo/* {
+		reverse_proxy minio:9000
+	}
+
 	handle {
 		root * /srv/web
 		try_files {path} {path}/ /index.html

@@ -39,9 +39,14 @@ def upload_bytes(data: bytes, key: str, content_type: str | None = None) -> None
 
 
 def presigned_get_url(key: str, *, expires_seconds: int = 7 * 24 * 3600) -> str:
-    """URL presignada de GET (acessível pelo navegador) para ``key``."""
-    return _client(settings.S3_PUBLIC_URL).generate_presigned_url(
-        "get_object",
-        Params={"Bucket": settings.S3_BUCKET, "Key": key},
-        ExpiresIn=expires_seconds,
-    )
+    """URL **pública** de GET para ``key``.
+
+    O bucket é público (leitura anônima — ``mc anonymous set download``), então
+    servimos a mídia por URL direta ``{S3_PUBLIC_URL}/{bucket}/{key}`` (sem
+    presign). Isso permite servir as imagens pelo **próprio domínio do app**
+    (ex.: ``faztudoapp.com.br/faztudo/...``), sem subdomínio/cert separado.
+    ``expires_seconds`` é mantido só por compatibilidade (ignorado).
+    """
+    _ = expires_seconds  # compat — não usado na URL pública
+    base = settings.S3_PUBLIC_URL.rstrip("/")
+    return f"{base}/{settings.S3_BUCKET}/{key}"

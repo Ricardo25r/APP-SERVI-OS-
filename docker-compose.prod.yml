@@ -67,13 +67,8 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
-    labels:
-      - traefik.enable=true
-      - traefik.docker.network=faztudo_net
-      - traefik.http.routers.faztudo-files.rule=Host(`files.faztudoapp.com.br`)
-      - traefik.http.routers.faztudo-files.entrypoints=websecure
-      - traefik.http.routers.faztudo-files.tls.certresolver=letsencrypt
-      - traefik.http.services.faztudo-files.loadbalancer.server.port=9000
+    # Sem labels do Traefik: a mídia é servida pelo Caddy (web) em /faztudo/*
+    # no próprio domínio. MinIO fica só na rede interna.
 
   createbuckets:
     image: minio/mc
