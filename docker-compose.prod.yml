@@ -1,21 +1,28 @@
-# FazTudo — PRODUÇÃO (Docker Compose).
+# FazTudo — PRODUÇÃO (Docker Compose) integrado ao Traefik da Hostinger.
 #
-# Diferenças vs. o compose de dev:
-#  - sem hot-reload / sem código montado (imagem buildada);
-#  - db/redis/minio SEM porta exposta no host (só rede interna);
-#  - Caddy (HTTPS automático) é o único exposto (80/443) e serve a web + /api;
-#  - backend com workers.
+# A VPS já tem um Traefik (network_mode: host) com Let's Encrypt (resolver
+# "letsencrypt", entrypoint "websecure") que roteia por LABELS do Docker.
+# Então NÃO subimos proxy próprio nas portas 80/443 — apenas publicamos os
+# serviços com labels e o Traefik faz TLS + roteamento.
 #
-# Variáveis vêm do arquivo `.env` (copie de infra/env.prod.example).
-# Subir:  docker compose -f docker-compose.prod.yml up -d --build
+#  - faztudo.sispeed.com.br        → web (Caddy interno: SPA + /api -> backend)
+#  - files.faztudo.sispeed.com.br  → MinIO (imagens; Host preservado p/ presign)
+#
+# db/redis/minio NÃO expõem porta no host. Variáveis vêm de `.env`
+# (copie de infra/env.prod.example). Subir: bash scripts/deploy.sh
 
 name: faztudo
+
+networks:
+  faztudo_net:
+    name: faztudo_net
 
 services:
   db:
     image: postgres:16
     container_name: faztudo-db
     restart: unless-stopped
+    networks: [faztudo_net]
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -34,6 +41,7 @@ services:
     image: redis:7-alpine
     container_name: faztudo-redis
     restart: unless-stopped
+    networks: [faztudo_net]
     volumes:
       - redisdata:/data
     healthcheck:
@@ -46,6 +54,7 @@ services:
     image: minio/minio
     container_name: faztudo-minio
     restart: unless-stopped
+    networks: [faztudo_net]
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: ${S3_ACCESS_KEY}
@@ -58,9 +67,17 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=faztudo_net
+      - traefik.http.routers.faztudo-files.rule=Host(`files.faztudo.sispeed.com.br`)
+      - traefik.http.routers.faztudo-files.entrypoints=websecure
+      - traefik.http.routers.faztudo-files.tls.certresolver=letsencrypt
+      - traefik.http.services.faztudo-files.loadbalancer.server.port=9000
 
   createbuckets:
     image: minio/mc
+    networks: [faztudo_net]
     depends_on:
       minio:
         condition: service_healthy
@@ -82,6 +99,7 @@ services:
     build: ./backend
     container_name: faztudo-backend
     restart: unless-stopped
+    networks: [faztudo_net]
     env_file: .env
     depends_on:
       db:
@@ -92,25 +110,28 @@ services:
         condition: service_healthy
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2
 
-  caddy:
+  # Caddy interno (sem TLS, só :80): serve a SPA estática e faz proxy de /api.
+  # O Traefik termina o HTTPS e roteia faztudo.sispeed.com.br -> este serviço.
+  web:
     build:
       context: ./frontend
       dockerfile: Dockerfile.web
-    container_name: faztudo-caddy
+    container_name: faztudo-web
     restart: unless-stopped
+    networks: [faztudo_net]
     depends_on:
       - backend
-    ports:
-      - "80:80"
-      - "443:443"
     volumes:
       - ./infra/Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=faztudo_net
+      - traefik.http.routers.faztudo-web.rule=Host(`faztudo.sispeed.com.br`)
+      - traefik.http.routers.faztudo-web.entrypoints=websecure
+      - traefik.http.routers.faztudo-web.tls.certresolver=letsencrypt
+      - traefik.http.services.faztudo-web.loadbalancer.server.port=80
 
 volumes:
   pgdata:
   miniodata:
   redisdata:
-  caddy_data:
-  caddy_config:

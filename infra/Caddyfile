@@ -1,27 +1,21 @@
-# FazTudo — produção. HTTPS automático (Let's Encrypt) gerenciado pelo Caddy.
+# FazTudo — Caddy INTERNO (atrás do Traefik). Sem TLS: escuta só :80; o Traefik
+# da Hostinger termina o HTTPS (Let's Encrypt) e roteia até aqui.
 #
-# - faztudo.sispeed.com.br        → web estática (out/) + /api proxied p/ o backend
-# - files.faztudo.sispeed.com.br  → MinIO (imagens; presign exige preservar o Host,
-#                                   o que o Caddy faz por padrão)
-
-faztudo.sispeed.com.br {
+# Faz duas coisas no host faztudo.sispeed.com.br:
+#   /api/*  → backend FastAPI (mantém o prefixo /api/v1)
+#   /*      → SPA estática (Next export): rota → pasta/index.html; fallback /index.html
+#
+# (As imagens em files.faztudo.sispeed.com.br vão direto do Traefik p/ o MinIO.)
+:80 {
 	encode gzip zstd
 
-	# API → backend FastAPI (mantém o prefixo /api/v1).
 	handle /api/* {
 		reverse_proxy backend:8000
 	}
 
-	# SPA estática (Next export): rota → pasta/index.html; fallback p/ /index.html.
 	handle {
 		root * /srv/web
 		try_files {path} {path}/ /index.html
 		file_server
 	}
-}
-
-# Storage público (imagens dos serviços). Caddy preserva o Host → a URL
-# presignada (assinada contra este host) valida no MinIO.
-files.faztudo.sispeed.com.br {
-	reverse_proxy minio:9000
 }
