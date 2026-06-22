@@ -109,7 +109,7 @@ export default function SplashPage() {
       return;
     const t = setTimeout(() => {
       router.replace(isAuthenticated ? "/" : "/onboarding");
-    }, 2200);
+    }, 3000);
     return () => clearTimeout(t);
   }, [hasHydrated, isAuthenticated, router]);
 
