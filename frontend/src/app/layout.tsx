@@ -5,6 +5,7 @@ import { Providers } from "./providers";
 import { SiteHeader } from "@/components/site-header";
 import { AppChrome } from "@/components/app-shell/app-chrome";
 import { CapacitorInit } from "@/components/capacitor-init";
+import { RegisterSW } from "@/components/register-sw";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -17,9 +18,11 @@ const montserrat = Montserrat({
 export const metadata: Metadata = {
   title: "FazTudo",
   description: "Marketplace de prestadores de serviços locais",
+  manifest: "/manifest.json",
+  appleWebApp: { capable: true, title: "FazTudo", statusBarStyle: "default" },
   icons: {
     icon: "/brand/logo-icon.png",
-    apple: "/brand/logo-icon.png",
+    apple: "/icon-192.png",
   },
 };
 
@@ -48,6 +51,7 @@ export default function RootLayout({
       <body className="font-sans">
         <Providers>
           <CapacitorInit />
+          <RegisterSW />
           <SiteHeader />
           <AppChrome>{children}</AppChrome>
         </Providers>
