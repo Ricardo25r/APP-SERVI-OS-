@@ -23,13 +23,14 @@ export const metadata: Metadata = {
   },
 };
 
-// App-like: trava o zoom (mantém a tela enquadrada) e respeita o notch.
+// App-like: trava o zoom (mantém a tela enquadrada). SEM viewport-fit=cover —
+// assim o iOS mantém cabeçalho e barra inferior dentro da área segura (sem corte
+// pelo notch / home indicator).
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  viewportFit: "cover",
   themeColor: "#0D47A1",
 };
 
