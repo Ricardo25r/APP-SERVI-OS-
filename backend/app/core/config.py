@@ -79,6 +79,13 @@ class Settings(BaseSettings):
     # STRIPE_API_KEY: str = ""
     # STRIPE_WEBHOOK_SECRET: str = ""
 
+    # Beta: pagamentos desligados — esconde a compra de créditos e LIBERA o boot
+    # em produção com PAYMENT_PROVIDER=dev (o fail-fast só exige gateway real
+    # quando PAYMENTS_ENABLED=true). Defina false para lançar sem pagamento.
+    PAYMENTS_ENABLED: bool = True
+    # Créditos de boas-vindas concedidos ao profissional no cadastro (0 = off).
+    FREE_SIGNUP_CREDITS: int = 0
+
     # Alertas de monitoramento (e-mail via SMTP). Segredos só via env.
     ALERTS_ENABLED: bool = False
     ALERT_EMAIL_TO: str = ""  # destinatário(s), separados por vírgula
@@ -126,16 +133,19 @@ class Settings(BaseSettings):
                 "JWT_SECRET ainda usa o valor padrão de desenvolvimento — "
                 "defina um segredo forte e único."
             )
-        if self.PAYMENT_WEBHOOK_SECRET == _INSECURE_WEBHOOK_SECRET:
-            problems.append(
-                "PAYMENT_WEBHOOK_SECRET ainda usa o valor padrão de "
-                "desenvolvimento — defina o HMAC real do provedor."
-            )
-        if self.PAYMENT_PROVIDER == "dev":
-            problems.append(
-                "PAYMENT_PROVIDER='dev' (checkout simulado) não é permitido em "
-                "produção — configure um provedor real (ex.: mercadopago)."
-            )
+        # Pagamentos só são exigidos quando habilitados — o modo beta
+        # (PAYMENTS_ENABLED=false) pode subir sem gateway real.
+        if self.PAYMENTS_ENABLED:
+            if self.PAYMENT_WEBHOOK_SECRET == _INSECURE_WEBHOOK_SECRET:
+                problems.append(
+                    "PAYMENT_WEBHOOK_SECRET ainda usa o valor padrão de "
+                    "desenvolvimento — defina o HMAC real do provedor."
+                )
+            if self.PAYMENT_PROVIDER == "dev":
+                problems.append(
+                    "PAYMENT_PROVIDER='dev' (checkout simulado) não é permitido em "
+                    "produção — configure um provedor real (ex.: mercadopago)."
+                )
 
         if problems:
             raise ValueError(

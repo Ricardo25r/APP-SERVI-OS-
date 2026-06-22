@@ -21,6 +21,7 @@ import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.core.exceptions import (
     ConflictError,
     DomainValidationError,
@@ -144,8 +145,11 @@ class UserProfileService:
         self.repo.add_professional_profile(profile)
         await self.repo.flush()  # garante profile.id para wallet/categorias
 
-        # Carteira automática (saldo 0) — §2.8.
-        self.repo.add_wallet_for_professional(profile.id, balance=0)
+        # Carteira automática — §2.8. Saldo inicial = bônus de boas-vindas
+        # (FREE_SIGNUP_CREDITS; 0 = desligado). Útil no beta sem pagamento.
+        self.repo.add_wallet_for_professional(
+            profile.id, balance=settings.FREE_SIGNUP_CREDITS
+        )
 
         if data.category_ids:
             await self.repo.replace_professional_categories(
