@@ -126,7 +126,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.docker.network=faztudo_net
-      - traefik.http.routers.faztudo-web.rule=Host(`faztudoapp.com.br`)
+      - traefik.http.routers.faztudo-web.rule=Host(`faztudoapp.com.br`) || Host(`www.faztudoapp.com.br`)
       - traefik.http.routers.faztudo-web.entrypoints=websecure
       - traefik.http.routers.faztudo-web.tls.certresolver=letsencrypt
       - traefik.http.services.faztudo-web.loadbalancer.server.port=80
