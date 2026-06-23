@@ -9,8 +9,9 @@
  * paginado (`{items, page, page_size, total}`) ou como array cru.
  */
 
-import { apiDelete, apiGet, apiPatch, apiPost } from "@/services/api";
+import { apiDelete, apiGet, apiPatch, apiPost, apiPut } from "@/services/api";
 import type { Category } from "@/types";
+import type { PaymentSettings } from "@/modules/payments/types";
 
 import type {
   AdminLead,
@@ -209,6 +210,18 @@ export function deactivateCategory(id: string): Promise<void> {
 /** Confirma manualmente um pedido (Pix manual) → credita a carteira. */
 export function confirmOrder(orderId: string): Promise<unknown> {
   return apiPost(`/payments/orders/${orderId}/confirmar`, {});
+}
+
+/** Dados de recebimento (Pix/banco) — leitura (admin). */
+export function fetchPaymentSettings(): Promise<PaymentSettings> {
+  return apiGet<PaymentSettings>("/payments/settings");
+}
+
+/** Dados de recebimento (Pix/banco) — atualização (admin). */
+export function updatePaymentSettings(
+  data: Partial<PaymentSettings>
+): Promise<PaymentSettings> {
+  return apiPut<PaymentSettings>("/payments/settings", data);
 }
 
 export function grantCredits(input: GrantCreditsInput): Promise<unknown> {

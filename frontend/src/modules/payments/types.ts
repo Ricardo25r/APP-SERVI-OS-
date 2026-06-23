@@ -51,3 +51,17 @@ export interface PaymentOrder {
 
 /** Evento simulado aceito por `POST /payments/dev/confirm/{id}`. */
 export type DevConfirmEvent = "paid" | "failed" | "refunded";
+
+/** `PaymentSettingsRead` — dados de recebimento (Pix/banco) editáveis no admin. */
+export interface PaymentSettings {
+  pix_key: string | null;
+  pix_key_type: string | null;
+  recipient_name: string | null;
+  bank_name: string | null;
+  bank_agency: string | null;
+  bank_account: string | null;
+  bank_account_type: string | null;
+  holder_name: string | null;
+  holder_document: string | null;
+  instructions: string | null;
+}

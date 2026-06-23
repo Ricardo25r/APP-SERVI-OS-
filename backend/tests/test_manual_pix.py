@@ -1,13 +1,12 @@
-"""Testes do :class:`ManualPixProvider` (Pix manual, sem gateway)."""
+"""Teste do :class:`ManualPixProvider` (Pix manual — os dados de recebimento
+vêm do painel admin via ``payment_settings``, não de variável de ambiente)."""
 
 from __future__ import annotations
 
 import uuid
 
 import pytest
-from app.core.config import settings
 from app.models import PaymentOrder
-from app.services.payments.exceptions import ProviderError
 from app.services.payments.manual_pix import ManualPixProvider
 
 
@@ -25,16 +24,8 @@ def _order() -> PaymentOrder:
 
 
 @pytest.mark.asyncio
-async def test_manual_pix_create_charge_returns_key(monkeypatch) -> None:
-    monkeypatch.setattr(settings, "MANUAL_PIX_KEY", "minha-chave-pix")
+async def test_manual_pix_create_charge() -> None:
     result = await ManualPixProvider().create_charge(_order())
-    assert result.pix_code == "minha-chave-pix"
-    assert result.checkout_url is None
     assert result.external_reference.startswith("manual_")
-
-
-@pytest.mark.asyncio
-async def test_manual_pix_requires_key(monkeypatch) -> None:
-    monkeypatch.setattr(settings, "MANUAL_PIX_KEY", "")
-    with pytest.raises(ProviderError):
-        await ManualPixProvider().create_charge(_order())
+    assert result.pix_code is None
+    assert result.checkout_url is None

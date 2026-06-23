@@ -8,7 +8,6 @@ Mercado Pago: o profissional cria o pedido, vê a **chave Pix do dono**
 
 from __future__ import annotations
 
-from app.core.config import settings
 from app.models import PaymentOrder
 from app.services.payments.base import (
     ChargeResult,
@@ -26,12 +25,12 @@ class ManualPixProvider(PaymentProvider):
     slug = "manual_pix"
 
     async def create_charge(self, order: PaymentOrder) -> ChargeResult:
-        key = settings.MANUAL_PIX_KEY
-        if not key:
-            raise ProviderError("Chave Pix (MANUAL_PIX_KEY) não configurada.")
+        # Os dados de recebimento (Pix/banco) ficam em ``payment_settings`` (painel
+        # admin) e são exibidos ao comprador via GET /payments/payment-info — não
+        # dependem de variável de ambiente.
         return ChargeResult(
             external_reference=f"manual_{order.id}",
-            pix_code=key,
+            pix_code=None,
             checkout_url=None,
         )
 

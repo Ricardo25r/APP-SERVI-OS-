@@ -21,7 +21,42 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.models.enums import PaymentOrderStatus
 
+
+class PaymentSettingsRead(BaseModel):
+    """Dados de recebimento (Pix + banco) exibidos ao comprador e no admin."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    pix_key: str | None = None
+    pix_key_type: str | None = None
+    recipient_name: str | None = None
+    bank_name: str | None = None
+    bank_agency: str | None = None
+    bank_account: str | None = None
+    bank_account_type: str | None = None
+    holder_name: str | None = None
+    holder_document: str | None = None
+    instructions: str | None = None
+
+
+class PaymentSettingsUpdate(BaseModel):
+    """Atualização dos dados de recebimento (admin) — todos opcionais."""
+
+    pix_key: str | None = Field(default=None, max_length=140)
+    pix_key_type: str | None = Field(default=None, max_length=20)
+    recipient_name: str | None = Field(default=None, max_length=120)
+    bank_name: str | None = Field(default=None, max_length=120)
+    bank_agency: str | None = Field(default=None, max_length=20)
+    bank_account: str | None = Field(default=None, max_length=30)
+    bank_account_type: str | None = Field(default=None, max_length=20)
+    holder_name: str | None = Field(default=None, max_length=120)
+    holder_document: str | None = Field(default=None, max_length=20)
+    instructions: str | None = Field(default=None, max_length=1000)
+
+
 __all__ = [
+    "PaymentSettingsRead",
+    "PaymentSettingsUpdate",
     "CreditPackageRead",
     "PaymentOrderCreate",
     "PaymentOrderRead",

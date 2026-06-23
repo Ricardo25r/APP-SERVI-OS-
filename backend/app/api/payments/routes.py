@@ -31,6 +31,8 @@ from app.schemas.payments import (
     PaymentOrderCreate,
     PaymentOrderListResponse,
     PaymentOrderRead,
+    PaymentSettingsRead,
+    PaymentSettingsUpdate,
     RefundRequest,
     WebhookReceived,
 )
@@ -55,6 +57,56 @@ async def list_packages(
     """Pacotes ativos (default). ``?active=false`` lista todos (§4 #1)."""
     service = PaymentService(db)
     return await service.list_packages(active_only=active)
+
+
+# --------------------------------------------------------------------------- #
+# Dados de recebimento (Pix/banco) — comprador vê; admin edita
+# --------------------------------------------------------------------------- #
+@router.get(
+    "/payment-info",
+    response_model=PaymentSettingsRead,
+    summary="Dados de recebimento para o comprador (Pix/banco)",
+)
+async def payment_info(
+    _user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> PaymentSettingsRead:
+    """Dados que o comprador usa para pagar (chave Pix + banco/conta/titular)."""
+    service = PaymentService(db)
+    return PaymentSettingsRead.model_validate(
+        await service.get_payment_settings()
+    )
+
+
+@router.get(
+    "/settings",
+    response_model=PaymentSettingsRead,
+    summary="Ver dados de recebimento (admin)",
+)
+async def get_settings(
+    _admin: User = Depends(require_roles(UserRole.admin)),
+    db: AsyncSession = Depends(get_db),
+) -> PaymentSettingsRead:
+    service = PaymentService(db)
+    return PaymentSettingsRead.model_validate(
+        await service.get_payment_settings()
+    )
+
+
+@router.put(
+    "/settings",
+    response_model=PaymentSettingsRead,
+    summary="Atualizar dados de recebimento (admin)",
+)
+async def update_settings(
+    payload: PaymentSettingsUpdate,
+    _admin: User = Depends(require_roles(UserRole.admin)),
+    db: AsyncSession = Depends(get_db),
+) -> PaymentSettingsRead:
+    service = PaymentService(db)
+    return PaymentSettingsRead.model_validate(
+        await service.update_payment_settings(payload)
+    )
 
 
 # --------------------------------------------------------------------------- #

@@ -12,7 +12,10 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Check, Copy, ExternalLink, Loader2, X } from "lucide-react";
+
+import { apiGet } from "@/services/api";
 
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -20,7 +23,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 import { useDevConfirm } from "../hooks";
-import type { PaymentOrder } from "../types";
+import type { PaymentOrder, PaymentSettings } from "../types";
 import {
   formatBRLFromCents,
   isDevPaymentProvider,
@@ -46,6 +49,13 @@ export function OrderPanel({ order, onClose, onConfirmed }: OrderPanelProps) {
 
   const statusMeta = paymentOrderStatusMeta(current.status);
   const isPaid = current.status === "paid";
+
+  const { data: payInfo } = useQuery({
+    queryKey: ["payment-info"],
+    queryFn: () => apiGet<PaymentSettings>("/payments/payment-info"),
+    enabled: manualMode && !isPaid,
+    staleTime: 60_000,
+  });
 
   async function handleCopy() {
     if (!current.pix_code) return;
@@ -164,16 +174,72 @@ export function OrderPanel({ order, onClose, onConfirmed }: OrderPanelProps) {
             )}
 
             {manualMode && (
-              <div className="rounded-md border border-dashed bg-muted/30 p-3 text-xs text-muted-foreground">
-                Pague o valor acima via Pix para a chave informada e envie o
-                comprovante pelo{" "}
-                <a
-                  href="/suporte"
-                  className="font-medium text-primary underline-offset-4 hover:underline"
-                >
-                  Suporte
-                </a>
-                . Seus créditos são liberados após a confirmação do pagamento.
+              <div className="space-y-2 rounded-md border bg-muted/30 p-4 text-sm">
+                <p className="font-medium text-foreground">
+                  Pague{" "}
+                  {formatBRLFromCents(current.amount_cents, current.currency)} via
+                  Pix ou transferência:
+                </p>
+                {payInfo ? (
+                  <div className="space-y-1 text-xs text-muted-foreground">
+                    {payInfo.pix_key ? (
+                      <p>
+                        <span className="font-semibold text-foreground">Pix:</span>{" "}
+                        {payInfo.pix_key}
+                        {payInfo.pix_key_type ? ` (${payInfo.pix_key_type})` : ""}
+                      </p>
+                    ) : null}
+                    {payInfo.recipient_name ? (
+                      <p>
+                        <span className="font-semibold text-foreground">
+                          Recebedor:
+                        </span>{" "}
+                        {payInfo.recipient_name}
+                      </p>
+                    ) : null}
+                    {payInfo.bank_name ? (
+                      <p>
+                        <span className="font-semibold text-foreground">
+                          Banco:
+                        </span>{" "}
+                        {payInfo.bank_name}
+                        {payInfo.bank_agency
+                          ? ` · Ag. ${payInfo.bank_agency}`
+                          : ""}
+                        {payInfo.bank_account
+                          ? ` · Conta ${payInfo.bank_account}`
+                          : ""}
+                        {payInfo.bank_account_type
+                          ? ` (${payInfo.bank_account_type})`
+                          : ""}
+                      </p>
+                    ) : null}
+                    {payInfo.holder_name ? (
+                      <p>
+                        <span className="font-semibold text-foreground">
+                          Titular:
+                        </span>{" "}
+                        {payInfo.holder_name}
+                        {payInfo.holder_document
+                          ? ` (${payInfo.holder_document})`
+                          : ""}
+                      </p>
+                    ) : null}
+                    {payInfo.instructions ? (
+                      <p className="pt-1">{payInfo.instructions}</p>
+                    ) : null}
+                  </div>
+                ) : null}
+                <p className="text-xs text-muted-foreground">
+                  Depois de pagar, envie o comprovante pelo{" "}
+                  <a
+                    href="/suporte"
+                    className="font-medium text-primary underline-offset-4 hover:underline"
+                  >
+                    Suporte
+                  </a>
+                  . Seus créditos são liberados após a confirmação.
+                </p>
               </div>
             )}
 

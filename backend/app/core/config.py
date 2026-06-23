@@ -153,31 +153,24 @@ class Settings(BaseSettings):
         # Pagamentos só são exigidos quando habilitados — o modo beta
         # (PAYMENTS_ENABLED=false) pode subir sem gateway real.
         if self.PAYMENTS_ENABLED:
-            if self.PAYMENT_WEBHOOK_SECRET == _INSECURE_WEBHOOK_SECRET:
-                problems.append(
-                    "PAYMENT_WEBHOOK_SECRET ainda usa o valor padrão de "
-                    "desenvolvimento — defina o HMAC real do provedor."
-                )
             if self.PAYMENT_PROVIDER == "dev":
                 problems.append(
                     "PAYMENT_PROVIDER='dev' (checkout simulado) não é permitido em "
-                    "produção — configure um provedor real (ex.: mercadopago)."
+                    "produção — use 'manual_pix' ou 'mercadopago'."
                 )
-            elif (
-                self.PAYMENT_PROVIDER == "mercadopago"
-                and not self.MERCADOPAGO_ACCESS_TOKEN
-            ):
-                problems.append(
-                    "PAYMENT_PROVIDER='mercadopago' mas MERCADOPAGO_ACCESS_TOKEN "
-                    "está vazio — defina o Access Token de produção do Mercado Pago."
-                )
-            elif (
-                self.PAYMENT_PROVIDER == "manual_pix" and not self.MANUAL_PIX_KEY
-            ):
-                problems.append(
-                    "PAYMENT_PROVIDER='manual_pix' mas MANUAL_PIX_KEY está vazio "
-                    "— defina a chave Pix do recebedor."
-                )
+            elif self.PAYMENT_PROVIDER == "mercadopago":
+                if not self.MERCADOPAGO_ACCESS_TOKEN:
+                    problems.append(
+                        "PAYMENT_PROVIDER='mercadopago' mas MERCADOPAGO_ACCESS_TOKEN"
+                        " está vazio — defina o Access Token de produção."
+                    )
+                if self.PAYMENT_WEBHOOK_SECRET == _INSECURE_WEBHOOK_SECRET:
+                    problems.append(
+                        "PAYMENT_WEBHOOK_SECRET ainda usa o valor padrão — defina o"
+                        " segredo do webhook do Mercado Pago."
+                    )
+            # manual_pix não exige segredos: os dados de recebimento ficam no
+            # painel admin (payment_settings), não em variáveis de ambiente.
 
         if problems:
             raise ValueError(

@@ -44,6 +44,7 @@ from app.models.mixins import (
 )
 from app.models.notification import Notification
 from app.models.payment_order import PaymentOrder
+from app.models.payment_settings import PaymentSettings
 from app.models.professional_category import ProfessionalCategory
 from app.models.professional_profile import ProfessionalProfile
 from app.models.refresh_token import RefreshToken
@@ -74,6 +75,7 @@ __all__ = [
     "LeadPurchase",
     "CreditPackage",
     "PaymentOrder",
+    "PaymentSettings",
     "Review",
     "Conversation",
     "Message",

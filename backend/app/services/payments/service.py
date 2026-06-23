@@ -28,6 +28,7 @@ from __future__ import annotations
 import uuid
 from datetime import UTC, datetime
 
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -41,11 +42,16 @@ from app.models import (
     CreditTransactionType,
     PaymentOrder,
     PaymentOrderStatus,
+    PaymentSettings,
     User,
 )
 from app.repositories.credits import supports_for_update
 from app.repositories.payments import PaymentRepository
-from app.schemas.payments import CreditPackageRead, PaymentOrderRead
+from app.schemas.payments import (
+    CreditPackageRead,
+    PaymentOrderRead,
+    PaymentSettingsUpdate,
+)
 from app.services.credits import CreditService
 from app.services.payments.base import ProviderEvent
 from app.services.payments.dev import sign_payload
@@ -310,6 +316,32 @@ class PaymentService:
         await self.db.commit()
         await self.db.refresh(order)
         return PaymentOrderRead.model_validate(order)
+
+    # ------------------------------------------------------------------ #
+    # Dados de recebimento (Pix/banco) — editáveis no admin
+    # ------------------------------------------------------------------ #
+    async def get_payment_settings(self) -> PaymentSettings:
+        """Linha única de dados de recebimento (get-or-create)."""
+        row = (
+            await self.db.execute(select(PaymentSettings).limit(1))
+        ).scalar_one_or_none()
+        if row is None:
+            row = PaymentSettings()
+            self.db.add(row)
+            await self.db.flush()
+            await self.db.commit()
+        return row
+
+    async def update_payment_settings(
+        self, data: PaymentSettingsUpdate
+    ) -> PaymentSettings:
+        """Atualiza os dados de recebimento (admin)."""
+        row = await self.get_payment_settings()
+        for field, value in data.model_dump(exclude_unset=True).items():
+            setattr(row, field, value)
+        await self.db.commit()
+        await self.db.refresh(row)
+        return row
 
     # ------------------------------------------------------------------ #
     # Refund (admin) — §4 #7 / §5.4
