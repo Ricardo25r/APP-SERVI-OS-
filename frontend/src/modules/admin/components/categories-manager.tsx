@@ -33,12 +33,22 @@ export const categoriesKey = ["admin", "categories", "all"] as const;
 
 const TIERS: CategoryTier[] = ["simple", "medium", "premium"];
 
+const SUGGESTED_GROUPS = [
+  "Reformas e Construção",
+  "Casa e Manutenção",
+  "Limpeza",
+  "Cuidados e Pets",
+  "Tecnologia e Segurança",
+  "Transporte e Entregas",
+];
+
 interface FormState {
   /** Categoria em edição; `null` = criando nova. */
   editing: Category | null;
   name: string;
   tier: CategoryTier;
   active: boolean;
+  group: string;
 }
 
 const EMPTY_FORM: FormState = {
@@ -46,6 +56,7 @@ const EMPTY_FORM: FormState = {
   name: "",
   tier: "medium",
   active: true,
+  group: "",
 };
 
 export function CategoriesManager() {
@@ -99,6 +110,7 @@ export function CategoriesManager() {
       name: category.name,
       tier: category.tier,
       active: category.active,
+      group: category.group ?? "",
     });
     saveMutation.reset();
     setShowForm(true);
@@ -117,11 +129,20 @@ export function CategoriesManager() {
       name: form.name.trim(),
       tier: form.tier,
       active: form.active,
+      group: form.group.trim() || null,
     };
     saveMutation.mutate({ id: form.editing?.id, input });
   }
 
   const categories = data ?? [];
+  const groupOptions = Array.from(
+    new Set([
+      ...SUGGESTED_GROUPS,
+      ...categories
+        .map((c) => c.group)
+        .filter((g): g is string => Boolean(g)),
+    ])
+  ).sort((a, b) => a.localeCompare(b));
 
   return (
     <div>
@@ -277,6 +298,28 @@ export function CategoriesManager() {
                     </SelectOption>
                   ))}
                 </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="cat-group">Grupo</Label>
+                <Input
+                  id="cat-group"
+                  list="cat-group-options"
+                  value={form.group}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, group: e.target.value }))
+                  }
+                  placeholder="Ex.: Reformas e Construção"
+                  maxLength={60}
+                />
+                <datalist id="cat-group-options">
+                  {groupOptions.map((g) => (
+                    <option key={g} value={g} />
+                  ))}
+                </datalist>
+                <p className="text-xs text-muted-foreground">
+                  Agrupa a categoria na tela do profissional. Vazio = &quot;Outros&quot;.
+                </p>
               </div>
 
               {form.editing ? (

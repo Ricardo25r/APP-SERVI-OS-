@@ -214,4 +214,5 @@ export interface CategoryInput {
   slug?: string;
   tier: CategoryTier;
   active?: boolean;
+  group?: string | null;
 }

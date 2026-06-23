@@ -52,6 +52,11 @@ class Category(UUIDPKMixin, TimestampMixin, Base):
         server_default=text("true"),
         index=True,
     )
+    # Agrupamento p/ a UI (ex.: "Reformas e Construção"). Coluna ``category_group``
+    # (evita a palavra reservada ``group``); ``None`` cai no grupo "Outros".
+    group: Mapped[str | None] = mapped_column(
+        "category_group", String(60), nullable=True, index=True
+    )
 
     # Relacionamentos (§2.5).
     professional_categories: Mapped[list[ProfessionalCategory]] = relationship(

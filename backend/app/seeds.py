@@ -24,17 +24,17 @@ from app.models import Category, CategoryTier, CreditPackage
 logger = logging.getLogger("faztudo.seeds")
 
 # (slug kebab-case sem acento, nome exibido, tier) — §2.5.
-INITIAL_CATEGORIES: tuple[tuple[str, str, CategoryTier], ...] = (
-    ("eletricista", "Eletricista", CategoryTier.medium),
-    ("encanador", "Encanador", CategoryTier.medium),
-    ("pintor", "Pintor", CategoryTier.medium),
-    ("diarista", "Diarista", CategoryTier.simple),
-    ("jardinagem", "Jardinagem", CategoryTier.simple),
-    ("montagem", "Montagem de Móveis", CategoryTier.simple),
-    ("reforma", "Reforma", CategoryTier.premium),
-    ("baba", "Babá", CategoryTier.premium),
-    ("cuidador", "Cuidador", CategoryTier.premium),
-    ("domestica", "Doméstica", CategoryTier.premium),
+INITIAL_CATEGORIES: tuple[tuple[str, str, CategoryTier, str], ...] = (
+    ("eletricista", "Eletricista", CategoryTier.medium, "Reformas e Construção"),
+    ("encanador", "Encanador", CategoryTier.medium, "Reformas e Construção"),
+    ("pintor", "Pintor", CategoryTier.medium, "Reformas e Construção"),
+    ("reforma", "Reforma", CategoryTier.premium, "Reformas e Construção"),
+    ("diarista", "Diarista", CategoryTier.simple, "Limpeza"),
+    ("domestica", "Doméstica", CategoryTier.premium, "Limpeza"),
+    ("jardinagem", "Jardinagem", CategoryTier.simple, "Casa e Manutenção"),
+    ("montagem", "Montagem de Móveis", CategoryTier.simple, "Casa e Manutenção"),
+    ("baba", "Babá", CategoryTier.premium, "Cuidados e Pets"),
+    ("cuidador", "Cuidador", CategoryTier.premium, "Cuidados e Pets"),
 )
 
 # (name, credits, price_cents, discount_percent, is_popular) — §6 + vitrine Tela 05.
@@ -59,11 +59,13 @@ async def seed_categories() -> dict[str, int]:
         result = await session.execute(select(Category.slug))
         existing_slugs = set(result.scalars().all())
 
-        for slug, name, tier in INITIAL_CATEGORIES:
+        for slug, name, tier, group in INITIAL_CATEGORIES:
             if slug in existing_slugs:
                 skipped += 1
                 continue
-            session.add(Category(name=name, slug=slug, tier=tier, active=True))
+            session.add(
+                Category(name=name, slug=slug, tier=tier, active=True, group=group)
+            )
             created += 1
 
         if created:

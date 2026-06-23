@@ -144,7 +144,14 @@ async def test_list_public_returns_only_active(
     assert slugs == {"eletricista", "diarista"}  # inativa fora
     # Ordenação por name (asc) e shape do CategoryOut.
     assert [item["name"] for item in body] == sorted(item["name"] for item in body)
-    assert set(body[0].keys()) == {"id", "name", "slug", "tier", "active"}
+    assert set(body[0].keys()) == {
+        "id",
+        "name",
+        "slug",
+        "tier",
+        "active",
+        "group",
+    }
 
 
 @pytest.mark.asyncio

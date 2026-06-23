@@ -33,6 +33,11 @@ class CategoryIn(BaseModel):
     )
     tier: CategoryTier = CategoryTier.medium
     active: bool = True
+    group: str | None = Field(
+        default=None,
+        max_length=60,
+        description="Grupo para a UI (ex.: 'Reformas e Construção').",
+    )
 
 
 class CategoryUpdate(BaseModel):
@@ -42,6 +47,7 @@ class CategoryUpdate(BaseModel):
     slug: str | None = Field(default=None, max_length=80)
     tier: CategoryTier | None = None
     active: bool | None = None
+    group: str | None = Field(default=None, max_length=60)
 
 
 class CategoryOut(BaseModel):
@@ -54,3 +60,4 @@ class CategoryOut(BaseModel):
     slug: str
     tier: CategoryTier
     active: bool
+    group: str | None = None

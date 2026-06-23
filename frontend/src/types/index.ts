@@ -60,6 +60,8 @@ export interface Category {
   slug: string;
   tier: CategoryTier;
   active: boolean;
+  /** Grupo para a UI (ex.: "Reformas e Construção"); null = "Outros". */
+  group?: string | null;
   created_at: string;
   updated_at: string;
 }

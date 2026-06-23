@@ -85,6 +85,7 @@ class CategoryService:
             slug=slug,
             tier=data.tier,
             active=data.active,
+            group=(data.group or "").strip() or None,
         )
         await self.repo.add(category)
         await self.db.commit()
@@ -121,6 +122,10 @@ class CategoryService:
 
         if "active" in fields and fields["active"] is not None:
             category.active = fields["active"]
+
+        if "group" in fields:
+            g = fields["group"]
+            category.group = (g.strip() or None) if isinstance(g, str) else None
 
         await self.repo.flush()
         await self.db.commit()
