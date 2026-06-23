@@ -53,10 +53,14 @@ dele esvazia o app. Por isso o eixo é **justiça nos dois lados + provas**.
 - ✅ Frontend: botão "Cliente não estava / recusou o código" (captura a localização).
 - ✅ Fallback Suporte quando a presença não pode ser comprovada (fora do raio / sem GPS / lead sem coordenadas) (D5).
 
-### Bloco 2 — Conclusão + avaliação mútua
-- ⬜ Cliente confirma "serviço concluído" → fecha o lead, libera avaliação (D3).
-- ⬜ Profissional avalia o cliente (avaliação mútua).
-- ⬜ Selos/estados de conclusão nas telas.
+### Bloco 2 — Conclusão + avaliação mútua ✅
+- ✅ Cliente confirma "serviço concluído" (`POST /lead-purchases/lead/{id}/concluir`)
+  → fecha o lead (`closed`) e notifica o profissional (D3).
+- ✅ Avaliação mútua **já existia** (POST `/reviews`, tela `/avaliacoes`,
+  recalcula reputação de pro **e** cliente). Confirmado que fechar o lead **não**
+  bloqueia avaliações (os reviews não filtram por status).
+- ✅ Telas: botão "Confirmar conclusão" + "Avaliar profissional" no detalhe da
+  solicitação (cliente).
 
 ### Bloco 3 — Cancelamento e agendamento
 - ⬜ Profissional "desistir" da compra → libera a vaga (sem reembolso).
@@ -87,4 +91,7 @@ dele esvazia o app. Por isso o eixo é **justiça nos dois lados + provas**.
   GPS: reembolsa o profissional, reabre a vaga e marca o cliente. Backend +
   frontend + migration `fase 18` (`users.client_no_show_count`) + testes (135 no
   total). No ar.
-- ➡ Próximo: **Bloco 2** (conclusão do serviço + avaliação mútua).
+- ✅ **Bloco 2** — conclusão do serviço (cliente fecha o lead) + avaliação mútua
+  (já existia; validada com o lead fechado). Backend + frontend, sem migration
+  (usa o status `closed`). 137 testes. No ar.
+- ➡ Próximo: **Bloco 3** (cancelamento + agendamento).

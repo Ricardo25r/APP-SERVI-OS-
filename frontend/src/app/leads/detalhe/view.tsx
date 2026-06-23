@@ -18,6 +18,7 @@ import {
   MapPin,
   MessageSquare,
   Pencil,
+  Star,
 } from "lucide-react";
 
 import { AppHeader } from "@/components/app-shell/app-header";
@@ -42,6 +43,7 @@ import {
   fetchLead,
   LeadForm,
   LeadStatusBadge,
+  confirmCompletion,
   leadTypeLabel,
   leadUrgencyLabel,
   markNoShow,
@@ -86,6 +88,10 @@ export default function LeadDetailPage() {
   const [noShowOpen, setNoShowOpen] = useState(false);
   const [marking, setMarking] = useState(false);
   const [markError, setMarkError] = useState<string | null>(null);
+
+  const [completeOpen, setCompleteOpen] = useState(false);
+  const [completing, setCompleting] = useState(false);
+  const [completeError, setCompleteError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -145,6 +151,23 @@ export default function LeadDetailPage() {
       );
     } finally {
       setMarking(false);
+    }
+  }
+
+  async function handleComplete() {
+    if (!lead) return;
+    setCompleting(true);
+    setCompleteError(null);
+    try {
+      await confirmCompletion(lead.id);
+      setCompleteOpen(false);
+      await load();
+    } catch (err) {
+      setCompleteError(
+        describeApiError(err, "Não foi possível confirmar a conclusão.")
+      );
+    } finally {
+      setCompleting(false);
     }
   }
 
@@ -364,13 +387,32 @@ export default function LeadDetailPage() {
                     Editar
                   </Button>
                 ) : null}
+                {lead.status === "purchased" ? (
+                  <Button
+                    className="gap-1.5"
+                    onClick={() => setCompleteOpen(true)}
+                  >
+                    <CheckCircle2 className="h-4 w-4" aria-hidden />
+                    Confirmar conclusão
+                  </Button>
+                ) : null}
+                {lead.status === "closed" ? (
+                  <Link
+                    href="/avaliacoes"
+                    className={cn(
+                      buttonVariants(),
+                      "gap-1.5 bg-brand text-brand-foreground hover:bg-brand/90"
+                    )}
+                  >
+                    <Star className="h-4 w-4" aria-hidden />
+                    Avaliar profissional
+                  </Link>
+                ) : null}
                 {lead.status === "purchased" || lead.status === "closed" ? (
                   <Link
                     href="/conversas"
                     className={cn(
-                      buttonVariants({
-                        variant: isOpen ? "outline" : "default",
-                      }),
+                      buttonVariants({ variant: "outline" }),
                       "gap-1.5"
                     )}
                   >
@@ -379,6 +421,9 @@ export default function LeadDetailPage() {
                   </Link>
                 ) : null}
               </div>
+              {completeError ? (
+                <p className="text-xs text-destructive">{completeError}</p>
+              ) : null}
             </CardContent>
           </Card>
         )}
@@ -398,6 +443,22 @@ export default function LeadDetailPage() {
         loading={marking}
         onConfirm={() => void handleNoShow()}
         onCancel={() => setNoShowOpen(false)}
+      />
+
+      <ConfirmDialog
+        open={completeOpen}
+        title="Confirmar conclusão do serviço?"
+        description={
+          <>
+            Confirme só depois que o serviço for{" "}
+            <span className="font-semibold">concluído</span>. Isso encerra a
+            solicitação e libera a avaliação.
+          </>
+        }
+        confirmLabel="Sim, foi concluído"
+        loading={completing}
+        onConfirm={() => void handleComplete()}
+        onCancel={() => setCompleteOpen(false)}
       />
     </>
   );

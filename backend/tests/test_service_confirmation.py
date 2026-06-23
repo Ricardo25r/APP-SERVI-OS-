@@ -427,3 +427,45 @@ async def test_client_absent_far_away_is_blocked(
             await s.execute(select(Lead).where(Lead.id == ctx["lead_id"]))
         ).scalar_one()
         assert lead.status == LeadStatus.purchased  # segue com o profissional
+
+
+@pytest.mark.asyncio
+async def test_confirm_completion_closes_lead(
+    client: httpx.AsyncClient, session_maker
+) -> None:
+    """Cliente confirma a conclusão → lead encerrado (closed)."""
+    ctx = await _seed(session_maker)
+    await _purchase(client, ctx["pro"], ctx["lead_id"])
+
+    resp = await client.post(
+        f"/api/v1/lead-purchases/lead/{ctx['lead_id']}/concluir",
+        headers=_auth(ctx["customer"]),
+    )
+    assert resp.status_code == 200, resp.text
+    assert resp.json()["completed"] is True
+
+    async with session_maker() as s:
+        lead = (
+            await s.execute(select(Lead).where(Lead.id == ctx["lead_id"]))
+        ).scalar_one()
+        assert lead.status == LeadStatus.closed
+
+
+@pytest.mark.asyncio
+async def test_review_allowed_after_completion(
+    client: httpx.AsyncClient, session_maker
+) -> None:
+    """Avaliação continua liberada mesmo com o lead encerrado (não filtra status)."""
+    ctx = await _seed(session_maker)
+    await _purchase(client, ctx["pro"], ctx["lead_id"])
+    await client.post(
+        f"/api/v1/lead-purchases/lead/{ctx['lead_id']}/concluir",
+        headers=_auth(ctx["customer"]),
+    )
+
+    review = await client.post(
+        "/api/v1/reviews/",
+        headers=_auth(ctx["customer"]),
+        json={"lead_id": str(ctx["lead_id"]), "score": 5, "comment": "Ótimo"},
+    )
+    assert review.status_code in (200, 201), review.text

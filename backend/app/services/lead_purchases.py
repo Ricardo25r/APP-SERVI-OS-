@@ -32,6 +32,7 @@ import secrets
 import uuid
 from datetime import UTC, datetime, timedelta
 
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -46,6 +47,7 @@ from app.models import (
     Lead,
     LeadPurchase,
     LeadStatus,
+    ProfessionalProfile,
     User,
     UserRole,
 )
@@ -391,6 +393,44 @@ class LeadPurchaseService:
         await reopen_lead_client_absent(self.db, purchase=purchase, lead=lead)
         await self.db.commit()
         return {"reopened": True, "refunded": True}
+
+    async def confirm_completion(
+        self, current_user: User, lead_id: uuid.UUID
+    ) -> dict[str, bool]:
+        """Cliente (dono do lead) confirma que o **serviço foi concluído** →
+        fecha o lead (``closed``) e incentiva a avaliação mútua. Erros: ``404``
+        lead, ``403`` não-dono, ``409`` lead fora de atendimento."""
+        lead = await self.repo.get_with_relations(lead_id)
+        if lead is None:
+            raise NotFoundError("Lead não encontrado.")
+        if lead.customer_id != current_user.id:
+            raise PermissionDeniedError("Você não é o dono deste lead.")
+        if lead.status != LeadStatus.purchased or lead.purchase is None:
+            raise ConflictError("Este lead não está em atendimento.")
+
+        lead.status = LeadStatus.closed
+
+        prof = (
+            await self.db.execute(
+                select(ProfessionalProfile).where(
+                    ProfessionalProfile.id == lead.purchase.professional_id
+                )
+            )
+        ).scalar_one_or_none()
+        if prof is not None:
+            add_notification(
+                self.db,
+                user_id=prof.user_id,
+                type="lead",
+                title="Serviço concluído",
+                body=(
+                    f'O cliente confirmou a conclusão de "{lead.title}". '
+                    "Avalie o cliente."
+                ),
+                href="/avaliacoes",
+            )
+        await self.db.commit()
+        return {"completed": True}
 
     # ------------------------------------------------------------------ #
     # Helpers internos

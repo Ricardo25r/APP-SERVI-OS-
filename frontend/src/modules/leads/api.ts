@@ -132,3 +132,13 @@ export function reportClientAbsent(
     { latitude, longitude, reason }
   );
 }
+
+/** Cliente confirma a conclusão do serviço (fecha o lead). */
+export function confirmCompletion(
+  leadId: string
+): Promise<{ completed: boolean }> {
+  return apiPost<{ completed: boolean }>(
+    `/lead-purchases/lead/${leadId}/concluir`,
+    {}
+  );
+}

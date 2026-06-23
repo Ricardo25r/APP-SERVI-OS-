@@ -143,3 +143,19 @@ async def report_client_absent(
         longitude=payload.longitude,
         reason=payload.reason,
     )
+
+
+@router.post(
+    "/lead/{lead_id}/concluir",
+    summary="Cliente: confirmar conclusão do serviço (fecha o lead)",
+)
+async def confirm_completion(
+    lead_id: uuid.UUID,
+    current_user: User = Depends(require_roles(UserRole.customer)),
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, bool]:
+    """O **cliente** dono confirma que o serviço foi concluído → fecha o lead e
+    libera a avaliação mútua (em ``/avaliacoes``). ``409`` se não estiver em
+    atendimento; ``403`` se não for o dono."""
+    service = LeadPurchaseService(db)
+    return await service.confirm_completion(current_user, lead_id)
