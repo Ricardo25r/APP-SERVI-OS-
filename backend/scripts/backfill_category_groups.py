@@ -12,10 +12,9 @@ from __future__ import annotations
 
 import asyncio
 
-from sqlalchemy import select
-
 from app.database.session import async_session_maker
 from app.models import Category
+from sqlalchemy import select
 
 NAME_GROUPS: dict[str, str] = {
     "Eletricista": "Reformas e Construção",
