@@ -21,6 +21,7 @@ Regras-chave:
 
 from __future__ import annotations
 
+import json
 import uuid
 from datetime import UTC, datetime
 
@@ -158,6 +159,8 @@ class AuthService:
 
     # ----------------------------------------------------------- login social
     _GOOGLE_TOKENINFO = "https://oauth2.googleapis.com/tokeninfo"
+    _APPLE_ISSUER = "https://appleid.apple.com"
+    _APPLE_KEYS_URL = "https://appleid.apple.com/auth/keys"
 
     async def login_with_google(self, id_token: str) -> AuthResponse:
         """Login/cadastro com **Google**: valida o ID token, vincula por
@@ -242,6 +245,102 @@ class AuthService:
             raise AuthError("Emissor do token do Google inválido.")
         if str(claims.get("email_verified")).lower() != "true":
             raise AuthError("E-mail do Google não verificado.")
+        return claims
+
+    async def login_with_apple(
+        self, id_token: str, name: str | None = None
+    ) -> AuthResponse:
+        """Login/cadastro com **Apple**: valida o ID token (JWKS RS256), vincula
+        por ``apple_sub`` (fallback e-mail) ou cria a conta, e emite o par de
+        tokens próprio. ``name`` só chega na 1ª autorização (a Apple não repete)."""
+        claims = await self._verify_apple_id_token(id_token)
+        apple_sub = str(claims["sub"])
+        email = (claims.get("email") or "").lower()
+        if not email:
+            raise AuthError("A Apple não forneceu um e-mail.")
+        fallback = email.split("@")[0] or "Usuário"
+        display_name = (name or fallback).strip()[:120] or "Usuário"
+
+        user = await self._get_by_apple_sub(apple_sub)
+        if user is None:
+            existing = await self.users.get_by_email(email)
+            if existing is not None:
+                existing.apple_sub = apple_sub  # vincula à conta existente
+                user = existing
+
+        try:
+            if user is None:
+                user = User(
+                    name=display_name,
+                    email=email,
+                    phone=None,
+                    password_hash=None,
+                    role=UserRole.customer,
+                    status=UserStatus.active,
+                    auth_provider="apple",
+                    apple_sub=apple_sub,
+                )
+                await self.users.create(user)
+            if user.status != UserStatus.active:
+                raise AuthError("Conta inativa.")
+            await self.users.touch_last_login(user, datetime.now(UTC))
+            tokens = await self._issue_and_store(user)
+            await self.db.commit()
+        except IntegrityError as exc:
+            await self.db.rollback()
+            raise ConflictError("Conta já existe para este e-mail.") from exc
+
+        await self.db.refresh(user)
+        return AuthResponse(user=UserOut.model_validate(user), tokens=tokens)
+
+    async def _get_by_apple_sub(self, apple_sub: str) -> User | None:
+        result = await self.db.execute(
+            select(User).where(
+                User.apple_sub == apple_sub, User.deleted_at.is_(None)
+            )
+        )
+        return result.scalar_one_or_none()
+
+    async def _verify_apple_id_token(self, id_token: str) -> dict:
+        """Valida o ID token do **Sign in with Apple**: assinatura RS256 contra as
+        chaves públicas (JWKS) da Apple + audiência (Services ID) + emissor."""
+        allowed = [
+            a.strip() for a in settings.APPLE_CLIENT_ID.split(",") if a.strip()
+        ]
+        if not allowed:
+            raise AuthError("Login com Apple não está configurado.")
+        try:
+            kid = jwt.get_unverified_header(id_token).get("kid")
+        except jwt.PyJWTError as exc:
+            raise AuthError("Token da Apple inválido.") from exc
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                resp = await client.get(self._APPLE_KEYS_URL)
+                resp.raise_for_status()
+        except httpx.HTTPError as exc:
+            raise AuthError("Falha ao validar o login da Apple.") from exc
+        jwk = next(
+            (k for k in resp.json().get("keys", []) if k.get("kid") == kid), None
+        )
+        if jwk is None:
+            raise AuthError("Token da Apple inválido (chave não encontrada).")
+        # Import preguiçoso: RS256 exige `cryptography` (extra pyjwt[crypto]); só é
+        # tocado quando o login Apple está ativo (aud configurado).
+        from jwt.algorithms import RSAAlgorithm
+
+        public_key = RSAAlgorithm.from_jwk(json.dumps(jwk))
+        try:
+            claims = jwt.decode(
+                id_token,
+                public_key,
+                algorithms=["RS256"],
+                audience=allowed,
+                issuer=self._APPLE_ISSUER,
+            )
+        except jwt.PyJWTError as exc:
+            raise AuthError("Token da Apple inválido ou expirado.") from exc
+        if str(claims.get("email_verified")).lower() != "true":
+            raise AuthError("E-mail da Apple não verificado.")
         return claims
 
     # ----------------------------------------------------------------- refresh

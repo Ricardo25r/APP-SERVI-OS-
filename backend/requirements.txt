@@ -9,7 +9,7 @@ asyncpg>=0.30,<0.31
 alembic>=1.14,<2.0
 pydantic>=2.9,<3.0
 pydantic-settings>=2.6,<3.0
-pyjwt>=2.10,<3.0
+pyjwt[crypto]>=2.10,<3.0  # [crypto]=cryptography: verificar RS256/JWKS (Sign in with Apple)
 passlib[bcrypt]>=1.7.4,<2.0
 bcrypt>=4.0,<4.1  # passlib 1.7.x é incompatível com bcrypt >= 4.1 (auto-teste)
 redis>=5.2,<6.0

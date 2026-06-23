@@ -73,6 +73,14 @@ class GoogleAuthIn(BaseModel):
     id_token: str = Field(min_length=10)
 
 
+class AppleAuthIn(BaseModel):
+    """Corpo de ``POST /auth/apple`` — o **ID token** do Sign in with Apple. O
+    ``name`` só é enviado pela Apple na 1ª autorização (opcional)."""
+
+    id_token: str = Field(min_length=10)
+    name: str | None = Field(default=None, max_length=120)
+
+
 class RefreshIn(BaseModel):
     """Corpo de ``POST /auth/refresh``."""
 

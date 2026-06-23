@@ -30,6 +30,7 @@ from app.core.ratelimit import rate_limit
 from app.database.session import get_db
 from app.models import User
 from app.schemas.auth import (
+    AppleAuthIn,
     AuthResponse,
     GoogleAuthIn,
     LoginIn,
@@ -94,6 +95,22 @@ async def google_login(
     vincula a conta por e-mail). Token inválido / não configurado → 401."""
     service = AuthService(db)
     return await service.login_with_google(payload.id_token)
+
+
+@router.post(
+    "/apple",
+    response_model=AuthResponse,
+    summary="Entrar com Apple (ID token)",
+    dependencies=[Depends(rate_limit("login", limit=10, window_seconds=60))],
+)
+async def apple_login(
+    payload: AppleAuthIn,
+    db: AsyncSession = Depends(get_db),
+) -> AuthResponse:
+    """Valida o **ID token** da Apple (JWKS RS256) e emite o par de tokens próprio
+    (cria ou vincula a conta por e-mail). Token inválido / não configurado → 401."""
+    service = AuthService(db)
+    return await service.login_with_apple(payload.id_token, payload.name)
 
 
 @router.post(

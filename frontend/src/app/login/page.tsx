@@ -38,6 +38,7 @@ import {
   toSession,
   useRedirectAuthenticated,
 } from "@/modules/auth";
+import { AppleSignInButton } from "@/modules/auth/apple-signin-button";
 import { GoogleSignInButton } from "@/modules/auth/google-signin-button";
 
 const loginSchema = z.object({
@@ -134,6 +135,7 @@ export default function LoginPage() {
   });
 
   const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_WEB_CLIENT_ID;
+  const appleClientId = process.env.NEXT_PUBLIC_APPLE_CLIENT_ID;
 
   async function onSubmit(values: LoginValues) {
     setFormError(null);
@@ -196,14 +198,26 @@ export default function LoginPage() {
 
             {/* Botões sociais — placeholders "Em breve" (sem OAuth no backend) */}
             <div className="mt-6 space-y-3">
-              {SOCIAL_PROVIDERS.map((provider) =>
-                provider.id === "google" && googleClientId ? (
-                  <GoogleSignInButton
-                    key="google"
-                    onSuccess={handleSocialSuccess}
-                    onError={setFormError}
-                  />
-                ) : (
+              {SOCIAL_PROVIDERS.map((provider) => {
+                if (provider.id === "google" && googleClientId) {
+                  return (
+                    <GoogleSignInButton
+                      key="google"
+                      onSuccess={handleSocialSuccess}
+                      onError={setFormError}
+                    />
+                  );
+                }
+                if (provider.id === "apple" && appleClientId) {
+                  return (
+                    <AppleSignInButton
+                      key="apple"
+                      onSuccess={handleSocialSuccess}
+                      onError={setFormError}
+                    />
+                  );
+                }
+                return (
                   <button
                     key={provider.id}
                     type="button"
@@ -220,8 +234,8 @@ export default function LoginPage() {
                       Em breve
                     </span>
                   </button>
-                )
-              )}
+                );
+              })}
             </div>
 
             {/* Divisor "ou" */}

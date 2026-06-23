@@ -108,6 +108,9 @@ class Settings(BaseSettings):
     # Login com Google (Client IDs públicos — o ID token é verificado no backend).
     GOOGLE_WEB_CLIENT_ID: str = ""  # client web (GIS) e Android (aud do ID token).
     GOOGLE_IOS_CLIENT_ID: str = ""  # client iOS (aud do ID token no app nativo).
+    # Login com Apple (Services ID — aud do ID token; verificado via JWKS/RS256).
+    # Aceita lista separada por vírgula (Services ID web + Bundle ID nativo iOS).
+    APPLE_CLIENT_ID: str = ""
     # Janela (min) p/ o profissional iniciar o contato após desbloquear o lead.
     CONTACT_WINDOW_MINUTES: int = 60
     # Prazo (dias) p/ confirmar a chegada (código). Esgotado sem chegada nem
