@@ -116,7 +116,7 @@ export default function SplashPage() {
   return (
     <main className="relative flex min-h-screen justify-center overflow-hidden bg-gradient-to-b from-primary to-blue-900 text-primary-foreground">
       {/* Coluna largura-de-celular (mesma cara no mobile e desktop) */}
-      <div className="relative flex min-h-screen w-full max-w-sm flex-col overflow-hidden">
+      <div className="relative flex min-h-screen w-full max-w-none flex-col overflow-hidden sm:max-w-sm">
         {/* Brilhos decorativos */}
         <div
           aria-hidden
@@ -163,7 +163,7 @@ export default function SplashPage() {
             height={650}
             alt="Profissionais FazTudo: eletricista, pintora e pedreiro"
             priority
-            className="h-auto max-h-full w-[112%] max-w-none object-contain object-bottom drop-shadow-2xl"
+            className="h-auto max-h-full w-[126%] max-w-none object-contain object-bottom drop-shadow-2xl"
           />
         </div>
 
