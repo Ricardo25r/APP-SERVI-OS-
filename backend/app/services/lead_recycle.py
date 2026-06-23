@@ -281,9 +281,101 @@ async def reopen_lead_client_absent(
     )
 
 
+async def reopen_lead_released(
+    db: AsyncSession, *, purchase: LeadPurchase, lead: Lead
+) -> None:
+    """Profissional **desiste** da compra (libera a vaga). Sem reembolso e **sem**
+    marca de não-comparecimento (desistir cedo é melhor do que sumir). Remove
+    conversa + compra, reabre o lead e notifica o profissional."""
+    profile = (
+        await db.execute(
+            select(ProfessionalProfile).where(
+                ProfessionalProfile.id == purchase.professional_id
+            )
+        )
+    ).scalar_one_or_none()
+    conversation = (
+        await db.execute(
+            select(Conversation).where(Conversation.lead_id == lead.id)
+        )
+    ).scalar_one_or_none()
+    if conversation is not None:
+        await db.execute(
+            delete(Message).where(Message.conversation_id == conversation.id)
+        )
+        await db.delete(conversation)
+    await db.delete(purchase)
+    lead.status = LeadStatus.open
+    if profile is not None:
+        add_notification(
+            db,
+            user_id=profile.user_id,
+            type="lead",
+            title="Você liberou a vaga",
+            body=(
+                f'Você desistiu de "{lead.title}". A vaga voltou ao mercado; '
+                "o crédito não é devolvido."
+            ),
+            href="/marketplace",
+        )
+
+
+async def cancel_lead_with_refund(
+    db: AsyncSession, *, purchase: LeadPurchase, lead: Lead
+) -> None:
+    """Cliente **cancela** o atendimento (não precisa mais). **Devolve** o crédito
+    ao profissional (a desistência foi do cliente) e marca o lead como
+    ``cancelled`` (não reabre — a necessidade acabou). Remove conversa + compra e
+    notifica o profissional."""
+    professional_id = purchase.professional_id
+    credits_used = purchase.credits_used
+    purchase_id = purchase.id
+    profile = (
+        await db.execute(
+            select(ProfessionalProfile).where(
+                ProfessionalProfile.id == professional_id
+            )
+        )
+    ).scalar_one_or_none()
+
+    credits = CreditService(db)
+    wallet = await credits.get_or_create_wallet(professional_id)
+    await credits.apply_movement(
+        wallet,
+        amount=credits_used,
+        transaction_type=CreditTransactionType.refund,
+        description=f"Reembolso: cliente cancelou o lead {lead.id}",
+        reference_id=purchase_id,
+    )
+
+    conversation = (
+        await db.execute(
+            select(Conversation).where(Conversation.lead_id == lead.id)
+        )
+    ).scalar_one_or_none()
+    if conversation is not None:
+        await db.execute(
+            delete(Message).where(Message.conversation_id == conversation.id)
+        )
+        await db.delete(conversation)
+    await db.delete(purchase)
+    lead.status = LeadStatus.cancelled
+    if profile is not None:
+        add_notification(
+            db,
+            user_id=profile.user_id,
+            type="lead",
+            title="Cliente cancelou o serviço",
+            body=f'O cliente cancelou "{lead.title}". O crédito foi devolvido.',
+            href="/marketplace",
+        )
+
+
 __all__ = [
     "recycle_expired_purchases",
     "reopen_lead_no_show",
     "reopen_no_show_purchases",
     "reopen_lead_client_absent",
+    "reopen_lead_released",
+    "cancel_lead_with_refund",
 ]

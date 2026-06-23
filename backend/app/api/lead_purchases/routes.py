@@ -27,6 +27,7 @@ from app.schemas.lead_purchases import (
     LeadPurchaseListResponse,
     LeadPurchaseRead,
     LeadPurchaseResult,
+    ScheduleVisit,
 )
 from app.services.lead_purchases import LeadPurchaseService
 
@@ -159,3 +160,51 @@ async def confirm_completion(
     atendimento; ``403`` se não for o dono."""
     service = LeadPurchaseService(db)
     return await service.confirm_completion(current_user, lead_id)
+
+
+@router.post(
+    "/{purchase_id}/desistir",
+    summary="Profissional: desistir da compra (libera a vaga)",
+)
+async def release_purchase(
+    purchase_id: uuid.UUID,
+    current_user: User = Depends(require_roles(UserRole.professional)),
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, bool]:
+    """O profissional desiste e libera a vaga ao mercado (sem reembolso, sem nota
+    de não comparecimento). ``409`` se já confirmou a chegada."""
+    service = LeadPurchaseService(db)
+    return await service.release_purchase(current_user, purchase_id)
+
+
+@router.post(
+    "/lead/{lead_id}/cancelar",
+    summary="Cliente: cancelar o atendimento (reembolsa o profissional)",
+)
+async def cancel_purchased_lead(
+    lead_id: uuid.UUID,
+    current_user: User = Depends(require_roles(UserRole.customer)),
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, bool]:
+    """O cliente cancela o atendimento → **devolve o crédito** ao profissional e
+    encerra a solicitação (``cancelled``). ``409`` se o profissional já chegou."""
+    service = LeadPurchaseService(db)
+    return await service.cancel_purchased_lead(current_user, lead_id)
+
+
+@router.post(
+    "/{purchase_id}/agendar",
+    summary="Profissional: agendar data/hora do serviço",
+)
+async def schedule_visit(
+    purchase_id: uuid.UUID,
+    payload: ScheduleVisit,
+    current_user: User = Depends(require_roles(UserRole.professional)),
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, str]:
+    """Define a data/hora combinada do serviço; o prazo de reabertura por não
+    chegada passa a ser ``scheduled_at`` + carência. ``409`` se já chegou."""
+    service = LeadPurchaseService(db)
+    return await service.schedule_visit(
+        current_user, purchase_id, payload.scheduled_at
+    )

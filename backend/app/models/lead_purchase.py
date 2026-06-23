@@ -59,6 +59,11 @@ class LeadPurchase(UUIDPKMixin, CreatedAtMixin, Base):
     no_show_deadline: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
+    # Data/hora combinada do serviço (agendamento). Quando definida, redefine o
+    # prazo de reabertura por não comparecimento (no_show_deadline).
+    scheduled_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
     lead: Mapped[Lead] = relationship("Lead", back_populates="purchase")
     professional: Mapped[ProfessionalProfile] = relationship(

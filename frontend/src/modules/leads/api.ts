@@ -142,3 +142,34 @@ export function confirmCompletion(
     {}
   );
 }
+
+/** Profissional desiste da compra (libera a vaga; sem reembolso). */
+export function releasePurchase(
+  purchaseId: string
+): Promise<{ released: boolean }> {
+  return apiPost<{ released: boolean }>(
+    `/lead-purchases/${purchaseId}/desistir`,
+    {}
+  );
+}
+
+/** Cliente cancela o atendimento (reembolsa o profissional). */
+export function cancelPurchasedLead(
+  leadId: string
+): Promise<{ cancelled: boolean; refunded: boolean }> {
+  return apiPost<{ cancelled: boolean; refunded: boolean }>(
+    `/lead-purchases/lead/${leadId}/cancelar`,
+    {}
+  );
+}
+
+/** Profissional agenda a data/hora do serviço (ISO 8601). */
+export function scheduleVisit(
+  purchaseId: string,
+  scheduledAt: string
+): Promise<{ scheduled_at: string }> {
+  return apiPost<{ scheduled_at: string }>(
+    `/lead-purchases/${purchaseId}/agendar`,
+    { scheduled_at: scheduledAt }
+  );
+}

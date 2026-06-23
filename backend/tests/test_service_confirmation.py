@@ -469,3 +469,94 @@ async def test_review_allowed_after_completion(
         json={"lead_id": str(ctx["lead_id"]), "score": 5, "comment": "Ótimo"},
     )
     assert review.status_code in (200, 201), review.text
+
+
+@pytest.mark.asyncio
+async def test_professional_releases_lead(
+    client: httpx.AsyncClient, session_maker
+) -> None:
+    """Profissional desiste → vaga reabre, sem reembolso e sem marca."""
+    ctx = await _seed(session_maker)
+    body = await _purchase(client, ctx["pro"], ctx["lead_id"])
+    purchase_id = body["purchase"]["id"]
+
+    resp = await client.post(
+        f"/api/v1/lead-purchases/{purchase_id}/desistir",
+        headers=_auth(ctx["pro"]),
+    )
+    assert resp.status_code == 200, resp.text
+
+    async with session_maker() as s:
+        lead = (
+            await s.execute(select(Lead).where(Lead.id == ctx["lead_id"]))
+        ).scalar_one()
+        assert lead.status == LeadStatus.open
+        wallet = (
+            await s.execute(
+                select(CreditWallet).where(
+                    CreditWallet.professional_id == ctx["profile_id"]
+                )
+            )
+        ).scalar_one()
+        assert wallet.balance == 7  # sem reembolso
+        profile = (
+            await s.execute(
+                select(ProfessionalProfile).where(
+                    ProfessionalProfile.id == ctx["profile_id"]
+                )
+            )
+        ).scalar_one()
+        assert profile.no_show_count == 0  # sem marca
+
+
+@pytest.mark.asyncio
+async def test_customer_cancels_with_refund(
+    client: httpx.AsyncClient, session_maker
+) -> None:
+    """Cliente cancela → reembolsa o profissional e encerra (cancelled)."""
+    ctx = await _seed(session_maker)
+    await _purchase(client, ctx["pro"], ctx["lead_id"])
+
+    resp = await client.post(
+        f"/api/v1/lead-purchases/lead/{ctx['lead_id']}/cancelar",
+        headers=_auth(ctx["customer"]),
+    )
+    assert resp.status_code == 200, resp.text
+    assert resp.json()["refunded"] is True
+
+    async with session_maker() as s:
+        lead = (
+            await s.execute(select(Lead).where(Lead.id == ctx["lead_id"]))
+        ).scalar_one()
+        assert lead.status == LeadStatus.cancelled
+        wallet = (
+            await s.execute(
+                select(CreditWallet).where(
+                    CreditWallet.professional_id == ctx["profile_id"]
+                )
+            )
+        ).scalar_one()
+        assert wallet.balance == 10  # reembolsado
+
+
+@pytest.mark.asyncio
+async def test_professional_schedules_visit(
+    client: httpx.AsyncClient, session_maker
+) -> None:
+    """Profissional agenda → scheduled_at + no_show_deadline (com carência)."""
+    ctx = await _seed(session_maker)
+    body = await _purchase(client, ctx["pro"], ctx["lead_id"])
+    purchase_id = body["purchase"]["id"]
+
+    resp = await client.post(
+        f"/api/v1/lead-purchases/{purchase_id}/agendar",
+        headers=_auth(ctx["pro"]),
+        json={"scheduled_at": "2026-12-25T10:00:00+00:00"},
+    )
+    assert resp.status_code == 200, resp.text
+
+    async with session_maker() as s:
+        purchase = (await s.execute(select(LeadPurchase))).scalar_one()
+        assert purchase.scheduled_at is not None
+        assert purchase.no_show_deadline is not None
+        assert purchase.no_show_deadline > purchase.scheduled_at  # +carência

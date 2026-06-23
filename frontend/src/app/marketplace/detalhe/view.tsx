@@ -49,7 +49,9 @@ import {
   describeApiError,
   leadTypeLabel,
   leadUrgencyLabel,
+  releasePurchase,
   reportClientAbsent,
+  scheduleVisit,
 } from "@/modules/leads";
 import { purchaseErrorMessage } from "@/modules/leads/marketplace/utils";
 
@@ -90,6 +92,11 @@ export default function MarketplaceLeadDetailPage() {
   const [arrivalError, setArrivalError] = useState<string | null>(null);
   const [reportingAbsent, setReportingAbsent] = useState(false);
   const [absentError, setAbsentError] = useState<string | null>(null);
+  const [scheduleValue, setScheduleValue] = useState("");
+  const [scheduling, setScheduling] = useState(false);
+  const [scheduleMsg, setScheduleMsg] = useState<string | null>(null);
+  const [releaseOpen, setReleaseOpen] = useState(false);
+  const [releasing, setReleasing] = useState(false);
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -184,6 +191,36 @@ export default function MarketplaceLeadDetailPage() {
       },
       { enableHighAccuracy: true, timeout: 15000 }
     );
+  }
+
+  async function handleSchedule() {
+    if (!lead?.purchase_id || !scheduleValue) return;
+    setScheduling(true);
+    setScheduleMsg(null);
+    setArrivalError(null);
+    try {
+      await scheduleVisit(lead.purchase_id, new Date(scheduleValue).toISOString());
+      setScheduleMsg("Serviço agendado.");
+    } catch (err) {
+      setArrivalError(describeApiError(err, "Não foi possível agendar."));
+    } finally {
+      setScheduling(false);
+    }
+  }
+
+  async function handleRelease() {
+    if (!lead?.purchase_id) return;
+    setReleasing(true);
+    setArrivalError(null);
+    try {
+      await releasePurchase(lead.purchase_id);
+      setReleaseOpen(false);
+      await load();
+    } catch (err) {
+      setArrivalError(describeApiError(err, "Não foi possível desistir."));
+    } finally {
+      setReleasing(false);
+    }
   }
 
   if (!auth.hasHydrated || auth.role !== "professional") {
@@ -479,6 +516,39 @@ export default function MarketplaceLeadDetailPage() {
                     <p className="mt-1 text-xs text-destructive">{absentError}</p>
                   ) : null}
                 </div>
+
+                <div className="space-y-2 border-t border-brand/20 pt-3">
+                  <label className="block text-xs font-medium text-muted-foreground">
+                    Agendar o serviço (define o prazo)
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="datetime-local"
+                      value={scheduleValue}
+                      onChange={(e) => setScheduleValue(e.target.value)}
+                      className="min-w-0 flex-1 rounded-lg border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-brand"
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => void handleSchedule()}
+                      disabled={scheduling || !scheduleValue}
+                    >
+                      Agendar
+                    </Button>
+                  </div>
+                  {scheduleMsg ? (
+                    <p className="text-xs text-success">{scheduleMsg}</p>
+                  ) : null}
+                  <button
+                    type="button"
+                    onClick={() => setReleaseOpen(true)}
+                    disabled={releasing}
+                    className="text-xs font-medium text-muted-foreground underline-offset-4 hover:text-destructive hover:underline disabled:opacity-50"
+                  >
+                    Desistir desta vaga
+                  </button>
+                </div>
               </div>
             ) : null}
 
@@ -554,6 +624,20 @@ export default function MarketplaceLeadDetailPage() {
           void handleBuy();
         }}
         onCancel={() => setConfirming(false)}
+      />
+      <ConfirmDialog
+        open={releaseOpen}
+        title="Desistir desta vaga?"
+        description={
+          <>
+            A vaga volta ao mercado para outros profissionais. O crédito{" "}
+            <span className="font-semibold">não é devolvido</span>.
+          </>
+        }
+        confirmLabel="Sim, desistir"
+        loading={releasing}
+        onConfirm={() => void handleRelease()}
+        onCancel={() => setReleaseOpen(false)}
       />
     </>
   );

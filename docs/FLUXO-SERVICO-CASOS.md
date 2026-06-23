@@ -62,11 +62,15 @@ dele esvazia o app. Por isso o eixo é **justiça nos dois lados + provas**.
 - ✅ Telas: botão "Confirmar conclusão" + "Avaliar profissional" no detalhe da
   solicitação (cliente).
 
-### Bloco 3 — Cancelamento e agendamento
-- ⬜ Profissional "desistir" da compra → libera a vaga (sem reembolso).
-- ⬜ Cliente cancela a solicitação após desbloqueio → reembolsa o profissional.
-- ⬜ Data/hora combinada no app define o prazo de reabertura (D4).
-- ⬜ Código de chegada só aparece perto do horário combinado.
+### Bloco 3 — Cancelamento e agendamento ✅
+- ✅ Profissional "desistir" (`POST /lead-purchases/{id}/desistir`) → libera a
+  vaga (sem reembolso, **sem** marca de no-show — desistir é melhor que sumir).
+- ✅ Cliente cancela (`POST /lead-purchases/lead/{id}/cancelar`) → **reembolsa** o
+  profissional e encerra (`cancelled`).
+- ✅ Data/hora combinada (`POST /lead-purchases/{id}/agendar`, coluna
+  `scheduled_at`, migration `fase 19`) → redefine o prazo de reabertura
+  (`scheduled_at` + `NO_SHOW_GRACE_HOURS`) (D4).
+- ⬜ Código só aparece perto do horário — adiado p/ o Bloco 6 (polimento).
 
 ### Bloco 4 — Reputação, consequências e disputa
 - ⬜ Consequências do `no_show_count` (aviso → ocultar do marketplace → suspender).
@@ -94,4 +98,8 @@ dele esvazia o app. Por isso o eixo é **justiça nos dois lados + provas**.
 - ✅ **Bloco 2** — conclusão do serviço (cliente fecha o lead) + avaliação mútua
   (já existia; validada com o lead fechado). Backend + frontend, sem migration
   (usa o status `closed`). 137 testes. No ar.
-- ➡ Próximo: **Bloco 3** (cancelamento + agendamento).
+- ✅ **Bloco 3** — desistência (pro), cancelamento (cliente, com reembolso) e
+  agendamento (`scheduled_at` define o prazo). Backend + frontend + migration
+  `fase 19`. 140 testes. No ar.
+- ➡ Próximo: **Bloco 4** (reputação/consequências), **Bloco 5** (qualidade do
+  lead/anti-fraude), **Bloco 6** (brechas do código) + auditoria final.

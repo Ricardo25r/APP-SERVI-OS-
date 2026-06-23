@@ -22,6 +22,7 @@ __all__ = [
     "LeadPurchaseCreate",
     "ArrivalConfirm",
     "ClientAbsentReport",
+    "ScheduleVisit",
     "LeadPurchaseRead",
     "LeadPurchaseResult",
     "WalletBalance",
@@ -91,6 +92,13 @@ class ClientAbsentReport(BaseModel):
     latitude: float
     longitude: float
     reason: str | None = None
+
+
+class ScheduleVisit(BaseModel):
+    """Corpo de ``POST /lead-purchases/{id}/agendar`` — data/hora combinada do
+    serviço (define o prazo de reabertura por não comparecimento)."""
+
+    scheduled_at: datetime
 
 
 class WalletBalance(BaseModel):

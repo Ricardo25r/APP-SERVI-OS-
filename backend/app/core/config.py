@@ -110,6 +110,10 @@ class Settings(BaseSettings):
     # Tolerância (metros) p/ comprovar a presença do profissional por GPS quando
     # o cliente está ausente/recusa o código (reembolsa + marca o cliente).
     PRESENCE_TOLERANCE_METERS: int = 500
+    # Carência (horas) após a data agendada antes do auto-reabre por não chegada.
+    NO_SHOW_GRACE_HOURS: int = 24
+    # Acima deste nº de não-comparecimentos, o profissional some do marketplace.
+    MARKETPLACE_MAX_NO_SHOWS: int = 5
     # Worker que devolve ao mercado os leads comprados e não contatados a tempo.
     CONTACT_RECYCLE_ENABLED: bool = True
     CONTACT_RECYCLE_INTERVAL_SECONDS: int = 120

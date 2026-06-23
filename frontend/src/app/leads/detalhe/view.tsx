@@ -19,6 +19,7 @@ import {
   MessageSquare,
   Pencil,
   Star,
+  X,
 } from "lucide-react";
 
 import { AppHeader } from "@/components/app-shell/app-header";
@@ -43,6 +44,7 @@ import {
   fetchLead,
   LeadForm,
   LeadStatusBadge,
+  cancelPurchasedLead,
   confirmCompletion,
   leadTypeLabel,
   leadUrgencyLabel,
@@ -92,6 +94,9 @@ export default function LeadDetailPage() {
   const [completeOpen, setCompleteOpen] = useState(false);
   const [completing, setCompleting] = useState(false);
   const [completeError, setCompleteError] = useState<string | null>(null);
+
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -168,6 +173,23 @@ export default function LeadDetailPage() {
       );
     } finally {
       setCompleting(false);
+    }
+  }
+
+  async function handleCancel() {
+    if (!lead) return;
+    setCancelling(true);
+    setCompleteError(null);
+    try {
+      await cancelPurchasedLead(lead.id);
+      setCancelOpen(false);
+      await load();
+    } catch (err) {
+      setCompleteError(
+        describeApiError(err, "Não foi possível cancelar o atendimento.")
+      );
+    } finally {
+      setCancelling(false);
     }
   }
 
@@ -396,6 +418,16 @@ export default function LeadDetailPage() {
                     Confirmar conclusão
                   </Button>
                 ) : null}
+                {lead.status === "purchased" ? (
+                  <Button
+                    variant="outline"
+                    className="gap-1.5 border-destructive/40 text-destructive hover:bg-destructive/10"
+                    onClick={() => setCancelOpen(true)}
+                  >
+                    <X className="h-4 w-4" aria-hidden />
+                    Cancelar atendimento
+                  </Button>
+                ) : null}
                 {lead.status === "closed" ? (
                   <Link
                     href="/avaliacoes"
@@ -459,6 +491,22 @@ export default function LeadDetailPage() {
         loading={completing}
         onConfirm={() => void handleComplete()}
         onCancel={() => setCompleteOpen(false)}
+      />
+
+      <ConfirmDialog
+        open={cancelOpen}
+        title="Cancelar o atendimento?"
+        description={
+          <>
+            Use se você <span className="font-semibold">não precisa mais</span> do
+            serviço. O profissional recebe o crédito de volta e a solicitação é
+            encerrada.
+          </>
+        }
+        confirmLabel="Sim, cancelar"
+        loading={cancelling}
+        onConfirm={() => void handleCancel()}
+        onCancel={() => setCancelOpen(false)}
       />
     </>
   );

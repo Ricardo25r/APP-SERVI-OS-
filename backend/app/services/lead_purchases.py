@@ -64,8 +64,10 @@ from app.services.chat import ChatService
 from app.services.credits import CreditService
 from app.services.gamification import GamificationService
 from app.services.lead_recycle import (
+    cancel_lead_with_refund,
     reopen_lead_client_absent,
     reopen_lead_no_show,
+    reopen_lead_released,
 )
 from app.services.leads import LeadService, _haversine_km
 from app.services.notifications import add_notification
@@ -431,6 +433,88 @@ class LeadPurchaseService:
             )
         await self.db.commit()
         return {"completed": True}
+
+    async def release_purchase(
+        self, current_user: User, purchase_id: uuid.UUID
+    ) -> dict[str, bool]:
+        """Profissional **desiste** da compra → libera a vaga (sem reembolso, sem
+        marca). Erros: ``404`` perfil/compra, ``403`` não-dono, ``409`` já chegou
+        / fora de atendimento."""
+        profile = await self.lead_repo.get_professional_profile(current_user.id)
+        if profile is None:
+            raise NotFoundError("Perfil profissional não encontrado.")
+        purchase = await self.repo.get_purchase_by_id(purchase_id)
+        if purchase is None:
+            raise NotFoundError("Compra não encontrada.")
+        if purchase.professional_id != profile.id:
+            raise PermissionDeniedError("Você não é o dono desta compra.")
+        if purchase.arrived_at is not None:
+            raise ConflictError("A chegada já foi confirmada.")
+        lead = purchase.lead
+        if lead is None or lead.status != LeadStatus.purchased:
+            raise ConflictError("Este lead não está em atendimento.")
+        await reopen_lead_released(self.db, purchase=purchase, lead=lead)
+        await self.db.commit()
+        return {"released": True}
+
+    async def cancel_purchased_lead(
+        self, current_user: User, lead_id: uuid.UUID
+    ) -> dict[str, bool]:
+        """Cliente **cancela** o atendimento → devolve o crédito ao profissional e
+        encerra (``cancelled``). Erros: ``404`` lead, ``403`` não-dono, ``409``
+        fora de atendimento / já chegou."""
+        lead = await self.repo.get_with_relations(lead_id)
+        if lead is None:
+            raise NotFoundError("Lead não encontrado.")
+        if lead.customer_id != current_user.id:
+            raise PermissionDeniedError("Você não é o dono deste lead.")
+        if lead.status != LeadStatus.purchased or lead.purchase is None:
+            raise ConflictError("Este lead não está em atendimento.")
+        if lead.purchase.arrived_at is not None:
+            raise ConflictError(
+                "O profissional já confirmou a chegada — não é possível cancelar."
+            )
+        await cancel_lead_with_refund(self.db, purchase=lead.purchase, lead=lead)
+        await self.db.commit()
+        return {"cancelled": True, "refunded": True}
+
+    async def schedule_visit(
+        self, current_user: User, purchase_id: uuid.UUID, scheduled_at: datetime
+    ) -> dict[str, str]:
+        """Profissional **agenda** a data/hora do serviço → redefine o prazo de
+        reabertura por não chegada (``scheduled_at`` + carência). Erros: ``404``,
+        ``403``, ``409`` já chegou / fora de atendimento."""
+        profile = await self.lead_repo.get_professional_profile(current_user.id)
+        if profile is None:
+            raise NotFoundError("Perfil profissional não encontrado.")
+        purchase = await self.repo.get_purchase_by_id(purchase_id)
+        if purchase is None:
+            raise NotFoundError("Compra não encontrada.")
+        if purchase.professional_id != profile.id:
+            raise PermissionDeniedError("Você não é o dono desta compra.")
+        if purchase.arrived_at is not None:
+            raise ConflictError("A chegada já foi confirmada.")
+        lead = purchase.lead
+        if lead is None or lead.status != LeadStatus.purchased:
+            raise ConflictError("Este lead não está em atendimento.")
+
+        when = scheduled_at
+        if when.tzinfo is None:
+            when = when.replace(tzinfo=UTC)
+        purchase.scheduled_at = when
+        purchase.no_show_deadline = when + timedelta(
+            hours=settings.NO_SHOW_GRACE_HOURS
+        )
+        add_notification(
+            self.db,
+            user_id=lead.customer_id,
+            type="lead",
+            title="Serviço agendado",
+            body=f'O profissional agendou o serviço de "{lead.title}".',
+            href="/leads",
+        )
+        await self.db.commit()
+        return {"scheduled_at": when.isoformat()}
 
     # ------------------------------------------------------------------ #
     # Helpers internos
