@@ -69,9 +69,13 @@ export function CategoriesManager() {
       vars.id
         ? updateCategory(vars.id, vars.input)
         : createCategory(vars.input),
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       invalidate();
-      closeForm();
+      // Mantém o modal aberto (só fecha no X / Cancelar). Ao CRIAR, limpa os
+      // campos para cadastrar a próxima categoria; ao EDITAR, mantém os valores.
+      if (!variables.id) {
+        setForm(EMPTY_FORM);
+      }
     },
   });
 
@@ -215,12 +219,10 @@ export function CategoriesManager() {
           role="dialog"
           aria-modal="true"
           aria-label={form.editing ? "Editar categoria" : "Nova categoria"}
-          onClick={saveMutation.isPending ? undefined : closeForm}
         >
           <form
             onSubmit={submit}
             className="w-full max-w-md rounded-lg border bg-card p-6 text-card-foreground shadow-lg"
-            onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold leading-none tracking-tight">
@@ -304,6 +306,15 @@ export function CategoriesManager() {
                   saveMutation.error,
                   "Não foi possível salvar a categoria."
                 )}
+              </p>
+            ) : null}
+
+            {saveMutation.isSuccess ? (
+              <p
+                role="status"
+                className="mt-4 rounded-md border border-success/50 bg-success/10 px-3 py-2 text-sm text-success"
+              >
+                Categoria salva com sucesso.
               </p>
             ) : null}
 
