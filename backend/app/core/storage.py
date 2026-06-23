@@ -38,6 +38,13 @@ def upload_bytes(data: bytes, key: str, content_type: str | None = None) -> None
     )
 
 
+def delete_object(key: str) -> None:
+    """Remove o objeto ``key`` do bucket (via endpoint interno do Docker)."""
+    _client(settings.S3_ENDPOINT).delete_object(
+        Bucket=settings.S3_BUCKET, Key=key
+    )
+
+
 def presigned_get_url(key: str, *, expires_seconds: int = 7 * 24 * 3600) -> str:
     """URL **pública** de GET para ``key``.
 
