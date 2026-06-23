@@ -26,6 +26,7 @@ import type {
   GrantCreditsInput,
   LeadsFilters,
   PaymentsFilters,
+  UserRoleUpdate,
   UsersFilters,
   UserStatusUpdate,
 } from "./types";
@@ -99,6 +100,14 @@ export function updateUserStatus(
   payload: UserStatusUpdate
 ): Promise<AdminUser> {
   return apiPatch<AdminUser>(`/admin/users/${id}/status`, payload);
+}
+
+/** Altera o papel de um usuário — promover/rebaixar admin (`PATCH /admin/users/{id}/role`). */
+export function updateUserRole(
+  id: string,
+  payload: UserRoleUpdate
+): Promise<AdminUser> {
+  return apiPatch<AdminUser>(`/admin/users/${id}/role`, payload);
 }
 
 /* ------------------------------------------------------------------ */

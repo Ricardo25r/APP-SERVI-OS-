@@ -3,13 +3,16 @@
 /**
  * Painel administrativo — **dashboard** (`/admin`).
  *
- * Protegido para o papel `admin`. Mostra os KPIs (`MetricCards`) e atalhos
- * para as subpáginas de gestão. Apenas tokens do design system.
+ * Protegido para o papel `admin`. Mostra um aviso de chamados em aberto (quando
+ * houver), os KPIs (`MetricCards`) e atalhos para as subpáginas de gestão.
+ * Apenas tokens do design system.
  */
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import {
   Activity,
+  ChevronRight,
   ClipboardList,
   CreditCard,
   Gift,
@@ -22,7 +25,8 @@ import {
 import type { LucideIcon } from "lucide-react";
 
 import { useRequireAuth } from "@/hooks/use-auth";
-import { MetricCards } from "@/modules/admin";
+import { fetchMetrics, MetricCards } from "@/modules/admin";
+import { metricsKey } from "@/modules/admin/components/metric-cards";
 
 interface Shortcut {
   href: string;
@@ -35,7 +39,7 @@ const SHORTCUTS: Shortcut[] = [
   {
     href: "/admin/usuarios",
     label: "Usuários",
-    description: "Gerencie contas e status (ativar, suspender, bloquear).",
+    description: "Gerencie contas, status e papéis (inclui promover a admin).",
     icon: Users,
   },
   {
@@ -91,6 +95,13 @@ const SHORTCUTS: Shortcut[] = [
 export default function AdminDashboardPage() {
   const auth = useRequireAuth("admin");
 
+  const { data: metrics } = useQuery({
+    queryKey: metricsKey,
+    queryFn: fetchMetrics,
+    enabled: auth.isAdmin,
+  });
+  const openTickets = metrics?.support_tickets_open ?? 0;
+
   if (!auth.hasHydrated || !auth.isAuthenticated || !auth.isAdmin) {
     return (
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
@@ -101,6 +112,25 @@ export default function AdminDashboardPage() {
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
+      {/* Aviso de chamados em aberto */}
+      {openTickets > 0 ? (
+        <Link
+          href="/admin/chamados"
+          className="mb-6 flex items-center gap-3 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-foreground transition-colors hover:bg-destructive/15"
+        >
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-destructive text-destructive-foreground">
+            <LifeBuoy className="h-5 w-5" aria-hidden />
+          </span>
+          <span className="flex-1">
+            <strong className="font-semibold">
+              {openTickets} chamado{openTickets > 1 ? "s" : ""} em aberto
+            </strong>{" "}
+            aguardando resposta.
+          </span>
+          <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden />
+        </Link>
+      ) : null}
+
       <header className="mb-8 space-y-1">
         <h1 className="text-3xl font-bold tracking-tight">Painel administrativo</h1>
         <p className="text-muted-foreground">
@@ -115,15 +145,26 @@ export default function AdminDashboardPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {SHORTCUTS.map((shortcut) => {
             const Icon = shortcut.icon;
+            const badge =
+              shortcut.href === "/admin/chamados" && openTickets > 0
+                ? openTickets
+                : null;
             return (
               <Link
                 key={shortcut.href}
                 href={shortcut.href}
                 className="group rounded-lg border bg-card p-5 shadow-sm transition-colors hover:border-primary/40 hover:bg-accent/40"
               >
-                <span className="flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                  <Icon className="h-5 w-5" aria-hidden />
-                </span>
+                <div className="flex items-start justify-between">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                    <Icon className="h-5 w-5" aria-hidden />
+                  </span>
+                  {badge !== null ? (
+                    <span className="flex min-w-[1.5rem] items-center justify-center rounded-full bg-destructive px-2 py-0.5 text-xs font-bold text-destructive-foreground">
+                      {badge}
+                    </span>
+                  ) : null}
+                </div>
                 <h3 className="mt-3 font-semibold text-foreground">
                   {shortcut.label}
                 </h3>

@@ -32,6 +32,7 @@ from app.models import (
     PaymentOrder,
     PaymentOrderStatus,
     Review,
+    SupportTicket,
     User,
     UserRole,
 )
@@ -89,6 +90,14 @@ class AdminRepository:
 
     async def count_conversations(self) -> int:
         stmt = select(func.count()).select_from(Conversation)
+        return int((await self.db.execute(stmt)).scalar_one())
+
+    async def count_open_support_tickets(self) -> int:
+        stmt = (
+            select(func.count())
+            .select_from(SupportTicket)
+            .where(SupportTicket.status == "open")
+        )
         return int((await self.db.execute(stmt)).scalar_one())
 
     async def payment_finance_summary(self) -> tuple[int, int, int]:

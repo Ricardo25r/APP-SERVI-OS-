@@ -89,6 +89,7 @@ class AdminMetrics(BaseModel):
     credit_packages_sold: int
     reviews: int
     conversations: int
+    support_tickets_open: int = 0
     finance: FinanceSummary
 
 
@@ -129,6 +130,15 @@ class UserStatusUpdate(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True)
 
     status: UserStatus
+    reason: str | None = Field(default=None, max_length=500)
+
+
+class UserRoleUpdate(BaseModel):
+    """Corpo de ``PATCH /admin/users/{id}/role`` — promover/alterar o papel."""
+
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    role: UserRole
     reason: str | None = Field(default=None, max_length=500)
 
 

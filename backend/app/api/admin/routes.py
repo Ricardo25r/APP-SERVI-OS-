@@ -43,6 +43,7 @@ from app.schemas.admin import (
     AdminUserListResponse,
     AdminUserRead,
     AuditLogListResponse,
+    UserRoleUpdate,
     UserStatusUpdate,
 )
 from app.services.admin import AdminService
@@ -110,6 +111,22 @@ async def update_user_status(
     """Muda ``status`` (active|suspended|blocked); grava auditoria. Não permite
     o admin alterar a própria conta (``422``). ``404`` se inexistente."""
     return await AdminService(db).update_user_status(admin, user_id, payload)
+
+
+@router.patch(
+    "/users/{user_id}/role",
+    response_model=AdminUserRead,
+    summary="Alterar papel do usuário (promover admin + auditoria)",
+)
+async def update_user_role(
+    user_id: uuid.UUID,
+    payload: UserRoleUpdate,
+    admin: User = Depends(require_roles(UserRole.admin)),
+    db: AsyncSession = Depends(get_db),
+) -> AdminUserRead:
+    """Promove/altera o papel (customer|professional|admin); grava auditoria.
+    Não permite o admin alterar o próprio papel (``422``); ``404`` inexistente."""
+    return await AdminService(db).update_user_role(admin, user_id, payload)
 
 
 # --------------------------------------------------------------------------- #

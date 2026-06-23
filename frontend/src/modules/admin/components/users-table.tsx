@@ -18,9 +18,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectOption } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/hooks/use-auth";
 import type { UserRole, UserStatus } from "@/types";
 
-import { fetchUsers, updateUserStatus } from "../api";
+import { fetchUsers, updateUserRole, updateUserStatus } from "../api";
 import type { AdminUser, UsersFilters } from "../types";
 import {
   adminErrorMessage,
@@ -39,6 +40,12 @@ export const usersKey = (filters: UsersFilters) =>
 interface PendingAction {
   user: AdminUser;
   status: UserStatus;
+}
+
+/** Ação pretendida sobre o papel de um usuário (alvo + novo papel). */
+interface PendingRole {
+  user: AdminUser;
+  role: UserRole;
 }
 
 const ACTION_COPY: Record<
@@ -67,6 +74,11 @@ export function UsersTable() {
   const [pending, setPending] = useState<PendingAction | null>(null);
   const [reason, setReason] = useState("");
 
+  // Diálogo de mudança de papel.
+  const [pendingRole, setPendingRole] = useState<PendingRole | null>(null);
+  const [roleReason, setRoleReason] = useState("");
+  const { user: currentUser } = useAuth();
+
   const { data, isLoading, isFetching, isError, error } = useQuery({
     queryKey: usersKey(applied),
     queryFn: () => fetchUsers(applied),
@@ -82,6 +94,19 @@ export function UsersTable() {
       queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
       queryClient.invalidateQueries({ queryKey: ["admin", "metrics"] });
       closeDialog();
+    },
+  });
+
+  const roleMutation = useMutation({
+    mutationFn: (vars: PendingRole) =>
+      updateUserRole(vars.user.id, {
+        role: vars.role,
+        reason: roleReason.trim() || undefined,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "metrics"] });
+      closeRoleDialog();
     },
   });
 
@@ -107,6 +132,13 @@ export function UsersTable() {
     setPending(null);
     setReason("");
     mutation.reset();
+  }
+
+  function closeRoleDialog() {
+    if (roleMutation.isPending) return;
+    setPendingRole(null);
+    setRoleReason("");
+    roleMutation.reset();
   }
 
   const hasFilters = Boolean(applied.role || applied.status || applied.q);
@@ -238,7 +270,31 @@ export function UsersTable() {
                       <p className="text-xs text-muted-foreground">{user.email}</p>
                     </td>
                     <td className="px-4 py-3">
-                      <Badge variant="outline">{ROLE_LABEL[user.role]}</Badge>
+                      {currentUser?.id === user.id ? (
+                        <Badge variant="outline">
+                          {ROLE_LABEL[user.role]} (você)
+                        </Badge>
+                      ) : (
+                        <Select
+                          aria-label="Papel do usuário"
+                          value={user.role}
+                          onChange={(e) => {
+                            const role = e.target.value as UserRole;
+                            if (role !== user.role) {
+                              setRoleReason("");
+                              roleMutation.reset();
+                              setPendingRole({ user, role });
+                            }
+                          }}
+                          className="w-40"
+                        >
+                          <SelectOption value="customer">Contratante</SelectOption>
+                          <SelectOption value="professional">
+                            Profissional
+                          </SelectOption>
+                          <SelectOption value="admin">Admin</SelectOption>
+                        </Select>
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       <Badge variant={userStatusVariant(user.status)}>
@@ -323,6 +379,46 @@ export function UsersTable() {
             placeholder="Descreva o motivo desta ação"
             value={reason}
             onChange={(e) => setReason(e.target.value)}
+            rows={3}
+            maxLength={500}
+          />
+        </div>
+      </ConfirmDialog>
+
+      {/* Confirmação de mudança de papel */}
+      <ConfirmDialog
+        open={Boolean(pendingRole)}
+        title="Alterar papel do usuário?"
+        description={
+          pendingRole
+            ? `"${pendingRole.user.name}" passará a ter o papel "${ROLE_LABEL[pendingRole.role]}".${
+                pendingRole.role === "admin"
+                  ? " Administradores têm acesso total ao painel."
+                  : ""
+              }`
+            : undefined
+        }
+        confirmLabel="Alterar papel"
+        confirmVariant={pendingRole?.role === "admin" ? "destructive" : "default"}
+        loading={roleMutation.isPending}
+        error={
+          roleMutation.isError
+            ? adminErrorMessage(
+                roleMutation.error,
+                "Não foi possível alterar o papel."
+              )
+            : null
+        }
+        onConfirm={() => pendingRole && roleMutation.mutate(pendingRole)}
+        onCancel={closeRoleDialog}
+      >
+        <div className="space-y-2">
+          <Label htmlFor="role-reason">Motivo (opcional)</Label>
+          <Textarea
+            id="role-reason"
+            placeholder="Descreva o motivo desta ação"
+            value={roleReason}
+            onChange={(e) => setRoleReason(e.target.value)}
             rows={3}
             maxLength={500}
           />

@@ -48,6 +48,7 @@ from app.schemas.admin import (
     FinanceSummary,
     LeadStatusCounts,
     RoleCounts,
+    UserRoleUpdate,
     UserStatusUpdate,
 )
 from app.services.lead_recycle import cancel_lead_with_refund
@@ -64,6 +65,7 @@ class AuditAction:
     user_unblock = "user_unblock"
     user_status_change = "user_status_change"
     lead_cancel = "lead_cancel"
+    user_role_change = "user_role_change"
 
 
 class AdminService:
@@ -121,6 +123,7 @@ class AdminService:
             credit_packages_sold=await self.repo.sum_credits_packages_sold(),
             reviews=await self.repo.count_reviews(),
             conversations=await self.repo.count_conversations(),
+            support_tickets_open=await self.repo.count_open_support_tickets(),
             finance=FinanceSummary(
                 paid_orders=paid_orders,
                 revenue_cents=revenue_cents,
@@ -224,6 +227,42 @@ class AdminService:
             if old == UserStatus.suspended:
                 return AuditAction.user_unsuspend
         return AuditAction.user_status_change
+
+    async def update_user_role(
+        self, admin: User, user_id: uuid.UUID, data: UserRoleUpdate
+    ) -> AdminUserRead:
+        """Altera o **papel** do usuário (ex.: promover a admin) + auditoria.
+
+        Não permite o admin alterar o próprio papel (anti-lockout — ``422``);
+        ``404`` se inexistente. Idempotente se já for o papel desejado.
+        """
+        if user_id == admin.id:
+            raise DomainValidationError(
+                "Você não pode alterar o próprio papel."
+            )
+        target = await self.repo.get_user(user_id)
+        if target is None:
+            raise NotFoundError("Usuário não encontrado.")
+
+        old_role = target.role
+        new_role = data.role
+        if old_role != new_role:
+            target.role = new_role
+            self._record_audit(
+                admin,
+                action=AuditAction.user_role_change,
+                entity="users",
+                entity_id=target.id,
+                meta={
+                    "reason": data.reason,
+                    "old_role": old_role.value,
+                    "new_role": new_role.value,
+                },
+            )
+            await self.repo.flush()
+            await self.db.commit()
+            await self.db.refresh(target)
+        return AdminUserRead.model_validate(target)
 
     # ------------------------------------------------------------------ #
     # Moderação de leads

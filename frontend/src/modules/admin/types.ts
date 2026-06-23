@@ -61,6 +61,8 @@ export interface AdminMetrics {
   credit_packages_sold: number;
   reviews: number;
   conversations: number;
+  /** Chamados de suporte com status "open" (para o aviso no painel). */
+  support_tickets_open?: number;
   finance: FinanceSummary;
 }
 
@@ -189,6 +191,12 @@ export interface AuditFilters {
 /** Body de `PATCH /admin/users/{id}/status`. */
 export interface UserStatusUpdate {
   status: UserStatus;
+  reason?: string;
+}
+
+/** Body de `PATCH /admin/users/{id}/role` (promover/alterar papel). */
+export interface UserRoleUpdate {
+  role: UserRole;
   reason?: string;
 }
 
