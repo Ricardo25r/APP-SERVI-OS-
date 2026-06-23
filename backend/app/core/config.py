@@ -73,9 +73,10 @@ class Settings(BaseSettings):
     PAYMENT_CURRENCY: str = "BRL"  # moeda padrão dos pacotes/pedidos
     # Base da URL fake de checkout (modo dev).
     PAYMENT_DEV_CHECKOUT_BASE: str = "http://localhost:3000/credits"
-    # Futuro (NÃO usados pelo DevPaymentProvider; documentados p/ provedores reais):
-    # MP_ACCESS_TOKEN: str = ""
-    # MP_WEBHOOK_SECRET: str = ""
+    # Mercado Pago (provedor real — Checkout Pro). Segredos só via env.
+    MERCADOPAGO_ACCESS_TOKEN: str = ""  # Access Token de produção (Bearer).
+    MERCADOPAGO_WEBHOOK_SECRET: str = ""  # "Assinatura secreta" do webhook (opcional, recomendado).
+    MERCADOPAGO_API_BASE: str = "https://api.mercadopago.com"
     # STRIPE_API_KEY: str = ""
     # STRIPE_WEBHOOK_SECRET: str = ""
 
@@ -148,6 +149,14 @@ class Settings(BaseSettings):
                 problems.append(
                     "PAYMENT_PROVIDER='dev' (checkout simulado) não é permitido em "
                     "produção — configure um provedor real (ex.: mercadopago)."
+                )
+            elif (
+                self.PAYMENT_PROVIDER == "mercadopago"
+                and not self.MERCADOPAGO_ACCESS_TOKEN
+            ):
+                problems.append(
+                    "PAYMENT_PROVIDER='mercadopago' mas MERCADOPAGO_ACCESS_TOKEN "
+                    "está vazio — defina o Access Token de produção do Mercado Pago."
                 )
 
         if problems:

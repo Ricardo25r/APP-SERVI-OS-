@@ -12,11 +12,12 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Copy, Loader2, X } from "lucide-react";
+import { Check, Copy, ExternalLink, Loader2, X } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 import { useDevConfirm } from "../hooks";
 import type { PaymentOrder } from "../types";
@@ -125,7 +126,28 @@ export function OrderPanel({ order, onClose, onConfirmed }: OrderPanelProps) {
               </div>
             )}
 
-            {current.checkout_url && (
+            {current.checkout_url && !devMode && (
+              <div className="space-y-1.5">
+                <a
+                  href={current.checkout_url}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className={cn(
+                    buttonVariants({ size: "lg" }),
+                    "w-full gap-2 bg-brand text-brand-foreground hover:bg-brand/90"
+                  )}
+                >
+                  <ExternalLink className="h-4 w-4" aria-hidden />
+                  Pagar com Pix ou cartão
+                </a>
+                <p className="text-center text-xs text-muted-foreground">
+                  Você vai para o ambiente seguro do Mercado Pago. O saldo é
+                  creditado automaticamente após a confirmação.
+                </p>
+              </div>
+            )}
+
+            {current.checkout_url && devMode && (
               <div className="space-y-1.5">
                 <p className="text-sm font-medium">Checkout</p>
                 <a

@@ -10,12 +10,13 @@ from __future__ import annotations
 from app.core.config import settings
 from app.services.payments.base import PaymentProvider
 from app.services.payments.dev import DevPaymentProvider
+from app.services.payments.mercadopago import MercadoPagoProvider
 
 __all__ = ["get_payment_provider"]
 
 _PROVIDERS: dict[str, type[PaymentProvider]] = {
     "dev": DevPaymentProvider,
-    # "mercadopago": MercadoPagoProvider,   # futuro (§3.4)
+    "mercadopago": MercadoPagoProvider,
     # "stripe": StripeProvider,             # futuro (§3.4)
 }
 
