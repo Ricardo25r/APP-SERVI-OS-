@@ -22,6 +22,7 @@ from app.database.session import get_db
 from app.models import User, UserRole
 from app.schemas.lead_purchases import (
     ArrivalConfirm,
+    ClientAbsentReport,
     LeadPurchaseCreate,
     LeadPurchaseListResponse,
     LeadPurchaseRead,
@@ -119,3 +120,26 @@ async def mark_no_show(
     service = LeadPurchaseService(db)
     await service.mark_no_show(current_user, lead_id)
     return {"reopened": True}
+
+
+@router.post(
+    "/{purchase_id}/cliente-ausente",
+    summary="Profissional: cliente não estava / recusou o código (prova GPS)",
+)
+async def report_client_absent(
+    purchase_id: uuid.UUID,
+    payload: ClientAbsentReport,
+    current_user: User = Depends(require_roles(UserRole.professional)),
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, bool]:
+    """Com a presença comprovada por GPS (≤ tolerância do local), reabre a vaga,
+    **devolve o crédito** e marca o cliente. Fora do raio / lead sem coordenadas
+    → ``409`` (orientar a abrir chamado no suporte)."""
+    service = LeadPurchaseService(db)
+    return await service.report_client_absent(
+        current_user,
+        purchase_id,
+        latitude=payload.latitude,
+        longitude=payload.longitude,
+        reason=payload.reason,
+    )

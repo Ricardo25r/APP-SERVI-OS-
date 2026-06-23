@@ -21,6 +21,7 @@ from app.schemas.leads import LeadContact, LeadRead
 __all__ = [
     "LeadPurchaseCreate",
     "ArrivalConfirm",
+    "ClientAbsentReport",
     "LeadPurchaseRead",
     "LeadPurchaseResult",
     "WalletBalance",
@@ -78,6 +79,18 @@ class ArrivalConfirm(BaseModel):
     recebê-lo presencialmente (validação anti "mandar outra pessoa")."""
 
     code: str
+
+
+class ClientAbsentReport(BaseModel):
+    """Corpo de ``POST /lead-purchases/{id}/cliente-ausente``.
+
+    O profissional reporta que o cliente não estava / recusou o código e envia a
+    **localização atual** (prova de presença por GPS, comparada ao local do
+    serviço). ``reason``: ``absent`` | ``code_refused`` | ``other`` (livre)."""
+
+    latitude: float
+    longitude: float
+    reason: str | None = None
 
 
 class WalletBalance(BaseModel):

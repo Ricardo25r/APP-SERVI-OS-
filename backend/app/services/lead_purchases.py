@@ -61,8 +61,11 @@ from app.schemas.leads import LeadContact, LeadRead
 from app.services.chat import ChatService
 from app.services.credits import CreditService
 from app.services.gamification import GamificationService
-from app.services.lead_recycle import reopen_lead_no_show
-from app.services.leads import LeadService
+from app.services.lead_recycle import (
+    reopen_lead_client_absent,
+    reopen_lead_no_show,
+)
+from app.services.leads import LeadService, _haversine_km
 from app.services.notifications import add_notification
 
 __all__ = ["LeadPurchaseService"]
@@ -335,6 +338,59 @@ class LeadPurchaseService:
             self.db, purchase=lead.purchase, lead=lead, auto=False
         )
         await self.db.commit()
+
+    async def report_client_absent(
+        self,
+        current_user: User,
+        purchase_id: uuid.UUID,
+        *,
+        latitude: float,
+        longitude: float,
+        reason: str | None = None,
+    ) -> dict[str, bool]:
+        """Profissional reporta que o **cliente não estava / recusou o código**.
+
+        Com a **presença comprovada por GPS** (distância ao local do serviço ≤
+        ``PRESENCE_TOLERANCE_METERS``): reabre a vaga, **devolve o crédito** e
+        marca o não-comparecimento do cliente. Sem coordenadas no lead ou fora do
+        raio → ``409`` (orientar a abrir chamado no suporte). Erros: ``404``
+        perfil/compra, ``403`` não-dono, ``409`` já chegou / fora do raio."""
+        profile = await self.lead_repo.get_professional_profile(current_user.id)
+        if profile is None:
+            raise NotFoundError("Perfil profissional não encontrado.")
+
+        purchase = await self.repo.get_purchase_by_id(purchase_id)
+        if purchase is None:
+            raise NotFoundError("Compra não encontrada.")
+        if purchase.professional_id != profile.id:
+            raise PermissionDeniedError("Você não é o dono desta compra.")
+        if purchase.arrived_at is not None:
+            raise ConflictError("A chegada já foi confirmada.")
+
+        lead = purchase.lead
+        if lead is None or lead.status != LeadStatus.purchased:
+            raise ConflictError("Este lead não está em atendimento.")
+        if lead.latitude is None or lead.longitude is None:
+            raise ConflictError(
+                "Este serviço não tem localização para comprovar a presença. "
+                "Abra um chamado no suporte."
+            )
+
+        distance_m = (
+            _haversine_km(
+                float(lead.latitude), float(lead.longitude), latitude, longitude
+            )
+            * 1000
+        )
+        if distance_m > settings.PRESENCE_TOLERANCE_METERS:
+            raise ConflictError(
+                "Não foi possível comprovar sua presença no local "
+                f"(você está a ~{int(distance_m)} m). Abra um chamado no suporte."
+            )
+
+        await reopen_lead_client_absent(self.db, purchase=purchase, lead=lead)
+        await self.db.commit()
+        return {"reopened": True, "refunded": True}
 
     # ------------------------------------------------------------------ #
     # Helpers internos

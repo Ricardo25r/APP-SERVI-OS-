@@ -28,6 +28,7 @@ from app.models import (
     LeadStatus,
     Message,
     ProfessionalProfile,
+    User,
 )
 from app.services.credits import CreditService
 from app.services.notifications import add_notification
@@ -199,8 +200,90 @@ async def reopen_no_show_purchases(db: AsyncSession, *, now: datetime) -> int:
     return reopened
 
 
+async def reopen_lead_client_absent(
+    db: AsyncSession,
+    *,
+    purchase: LeadPurchase,
+    lead: Lead,
+) -> None:
+    """Reabre por **culpa do cliente** (ausente/recusou o código, com a presença
+    do profissional comprovada por GPS): **devolve** o crédito ao profissional e
+    marca o não-comparecimento do cliente. Remove conversa (+ mensagens) e compra
+    (libera os ``UNIQUE(lead_id)``), reabre o lead e notifica ambos os lados.
+    """
+    professional_id = purchase.professional_id
+    credits_used = purchase.credits_used
+    purchase_id = purchase.id
+
+    profile = (
+        await db.execute(
+            select(ProfessionalProfile).where(
+                ProfessionalProfile.id == professional_id
+            )
+        )
+    ).scalar_one_or_none()
+    customer = (
+        await db.execute(select(User).where(User.id == lead.customer_id))
+    ).scalar_one_or_none()
+
+    # 1) Reembolsa o profissional (a culpa não foi dele).
+    credits = CreditService(db)
+    wallet = await credits.get_or_create_wallet(professional_id)
+    await credits.apply_movement(
+        wallet,
+        amount=credits_used,
+        transaction_type=CreditTransactionType.refund,
+        description=f"Reembolso: cliente ausente/recusou no lead {lead.id}",
+        reference_id=purchase_id,
+    )
+
+    # 2) Marca o não-comparecimento do cliente (reputação).
+    if customer is not None:
+        customer.client_no_show_count = (customer.client_no_show_count or 0) + 1
+
+    # 3) Remove conversa (+ mensagens) e compra; reabre o lead.
+    conversation = (
+        await db.execute(
+            select(Conversation).where(Conversation.lead_id == lead.id)
+        )
+    ).scalar_one_or_none()
+    if conversation is not None:
+        await db.execute(
+            delete(Message).where(Message.conversation_id == conversation.id)
+        )
+        await db.delete(conversation)
+    await db.delete(purchase)
+    lead.status = LeadStatus.open
+
+    # 4) Notifica os dois lados.
+    if profile is not None:
+        add_notification(
+            db,
+            user_id=profile.user_id,
+            type="lead",
+            title="Crédito devolvido",
+            body=(
+                f'Você comprovou presença em "{lead.title}", mas o cliente não '
+                "estava/recusou o código. O crédito foi devolvido."
+            ),
+            href="/marketplace",
+        )
+    add_notification(
+        db,
+        user_id=lead.customer_id,
+        type="lead",
+        title="Profissional compareceu e não foi atendido",
+        body=(
+            f'Um profissional informou que esteve no local de "{lead.title}" e '
+            "não foi atendido. A vaga foi reaberta."
+        ),
+        href="/leads",
+    )
+
+
 __all__ = [
     "recycle_expired_purchases",
     "reopen_lead_no_show",
     "reopen_no_show_purchases",
+    "reopen_lead_client_absent",
 ]

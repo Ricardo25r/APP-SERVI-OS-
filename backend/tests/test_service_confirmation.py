@@ -126,7 +126,13 @@ async def _make_professional(
 
 
 async def _make_lead(
-    session: AsyncSession, *, customer: User, category: Category, cost: int = 3
+    session: AsyncSession,
+    *,
+    customer: User,
+    category: Category,
+    cost: int = 3,
+    lat: float | None = None,
+    lng: float | None = None,
 ) -> Lead:
     lead = Lead(
         customer_id=customer.id,
@@ -139,10 +145,16 @@ async def _make_lead(
         state="RO",
         status=LeadStatus.open,
         credits_cost=cost,
+        latitude=lat,
+        longitude=lng,
     )
     session.add(lead)
     await session.flush()
     return lead
+
+
+# Coordenadas do lead semeado (Ariquemes/RO) — usadas na prova de presença.
+_LEAD_LAT, _LEAD_LNG = -9.91, -63.03
 
 
 async def _seed(session_maker) -> dict:
@@ -153,7 +165,9 @@ async def _seed(session_maker) -> dict:
         )
         cat = await _make_category(s, slug="encanador")
         pro, profile = await _make_professional(s, email="pro@t.com", category_id=cat.id)
-        lead = await _make_lead(s, customer=customer, category=cat, cost=3)
+        lead = await _make_lead(
+            s, customer=customer, category=cat, cost=3, lat=_LEAD_LAT, lng=_LEAD_LNG
+        )
         out = {
             "customer": customer,
             "pro": pro,
@@ -345,3 +359,71 @@ async def test_worker_auto_reopens_expired_no_show(
             )
         ).scalar_one()
         assert profile.no_show_count == 1
+
+
+@pytest.mark.asyncio
+async def test_client_absent_with_presence_refunds_and_reopens(
+    client: httpx.AsyncClient, session_maker
+) -> None:
+    """Profissional comprova presença (GPS no local) → reembolsa + reabre + marca o cliente."""
+    ctx = await _seed(session_maker)
+    body = await _purchase(client, ctx["pro"], ctx["lead_id"])
+    purchase_id = body["purchase"]["id"]
+
+    resp = await client.post(
+        f"/api/v1/lead-purchases/{purchase_id}/cliente-ausente",
+        headers=_auth(ctx["pro"]),
+        json={"latitude": _LEAD_LAT, "longitude": _LEAD_LNG, "reason": "absent"},
+    )
+    assert resp.status_code == 200, resp.text
+    assert resp.json()["refunded"] is True
+
+    async with session_maker() as s:
+        lead = (
+            await s.execute(select(Lead).where(Lead.id == ctx["lead_id"]))
+        ).scalar_one()
+        assert lead.status == LeadStatus.open
+        assert (await s.execute(select(LeadPurchase))).scalars().all() == []
+        wallet = (
+            await s.execute(
+                select(CreditWallet).where(
+                    CreditWallet.professional_id == ctx["profile_id"]
+                )
+            )
+        ).scalar_one()
+        assert wallet.balance == 10  # reembolsado (7 + 3)
+        customer = (
+            await s.execute(select(User).where(User.id == ctx["customer"].id))
+        ).scalar_one()
+        assert customer.client_no_show_count == 1
+
+
+@pytest.mark.asyncio
+async def test_client_absent_far_away_is_blocked(
+    client: httpx.AsyncClient, session_maker
+) -> None:
+    """Longe do local (GPS não bate) → 409 e nada de reembolso/reabertura."""
+    ctx = await _seed(session_maker)
+    body = await _purchase(client, ctx["pro"], ctx["lead_id"])
+    purchase_id = body["purchase"]["id"]
+
+    resp = await client.post(
+        f"/api/v1/lead-purchases/{purchase_id}/cliente-ausente",
+        headers=_auth(ctx["pro"]),
+        json={"latitude": -23.55, "longitude": -46.63},  # São Paulo (longe)
+    )
+    assert resp.status_code == 409, resp.text
+
+    async with session_maker() as s:
+        wallet = (
+            await s.execute(
+                select(CreditWallet).where(
+                    CreditWallet.professional_id == ctx["profile_id"]
+                )
+            )
+        ).scalar_one()
+        assert wallet.balance == 7  # NÃO reembolsado
+        lead = (
+            await s.execute(select(Lead).where(Lead.id == ctx["lead_id"]))
+        ).scalar_one()
+        assert lead.status == LeadStatus.purchased  # segue com o profissional

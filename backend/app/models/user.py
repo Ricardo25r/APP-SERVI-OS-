@@ -8,7 +8,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, Enum, Index, String, text
+from sqlalchemy import DateTime, Enum, Index, Integer, String, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.base import Base
@@ -65,6 +65,11 @@ class User(UUIDPKMixin, TimestampMixin, SoftDeleteMixin, Base):
     )
     # Chave da foto de perfil no storage (MinIO); URL presignada exposta no schema.
     avatar_key: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    # Não-comparecimentos do cliente (ausente/recusou o código com a presença do
+    # profissional comprovada por GPS) — reputação anti "furo" do contratante.
+    client_no_show_count: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default=text("0")
+    )
 
     # Relacionamentos (§2.1).
     customer_profile: Mapped[CustomerProfile | None] = relationship(

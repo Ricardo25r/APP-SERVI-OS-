@@ -107,6 +107,9 @@ class Settings(BaseSettings):
     # Prazo (dias) p/ confirmar a chegada (código). Esgotado sem chegada nem
     # "não compareceu" manual, o worker reabre a vaga sozinho (sem reembolso).
     NO_SHOW_DEADLINE_DAYS: int = 7
+    # Tolerância (metros) p/ comprovar a presença do profissional por GPS quando
+    # o cliente está ausente/recusa o código (reembolsa + marca o cliente).
+    PRESENCE_TOLERANCE_METERS: int = 500
     # Worker que devolve ao mercado os leads comprados e não contatados a tempo.
     CONTACT_RECYCLE_ENABLED: bool = True
     CONTACT_RECYCLE_INTERVAL_SECONDS: int = 120

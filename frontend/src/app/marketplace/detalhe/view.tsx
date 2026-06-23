@@ -49,6 +49,7 @@ import {
   describeApiError,
   leadTypeLabel,
   leadUrgencyLabel,
+  reportClientAbsent,
 } from "@/modules/leads";
 import { purchaseErrorMessage } from "@/modules/leads/marketplace/utils";
 
@@ -87,6 +88,8 @@ export default function MarketplaceLeadDetailPage() {
   const [arrivalCode, setArrivalCode] = useState("");
   const [confirmingArrival, setConfirmingArrival] = useState(false);
   const [arrivalError, setArrivalError] = useState<string | null>(null);
+  const [reportingAbsent, setReportingAbsent] = useState(false);
+  const [absentError, setAbsentError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -142,6 +145,45 @@ export default function MarketplaceLeadDetailPage() {
     } finally {
       setConfirmingArrival(false);
     }
+  }
+
+  function handleClientAbsent() {
+    const purchaseId = lead?.purchase_id;
+    if (!purchaseId) return;
+    setAbsentError(null);
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      setAbsentError(
+        "Seu aparelho não permite localização. Abra um chamado no suporte."
+      );
+      return;
+    }
+    setReportingAbsent(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          await reportClientAbsent(
+            purchaseId,
+            pos.coords.latitude,
+            pos.coords.longitude,
+            "absent"
+          );
+          await load();
+        } catch (err) {
+          setAbsentError(
+            describeApiError(err, "Não foi possível comprovar a presença.")
+          );
+        } finally {
+          setReportingAbsent(false);
+        }
+      },
+      () => {
+        setAbsentError(
+          "Não foi possível obter sua localização. Permita o acesso ou abra um chamado no suporte."
+        );
+        setReportingAbsent(false);
+      },
+      { enableHighAccuracy: true, timeout: 15000 }
+    );
   }
 
   if (!auth.hasHydrated || auth.role !== "professional") {
@@ -421,6 +463,22 @@ export default function MarketplaceLeadDetailPage() {
                 {arrivalError ? (
                   <p className="text-xs text-destructive">{arrivalError}</p>
                 ) : null}
+
+                <div className="border-t border-brand/20 pt-3">
+                  <button
+                    type="button"
+                    onClick={handleClientAbsent}
+                    disabled={reportingAbsent}
+                    className="text-xs font-medium text-muted-foreground underline-offset-4 hover:text-destructive hover:underline disabled:opacity-50"
+                  >
+                    {reportingAbsent
+                      ? "Verificando sua localização..."
+                      : "O cliente não estava / recusou o código"}
+                  </button>
+                  {absentError ? (
+                    <p className="mt-1 text-xs text-destructive">{absentError}</p>
+                  ) : null}
+                </div>
               </div>
             ) : null}
 

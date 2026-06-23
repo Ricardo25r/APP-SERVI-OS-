@@ -119,3 +119,16 @@ export function markNoShow(leadId: string): Promise<{ reopened: boolean }> {
     {}
   );
 }
+
+/** Profissional reporta cliente ausente/recusou (prova de presença por GPS). */
+export function reportClientAbsent(
+  purchaseId: string,
+  latitude: number,
+  longitude: number,
+  reason?: string
+): Promise<{ reopened: boolean; refunded: boolean }> {
+  return apiPost<{ reopened: boolean; refunded: boolean }>(
+    `/lead-purchases/${purchaseId}/cliente-ausente`,
+    { latitude, longitude, reason }
+  );
+}
