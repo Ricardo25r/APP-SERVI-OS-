@@ -14,6 +14,7 @@ import {
   CreditCard,
   Gift,
   LifeBuoy,
+  Rocket,
   ScrollText,
   Tags,
   Users,
@@ -78,6 +79,12 @@ const SHORTCUTS: Shortcut[] = [
     label: "Chamados",
     description: "Veja e responda os chamados de suporte dos usuários.",
     icon: LifeBuoy,
+  },
+  {
+    href: "/admin/sprints",
+    label: "Sprints",
+    description: "Esteira de ideias: bugs, melhorias, consertos e ideias do produto.",
+    icon: Rocket,
   },
 ];
 

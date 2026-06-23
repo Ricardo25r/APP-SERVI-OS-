@@ -49,6 +49,14 @@ from app.models.professional_category import ProfessionalCategory
 from app.models.professional_profile import ProfessionalProfile
 from app.models.refresh_token import RefreshToken
 from app.models.review import Review
+from app.models.sprint import (
+    Sprint,
+    SprintIdea,
+    SprintIdeaAnexo,
+    SprintIdeaComentario,
+    SprintIdeaEvento,
+    SprintIdeaVoto,
+)
 from app.models.support_ticket import SupportTicket
 from app.models.user import User
 from app.models.xp_transaction import XpTransaction
@@ -85,6 +93,12 @@ __all__ = [
     "UserAchievement",
     "AuditLog",
     "SupportTicket",
+    "Sprint",
+    "SprintIdea",
+    "SprintIdeaAnexo",
+    "SprintIdeaComentario",
+    "SprintIdeaVoto",
+    "SprintIdeaEvento",
     # Enums
     "UserRole",
     "UserStatus",
