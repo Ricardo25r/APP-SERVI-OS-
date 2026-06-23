@@ -21,6 +21,7 @@ import uuid
 from datetime import UTC, datetime
 from typing import Any
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import (
@@ -29,6 +30,7 @@ from app.core.exceptions import (
 )
 from app.models import (
     AuditLog,
+    LeadPurchase,
     LeadStatus,
     PaymentOrderStatus,
     User,
@@ -48,6 +50,7 @@ from app.schemas.admin import (
     RoleCounts,
     UserStatusUpdate,
 )
+from app.services.lead_recycle import cancel_lead_with_refund
 
 __all__ = ["AdminService", "AuditAction"]
 
@@ -264,6 +267,19 @@ class AdminService:
             raise DomainValidationError("O lead já está cancelado.")
 
         old_status = lead.status
+        # Lead falso/comprado: devolve o crédito ao profissional (reembolsa +
+        # remove compra/conversa + notifica o pro). Para leads não comprados,
+        # apenas marca cancelado.
+        if old_status == LeadStatus.purchased:
+            purchase = (
+                await self.db.execute(
+                    select(LeadPurchase).where(LeadPurchase.lead_id == lead.id)
+                )
+            ).scalar_one_or_none()
+            if purchase is not None:
+                await cancel_lead_with_refund(
+                    self.db, purchase=purchase, lead=lead
+                )
         lead.status = LeadStatus.cancelled
         lead.deleted_at = datetime.now(UTC)
         self._record_audit(

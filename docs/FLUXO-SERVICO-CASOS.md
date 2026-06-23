@@ -81,14 +81,18 @@ dele esvazia o app. Por isso o eixo é **justiça nos dois lados + provas**.
   `conversations`; baixo ganho enquanto não houver disputa formal).
 - ✅ Contestação/disputa via **Suporte** (`/suporte` já existe → admin decide) — D5.
 
-### Bloco 5 — Qualidade do lead e anti-fraude
-- ⬜ Admin marca lead como inválido/falso → reembolsa os profissionais.
-- ⬜ Profissional reporta lead suspeito.
-- ⬜ Limite de criação de leads (anti-spam).
+### Bloco 5 — Qualidade do lead e anti-fraude ✅ (parcial)
+- ✅ Admin cancela/invalida lead falso (`PATCH /admin/leads/{id}`) → agora
+  **reembolsa** o profissional quando o lead estava comprado (reusa o fluxo de
+  cancelamento com reembolso).
+- ✅ Limite de criação de leads: **rate-limit** (10/min) em `POST /leads`.
+- ✅ Reportar lead suspeito → via **Suporte** (`/suporte`).
 
-### Bloco 6 — Brechas do código de chegada
-- ⬜ Aviso "só mostre o código em pessoa" (texto na UI).
-- ⬜ Expirar/rotacionar o código.
+### Bloco 6 — Brechas do código de chegada ✅ (parcial)
+- ✅ Aviso "só mostre o código quando o profissional estiver com você" (texto no
+  card do cliente).
+- ⬜ Expirar/rotacionar o código → **adiado** (baixo risco: o código é por compra
+  e some na reabertura; reavaliar depois).
 
 ---
 
@@ -106,5 +110,7 @@ dele esvazia o app. Por isso o eixo é **justiça nos dois lados + provas**.
   `fase 19`. 140 testes. No ar.
 - ✅ **Bloco 4** (parcial) — suspensão por excesso de no-show + reputação do
   cliente visível ao profissional; disputa via Suporte. Sem migration. 141 testes.
-- ➡ Próximo: **Bloco 5** (qualidade do lead/anti-fraude), **Bloco 6** (brechas
-  do código) + auditoria final.
+- ✅ **Bloco 5** — admin reembolsa lead falso comprado + rate-limit na criação de
+  lead; reporte via Suporte. Sem migration.
+- ✅ **Bloco 6** — aviso "só mostre em pessoa" (já presente); expiry adiado.
+- ➡ **Auditoria final** (segurança, performance, UX, permissões).

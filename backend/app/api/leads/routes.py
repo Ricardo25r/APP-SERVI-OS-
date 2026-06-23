@@ -28,6 +28,7 @@ from fastapi import (
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import get_current_user, require_roles
+from app.core.ratelimit import rate_limit
 from app.database.session import get_db
 from app.models import LeadStatus, User, UserRole
 from app.schemas.leads import (
@@ -47,6 +48,7 @@ router = APIRouter()
     response_model=LeadRead,
     status_code=status.HTTP_201_CREATED,
     summary="Criar lead (oportunidade)",
+    dependencies=[Depends(rate_limit("leadcreate", limit=10, window_seconds=60))],
 )
 async def create_lead(
     payload: LeadCreate,
