@@ -288,6 +288,30 @@ class PaymentService:
         return await self.handle_event(provider_event)
 
     # ------------------------------------------------------------------ #
+    # Confirmação manual (admin) — Pix manual, sem gateway
+    # ------------------------------------------------------------------ #
+    async def admin_confirm_order(self, order_id: uuid.UUID) -> PaymentOrderRead:
+        """Admin confirma manualmente um pedido (Pix manual) → credita a carteira
+        e marca ``paid``. Erros: ``404`` inexistente, ``409`` não pendente."""
+        order = await self.repo.get_order(order_id)
+        if order is None:
+            raise NotFoundError("Pedido não encontrado.")
+        if order.status != PaymentOrderStatus.pending:
+            raise ConflictError("Pedido não está pendente.")
+
+        event = ProviderEvent(
+            external_reference=order.external_reference or f"manual_{order.id}",
+            status=PaymentOrderStatus.paid,
+            provider_event_id=f"manual_{uuid.uuid4().hex}",
+            raw=None,
+        )
+        await self._apply_paid(order, event)
+        await self.repo.flush()
+        await self.db.commit()
+        await self.db.refresh(order)
+        return PaymentOrderRead.model_validate(order)
+
+    # ------------------------------------------------------------------ #
     # Refund (admin) — §4 #7 / §5.4
     # ------------------------------------------------------------------ #
     async def refund(

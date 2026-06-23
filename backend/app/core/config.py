@@ -77,6 +77,9 @@ class Settings(BaseSettings):
     MERCADOPAGO_ACCESS_TOKEN: str = ""  # Access Token de produção (Bearer).
     MERCADOPAGO_WEBHOOK_SECRET: str = ""  # "Assinatura secreta" do webhook (opcional, recomendado).
     MERCADOPAGO_API_BASE: str = "https://api.mercadopago.com"
+    # Pix MANUAL (vender créditos sem gateway): chave do dono + nome do recebedor.
+    MANUAL_PIX_KEY: str = ""  # copia-e-cola ou chave (CPF/telefone/email/aleatória).
+    MANUAL_PIX_NAME: str = ""  # nome do recebedor (exibido nas instruções).
     # STRIPE_API_KEY: str = ""
     # STRIPE_WEBHOOK_SECRET: str = ""
 
@@ -164,6 +167,13 @@ class Settings(BaseSettings):
                 problems.append(
                     "PAYMENT_PROVIDER='mercadopago' mas MERCADOPAGO_ACCESS_TOKEN "
                     "está vazio — defina o Access Token de produção do Mercado Pago."
+                )
+            elif (
+                self.PAYMENT_PROVIDER == "manual_pix" and not self.MANUAL_PIX_KEY
+            ):
+                problems.append(
+                    "PAYMENT_PROVIDER='manual_pix' mas MANUAL_PIX_KEY está vazio "
+                    "— defina a chave Pix do recebedor."
                 )
 
         if problems:

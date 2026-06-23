@@ -187,6 +187,22 @@ async def refund_order(
     return await service.refund(order_id, reason=data.reason)
 
 
+@router.post(
+    "/orders/{order_id}/confirmar",
+    response_model=PaymentOrderRead,
+    summary="Confirmar pagamento manual (admin) — Pix manual",
+)
+async def confirm_order(
+    order_id: uuid.UUID,
+    _admin: User = Depends(require_roles(UserRole.admin)),
+    db: AsyncSession = Depends(get_db),
+) -> PaymentOrderRead:
+    """Admin confirma um pedido pago via **Pix manual** → credita a carteira do
+    profissional e marca ``paid``. ``404`` inexistente; ``409`` não pendente."""
+    service = PaymentService(db)
+    return await service.admin_confirm_order(order_id)
+
+
 # --------------------------------------------------------------------------- #
 # 4. Detalhe de um pedido (professional dono) — declarado por último para não
 #    capturar ``/orders`` (estático) nem ``/orders/{id}/refund``.

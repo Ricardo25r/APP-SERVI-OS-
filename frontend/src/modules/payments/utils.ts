@@ -40,6 +40,11 @@ export function isDevPaymentProvider(): boolean {
   return provider === undefined || provider === "" || provider === "dev";
 }
 
+/** Indica o modo **Pix manual** (sem gateway) — confirmação feita pelo admin. */
+export function isManualPixProvider(): boolean {
+  return process.env.NEXT_PUBLIC_PAYMENT_PROVIDER === "manual_pix";
+}
+
 type BadgeVariant =
   | "default"
   | "secondary"

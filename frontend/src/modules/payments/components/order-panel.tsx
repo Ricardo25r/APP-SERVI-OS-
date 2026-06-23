@@ -24,6 +24,7 @@ import type { PaymentOrder } from "../types";
 import {
   formatBRLFromCents,
   isDevPaymentProvider,
+  isManualPixProvider,
   paymentOrderStatusMeta,
 } from "../utils";
 import { ErrorBanner, SuccessBanner, errorMessage } from "./feedback";
@@ -38,6 +39,7 @@ interface OrderPanelProps {
 
 export function OrderPanel({ order, onClose, onConfirmed }: OrderPanelProps) {
   const devMode = isDevPaymentProvider();
+  const manualMode = isManualPixProvider();
   const confirm = useDevConfirm();
   const [current, setCurrent] = useState<PaymentOrder>(order);
   const [copied, setCopied] = useState(false);
@@ -158,6 +160,20 @@ export function OrderPanel({ order, onClose, onConfirmed }: OrderPanelProps) {
                 >
                   Abrir página de pagamento
                 </a>
+              </div>
+            )}
+
+            {manualMode && (
+              <div className="rounded-md border border-dashed bg-muted/30 p-3 text-xs text-muted-foreground">
+                Pague o valor acima via Pix para a chave informada e envie o
+                comprovante pelo{" "}
+                <a
+                  href="/suporte"
+                  className="font-medium text-primary underline-offset-4 hover:underline"
+                >
+                  Suporte
+                </a>
+                . Seus créditos são liberados após a confirmação do pagamento.
               </div>
             )}
 

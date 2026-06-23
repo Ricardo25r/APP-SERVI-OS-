@@ -206,6 +206,11 @@ export function deactivateCategory(id: string): Promise<void> {
 /* ------------------------------------------------------------------ */
 
 /** Concede créditos a um profissional (`POST /credits/grant`, admin). */
+/** Confirma manualmente um pedido (Pix manual) → credita a carteira. */
+export function confirmOrder(orderId: string): Promise<unknown> {
+  return apiPost(`/payments/orders/${orderId}/confirmar`, {});
+}
+
 export function grantCredits(input: GrantCreditsInput): Promise<unknown> {
   return apiPost<unknown>("/credits/grant", input);
 }

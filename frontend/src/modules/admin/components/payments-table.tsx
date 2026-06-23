@@ -9,7 +9,7 @@
  */
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   CheckCircle2,
   Loader2,
@@ -24,7 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectOption } from "@/components/ui/select";
 
-import { fetchPayments } from "../api";
+import { confirmOrder, fetchPayments } from "../api";
 import type { PaymentOrderStatus, PaymentsFilters } from "../types";
 import {
   adminErrorMessage,
@@ -47,6 +47,14 @@ export function PaymentsTable() {
   const { data, isLoading, isFetching, isError, error } = useQuery({
     queryKey: paymentsKey(applied),
     queryFn: () => fetchPayments(applied),
+  });
+
+  const queryClient = useQueryClient();
+  const confirm = useMutation({
+    mutationFn: (orderId: string) => confirmOrder(orderId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["admin", "payments"] });
+    },
   });
 
   function applyFilters(e: React.FormEvent<HTMLFormElement>) {
@@ -184,6 +192,7 @@ export function PaymentsTable() {
                   <th className="px-4 py-3 font-medium">Valor</th>
                   <th className="px-4 py-3 font-medium">Status</th>
                   <th className="px-4 py-3 font-medium">Data</th>
+                  <th className="px-4 py-3 font-medium">Ações</th>
                 </tr>
               </thead>
               <tbody>
@@ -204,6 +213,18 @@ export function PaymentsTable() {
                     </td>
                     <td className="px-4 py-3 text-xs text-muted-foreground">
                       {formatDateTime(order.paid_at ?? order.created_at)}
+                    </td>
+                    <td className="px-4 py-3">
+                      {order.status === "pending" ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={confirm.isPending}
+                          onClick={() => confirm.mutate(order.id)}
+                        >
+                          Confirmar
+                        </Button>
+                      ) : null}
                     </td>
                   </tr>
                 ))}
