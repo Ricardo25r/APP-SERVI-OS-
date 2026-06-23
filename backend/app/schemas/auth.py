@@ -66,6 +66,13 @@ class LoginIn(BaseModel):
     password: str = Field(min_length=1, max_length=128)
 
 
+class GoogleAuthIn(BaseModel):
+    """Corpo de ``POST /auth/google`` — o **ID token** do Google (GIS web ou
+    plugin nativo). O backend valida assinatura/audiência e emite o JWT próprio."""
+
+    id_token: str = Field(min_length=10)
+
+
 class RefreshIn(BaseModel):
     """Corpo de ``POST /auth/refresh``."""
 
@@ -163,6 +170,7 @@ class PasswordResetRequestOut(BaseModel):
 __all__ = [
     "RegisterIn",
     "LoginIn",
+    "GoogleAuthIn",
     "RefreshIn",
     "LogoutIn",
     "PasswordResetRequestIn",

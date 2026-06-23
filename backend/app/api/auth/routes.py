@@ -31,6 +31,7 @@ from app.database.session import get_db
 from app.models import User
 from app.schemas.auth import (
     AuthResponse,
+    GoogleAuthIn,
     LoginIn,
     LogoutIn,
     MeOut,
@@ -77,6 +78,22 @@ async def login(
     Credenciais inválidas ou conta inativa → 401 (§4)."""
     service = AuthService(db)
     return await service.login(payload)
+
+
+@router.post(
+    "/google",
+    response_model=AuthResponse,
+    summary="Entrar com Google (ID token)",
+    dependencies=[Depends(rate_limit("login", limit=10, window_seconds=60))],
+)
+async def google_login(
+    payload: GoogleAuthIn,
+    db: AsyncSession = Depends(get_db),
+) -> AuthResponse:
+    """Valida o **ID token** do Google e emite o par de tokens próprio (cria ou
+    vincula a conta por e-mail). Token inválido / não configurado → 401."""
+    service = AuthService(db)
+    return await service.login_with_google(payload.id_token)
 
 
 @router.post(

@@ -24,6 +24,7 @@ from __future__ import annotations
 import uuid
 from datetime import UTC, datetime
 
+import httpx
 import jwt
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -45,6 +46,7 @@ from app.models import (
     CustomerProfile,
     ProfessionalProfile,
     User,
+    UserRole,
     UserStatus,
 )
 from app.repositories.auth import RefreshTokenRepository, UserRepository
@@ -153,6 +155,94 @@ class AuthService:
         await self.db.commit()
         await self.db.refresh(user)
         return AuthResponse(user=UserOut.model_validate(user), tokens=tokens)
+
+    # ----------------------------------------------------------- login social
+    _GOOGLE_TOKENINFO = "https://oauth2.googleapis.com/tokeninfo"
+
+    async def login_with_google(self, id_token: str) -> AuthResponse:
+        """Login/cadastro com **Google**: valida o ID token, vincula por
+        ``google_sub`` (fallback e-mail) ou cria a conta, e emite o par de tokens
+        próprio (mesmo shape do login por senha)."""
+        claims = await self._verify_google_id_token(id_token)
+        google_sub = str(claims["sub"])
+        email = (claims.get("email") or "").lower()
+        if not email:
+            raise AuthError("O Google não forneceu um e-mail.")
+        name = (claims.get("name") or email.split("@")[0] or "Usuário").strip()
+
+        user = await self._get_by_google_sub(google_sub)
+        if user is None:
+            existing = await self.users.get_by_email(email)
+            if existing is not None:
+                existing.google_sub = google_sub  # vincula à conta existente
+                user = existing
+
+        try:
+            if user is None:
+                user = User(
+                    name=name,
+                    email=email,
+                    phone=None,
+                    password_hash=None,
+                    role=UserRole.customer,
+                    status=UserStatus.active,
+                    auth_provider="google",
+                    google_sub=google_sub,
+                )
+                await self.users.create(user)
+            if user.status != UserStatus.active:
+                raise AuthError("Conta inativa.")
+            await self.users.touch_last_login(user, datetime.now(UTC))
+            tokens = await self._issue_and_store(user)
+            await self.db.commit()
+        except IntegrityError as exc:
+            await self.db.rollback()
+            raise ConflictError("Conta já existe para este e-mail.") from exc
+
+        await self.db.refresh(user)
+        return AuthResponse(user=UserOut.model_validate(user), tokens=tokens)
+
+    async def _get_by_google_sub(self, google_sub: str) -> User | None:
+        result = await self.db.execute(
+            select(User).where(
+                User.google_sub == google_sub, User.deleted_at.is_(None)
+            )
+        )
+        return result.scalar_one_or_none()
+
+    async def _verify_google_id_token(self, id_token: str) -> dict:
+        """Valida o ID token do Google via ``tokeninfo`` (assinatura + audiência
+        + emissor + e-mail verificado)."""
+        allowed = {
+            a
+            for a in (
+                settings.GOOGLE_WEB_CLIENT_ID,
+                settings.GOOGLE_IOS_CLIENT_ID,
+            )
+            if a
+        }
+        if not allowed:
+            raise AuthError("Login com Google não está configurado.")
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                resp = await client.get(
+                    self._GOOGLE_TOKENINFO, params={"id_token": id_token}
+                )
+        except httpx.HTTPError as exc:
+            raise AuthError("Falha ao validar o login do Google.") from exc
+        if resp.status_code != 200:
+            raise AuthError("Token do Google inválido ou expirado.")
+        claims = resp.json()
+        if claims.get("aud") not in allowed:
+            raise AuthError("Token do Google não é deste aplicativo.")
+        if claims.get("iss") not in (
+            "accounts.google.com",
+            "https://accounts.google.com",
+        ):
+            raise AuthError("Emissor do token do Google inválido.")
+        if str(claims.get("email_verified")).lower() != "true":
+            raise AuthError("E-mail do Google não verificado.")
+        return claims
 
     # ----------------------------------------------------------------- refresh
     async def refresh(self, raw_refresh: str) -> RefreshResponse:

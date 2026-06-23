@@ -105,6 +105,9 @@ class Settings(BaseSettings):
     MONITORING_URL: str = "http://localhost:3000/admin/monitoramento"
     # URL pública do app (base p/ links em e-mails transacionais, ex.: reset).
     FRONTEND_URL: str = "http://localhost:3000"
+    # Login com Google (Client IDs públicos — o ID token é verificado no backend).
+    GOOGLE_WEB_CLIENT_ID: str = ""  # client web (GIS) e Android (aud do ID token).
+    GOOGLE_IOS_CLIENT_ID: str = ""  # client iOS (aud do ID token no app nativo).
     # Janela (min) p/ o profissional iniciar o contato após desbloquear o lead.
     CONTACT_WINDOW_MINUTES: int = 60
     # Prazo (dias) p/ confirmar a chegada (código). Esgotado sem chegada nem

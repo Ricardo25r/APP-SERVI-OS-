@@ -38,6 +38,7 @@ import {
   toSession,
   useRedirectAuthenticated,
 } from "@/modules/auth";
+import { GoogleSignInButton } from "@/modules/auth/google-signin-button";
 
 const loginSchema = z.object({
   email: z
@@ -148,6 +149,8 @@ export default function LoginPage() {
     defaultValues: { email: "", password: "" },
   });
 
+  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_WEB_CLIENT_ID;
+
   async function onSubmit(values: LoginValues) {
     setFormError(null);
     try {
@@ -155,12 +158,16 @@ export default function LoginPage() {
         email: values.email,
         password: values.password,
       });
-      const session = toSession(resp);
-      setAuth(session);
-      router.replace(homePathForRole(session.user.role));
+      handleSocialSuccess(resp);
     } catch (error) {
       setFormError(messageFromError(error));
     }
+  }
+
+  function handleSocialSuccess(resp: AuthResponse) {
+    const session = toSession(resp);
+    setAuth(session);
+    router.replace(homePathForRole(session.user.role));
   }
 
   // Evita flicker: enquanto não hidratou, não renderiza o formulário.
@@ -205,24 +212,32 @@ export default function LoginPage() {
 
             {/* Botões sociais — placeholders "Em breve" (sem OAuth no backend) */}
             <div className="mt-6 space-y-3">
-              {SOCIAL_PROVIDERS.map((provider) => (
-                <button
-                  key={provider.id}
-                  type="button"
-                  disabled
-                  aria-disabled="true"
-                  title="Em breve"
-                  className="relative flex h-11 w-full items-center justify-center gap-3 rounded-md border border-input bg-card text-sm font-medium text-foreground transition-colors disabled:cursor-not-allowed disabled:opacity-70"
-                >
-                  <span className="absolute left-4 inline-flex items-center">
-                    {provider.icon}
-                  </span>
-                  <span>{provider.label}</span>
-                  <span className="absolute right-3 rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    Em breve
-                  </span>
-                </button>
-              ))}
+              {SOCIAL_PROVIDERS.map((provider) =>
+                provider.id === "google" && googleClientId ? (
+                  <GoogleSignInButton
+                    key="google"
+                    onSuccess={handleSocialSuccess}
+                    onError={setFormError}
+                  />
+                ) : (
+                  <button
+                    key={provider.id}
+                    type="button"
+                    disabled
+                    aria-disabled="true"
+                    title="Em breve"
+                    className="relative flex h-11 w-full items-center justify-center gap-3 rounded-md border border-input bg-card text-sm font-medium text-foreground transition-colors disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    <span className="absolute left-4 inline-flex items-center">
+                      {provider.icon}
+                    </span>
+                    <span>{provider.label}</span>
+                    <span className="absolute right-3 rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      Em breve
+                    </span>
+                  </button>
+                )
+              )}
             </div>
 
             {/* Divisor "ou" */}

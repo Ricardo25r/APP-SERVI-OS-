@@ -33,7 +33,8 @@ class User(UUIDPKMixin, TimestampMixin, SoftDeleteMixin, Base):
     name: Mapped[str] = mapped_column(String(120), nullable=False)
     email: Mapped[str] = mapped_column(String(255), nullable=False)
     phone: Mapped[str | None] = mapped_column(String(20), nullable=True)
-    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    # Nulo para contas de login social (Google/Apple) — sem senha local.
+    password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
     role: Mapped[UserRole] = mapped_column(
         Enum(
             UserRole,
@@ -69,6 +70,15 @@ class User(UUIDPKMixin, TimestampMixin, SoftDeleteMixin, Base):
     # profissional comprovada por GPS) — reputação anti "furo" do contratante.
     client_no_show_count: Mapped[int] = mapped_column(
         Integer, nullable=False, default=0, server_default=text("0")
+    )
+    # Login social: provedor que prova a identidade + ids estáveis do provedor.
+    auth_provider: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="local", server_default="local"
+    )
+    google_sub: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    apple_sub: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    phone_verified_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
     )
 
     # Relacionamentos (§2.1).
@@ -109,6 +119,23 @@ class User(UUIDPKMixin, TimestampMixin, SoftDeleteMixin, Base):
             "phone",
             unique=True,
             postgresql_where=text("phone IS NOT NULL AND deleted_at IS NULL"),
+        ),
+        # Unicidade dos ids de login social (apenas quando presentes e ativos).
+        Index(
+            "uq_users_google_sub_active",
+            "google_sub",
+            unique=True,
+            postgresql_where=text(
+                "google_sub IS NOT NULL AND deleted_at IS NULL"
+            ),
+        ),
+        Index(
+            "uq_users_apple_sub_active",
+            "apple_sub",
+            unique=True,
+            postgresql_where=text(
+                "apple_sub IS NOT NULL AND deleted_at IS NULL"
+            ),
         ),
     )
 
