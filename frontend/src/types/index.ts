@@ -178,6 +178,8 @@ export interface Lead {
   arrived?: boolean;
   /** Id da compra ativa (para o profissional confirmar a chegada). */
   purchase_id?: string | null;
+  /** Reputação do cliente: nº de não-comparecimentos (visão do profissional). */
+  customer_no_show_count?: number | null;
 }
 
 /** Foto do lead (`LeadMediaOut`). */

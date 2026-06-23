@@ -105,6 +105,11 @@ class LeadPurchaseService:
         profile = await self.lead_repo.get_professional_profile(current_user.id)
         if profile is None:
             raise NotFoundError("Perfil profissional não encontrado.")
+        if profile.no_show_count >= settings.MARKETPLACE_MAX_NO_SHOWS:
+            raise PermissionDeniedError(
+                "Sua conta está suspensa por excesso de não comparecimentos. "
+                "Fale com o suporte."
+            )
 
         use_lock = supports_for_update(self.db)
 

@@ -72,11 +72,14 @@ dele esvazia o app. Por isso o eixo é **justiça nos dois lados + provas**.
   (`scheduled_at` + `NO_SHOW_GRACE_HOURS`) (D4).
 - ⬜ Código só aparece perto do horário — adiado p/ o Bloco 6 (polimento).
 
-### Bloco 4 — Reputação, consequências e disputa
-- ⬜ Consequências do `no_show_count` (aviso → ocultar do marketplace → suspender).
-- ⬜ Reputação do cliente visível/consequente.
-- ⬜ Preservar a conversa ao reabrir (hoje é apagada) → prova.
-- ⬜ Contestação/disputa (via Suporte no MVP — D5).
+### Bloco 4 — Reputação, consequências e disputa ✅ (parcial)
+- ✅ Consequência do `no_show_count`: acima de `MARKETPLACE_MAX_NO_SHOWS` (5) o
+  profissional fica **suspenso da compra** (403 "fale com o suporte").
+- ✅ Reputação do cliente visível ao profissional (`customer_no_show_count` no
+  `LeadRead` + alerta na tela da oportunidade).
+- ⬜ Preservar a conversa ao reabrir → **adiado** (exige trocar o `UNIQUE` de
+  `conversations`; baixo ganho enquanto não houver disputa formal).
+- ✅ Contestação/disputa via **Suporte** (`/suporte` já existe → admin decide) — D5.
 
 ### Bloco 5 — Qualidade do lead e anti-fraude
 - ⬜ Admin marca lead como inválido/falso → reembolsa os profissionais.
@@ -101,5 +104,7 @@ dele esvazia o app. Por isso o eixo é **justiça nos dois lados + provas**.
 - ✅ **Bloco 3** — desistência (pro), cancelamento (cliente, com reembolso) e
   agendamento (`scheduled_at` define o prazo). Backend + frontend + migration
   `fase 19`. 140 testes. No ar.
-- ➡ Próximo: **Bloco 4** (reputação/consequências), **Bloco 5** (qualidade do
-  lead/anti-fraude), **Bloco 6** (brechas do código) + auditoria final.
+- ✅ **Bloco 4** (parcial) — suspensão por excesso de no-show + reputação do
+  cliente visível ao profissional; disputa via Suporte. Sem migration. 141 testes.
+- ➡ Próximo: **Bloco 5** (qualidade do lead/anti-fraude), **Bloco 6** (brechas
+  do código) + auditoria final.

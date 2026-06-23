@@ -424,6 +424,11 @@ class LeadService:
             and lead.customer_id == viewer.id
             else None
         )
+        customer_no_show_count = (
+            lead.customer.client_no_show_count
+            if lead.customer is not None
+            else None
+        )
 
         contact: LeadContact | None = None
         if include_contact and lead.customer is not None:
@@ -477,6 +482,7 @@ class LeadService:
             arrival_code=arrival_code,
             arrived=arrived,
             purchase_id=purchase.id if purchase is not None else None,
+            customer_no_show_count=customer_no_show_count,
             contact=contact,
             affordable=affordable,
             media=media,

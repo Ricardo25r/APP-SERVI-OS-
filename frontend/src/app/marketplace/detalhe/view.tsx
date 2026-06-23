@@ -16,6 +16,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import {
+  AlertTriangle,
   ArrowLeft,
   CalendarClock,
   CheckCircle2,
@@ -323,6 +324,25 @@ export default function MarketplaceLeadDetailPage() {
                 </div>
               </div>
             </div>
+
+            {/* Reputação do cliente (não-comparecimentos) — alerta ao pro. */}
+            {lead.customer_no_show_count != null &&
+            lead.customer_no_show_count > 0 ? (
+              <div className="flex items-start gap-2 rounded-xl border border-brand/30 bg-brand/5 px-4 py-3 text-sm text-foreground">
+                <AlertTriangle
+                  className="mt-0.5 h-4 w-4 shrink-0 text-brand"
+                  aria-hidden
+                />
+                <span>
+                  Atenção: este cliente tem{" "}
+                  <span className="font-semibold">
+                    {lead.customer_no_show_count} não-comparecimento
+                    {lead.customer_no_show_count === 1 ? "" : "s"}
+                  </span>{" "}
+                  registrado{lead.customer_no_show_count === 1 ? "" : "s"}.
+                </span>
+              </div>
+            ) : null}
 
             {/* Aviso de desbloqueio (apenas antes de comprar). */}
             {!unlocked ? (

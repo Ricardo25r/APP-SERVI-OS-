@@ -184,6 +184,8 @@ class LeadRead(BaseModel):
     arrived: bool = False
     # Id da compra ativa (para o profissional comprador confirmar a chegada).
     purchase_id: uuid.UUID | None = None
+    # Reputação do cliente (não-comparecimentos) — ajuda o profissional a decidir.
+    customer_no_show_count: int | None = None
 
 
 class LeadListResponse(BaseModel):

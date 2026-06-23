@@ -560,3 +560,28 @@ async def test_professional_schedules_visit(
         assert purchase.scheduled_at is not None
         assert purchase.no_show_deadline is not None
         assert purchase.no_show_deadline > purchase.scheduled_at  # +carência
+
+
+@pytest.mark.asyncio
+async def test_suspended_professional_cannot_purchase(
+    client: httpx.AsyncClient, session_maker
+) -> None:
+    """Profissional com no_show_count acima do limite é bloqueado na compra (403)."""
+    ctx = await _seed(session_maker)
+    async with session_maker() as s:
+        prof = (
+            await s.execute(
+                select(ProfessionalProfile).where(
+                    ProfessionalProfile.id == ctx["profile_id"]
+                )
+            )
+        ).scalar_one()
+        prof.no_show_count = 5  # >= MARKETPLACE_MAX_NO_SHOWS (default 5)
+        await s.commit()
+
+    resp = await client.post(
+        "/api/v1/lead-purchases/",
+        headers=_auth(ctx["pro"]),
+        json={"lead_id": str(ctx["lead_id"])},
+    )
+    assert resp.status_code == 403, resp.text
