@@ -28,6 +28,7 @@ antes de qualquer ``commit``, e fazemos ``rollback`` da transação inteira.
 
 from __future__ import annotations
 
+import secrets
 import uuid
 from datetime import UTC, datetime, timedelta
 
@@ -60,6 +61,7 @@ from app.schemas.leads import LeadContact, LeadRead
 from app.services.chat import ChatService
 from app.services.credits import CreditService
 from app.services.gamification import GamificationService
+from app.services.lead_recycle import reopen_lead_no_show
 from app.services.leads import LeadService
 from app.services.notifications import add_notification
 
@@ -124,12 +126,18 @@ class LeadPurchaseService:
 
             # (4) Insere a compra ANTES de confirmar o débito. O UNIQUE(lead_id)
             # garante exclusividade: um conflito aqui aborta tudo sem debitar.
+            now = datetime.now(UTC)
             purchase = LeadPurchase(
                 lead_id=lead.id,
                 professional_id=profile.id,
                 credits_used=lead.credits_cost,
-                contact_deadline=datetime.now(UTC)
+                contact_deadline=now
                 + timedelta(minutes=settings.CONTACT_WINDOW_MINUTES),
+                # Código de chegada (o cliente mostra, o profissional digita) +
+                # prazo de segurança p/ reabrir a vaga se a chegada não vier.
+                arrival_code=f"{secrets.randbelow(10000):04d}",
+                no_show_deadline=now
+                + timedelta(days=settings.NO_SHOW_DEADLINE_DAYS),
             )
             self.repo.add(purchase)
             try:
@@ -260,6 +268,75 @@ class LeadPurchaseService:
         return self._purchase_with_lead(purchase, current_user)
 
     # ------------------------------------------------------------------ #
+    # Confirmação de serviço (anti no-show)
+    # ------------------------------------------------------------------ #
+    async def confirm_arrival(
+        self, current_user: User, purchase_id: uuid.UUID, code: str
+    ) -> LeadPurchaseRead:
+        """Profissional confirma a chegada digitando o **código** que o cliente
+        mostra presencialmente. Valida posse + código. Erros: ``404`` perfil/
+        compra, ``403`` não dono ou código inválido, ``409`` já confirmada."""
+        profile = await self.lead_repo.get_professional_profile(current_user.id)
+        if profile is None:
+            raise NotFoundError("Perfil profissional não encontrado.")
+
+        purchase = await self.repo.get_purchase_by_id(purchase_id)
+        if purchase is None:
+            raise NotFoundError("Compra não encontrada.")
+        if purchase.professional_id != profile.id:
+            raise PermissionDeniedError("Você não é o dono desta compra.")
+        if purchase.arrived_at is not None:
+            raise ConflictError("Chegada já confirmada.")
+
+        expected = (purchase.arrival_code or "").strip()
+        if not expected or (code or "").strip() != expected:
+            raise PermissionDeniedError("Código de chegada inválido.")
+
+        purchase.arrived_at = datetime.now(UTC)
+        lead = purchase.lead
+        if lead is not None:
+            add_notification(
+                self.db,
+                user_id=lead.customer_id,
+                type="lead",
+                title="Profissional chegou",
+                body=(
+                    f"{current_user.name} confirmou a chegada para "
+                    f'"{lead.title}".'
+                ),
+                href="/conversas",
+            )
+        await self.db.commit()
+
+        refreshed = await self.repo.get_purchase_by_id(purchase_id)
+        assert refreshed is not None
+        return self._purchase_with_lead(refreshed, current_user)
+
+    async def mark_no_show(
+        self, current_user: User, lead_id: uuid.UUID
+    ) -> None:
+        """Cliente (dono do lead) marca que o profissional **não compareceu**:
+        reabre a vaga, sem reembolso, +1 no_show na reputação. Erros: ``404``
+        lead, ``403`` não dono, ``409`` lead fora de atendimento / já chegou."""
+        lead = await self.repo.get_with_relations(lead_id)
+        if lead is None:
+            raise NotFoundError("Lead não encontrado.")
+        if lead.customer_id != current_user.id:
+            raise PermissionDeniedError("Você não é o dono deste lead.")
+        if lead.status != LeadStatus.purchased or lead.purchase is None:
+            raise ConflictError("Este lead não está em atendimento.")
+        if lead.purchase.arrived_at is not None:
+            raise ConflictError(
+                "O profissional já confirmou a chegada — não é possível marcar "
+                "não comparecimento."
+            )
+
+        await reopen_lead_no_show(
+            self.db, purchase=lead.purchase, lead=lead, auto=False
+        )
+        await self.db.commit()
+
+    # ------------------------------------------------------------------ #
     # Helpers internos
     # ------------------------------------------------------------------ #
     def _purchase_with_lead(
@@ -292,6 +369,7 @@ class LeadPurchaseService:
             purchased_at=purchase.purchased_at,
             created_at=purchase.created_at,
             contact_deadline=purchase.contact_deadline,
+            arrived_at=purchase.arrived_at,
             lead=lead_read,
             contact=contact,
         )

@@ -17,7 +17,7 @@ from __future__ import annotations
 import logging
 from datetime import datetime
 
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import (
@@ -115,4 +115,92 @@ async def recycle_expired_purchases(db: AsyncSession, *, now: datetime) -> int:
     return recycled
 
 
-__all__ = ["recycle_expired_purchases"]
+async def reopen_lead_no_show(
+    db: AsyncSession,
+    *,
+    purchase: LeadPurchase,
+    lead: Lead,
+    auto: bool,
+) -> None:
+    """Reabre um lead por **não comparecimento** (anti no-show).
+
+    Diferente do reciclo: **não** reembolsa (o profissional perde o crédito como
+    punição por não comparecer) e registra ``+1`` em ``no_show_count`` na
+    reputação do profissional. Remove a conversa (e suas mensagens) e a compra
+    p/ liberar os ``UNIQUE(lead_id)``, reabre o lead e notifica o profissional.
+    """
+    profile = (
+        await db.execute(
+            select(ProfessionalProfile).where(
+                ProfessionalProfile.id == purchase.professional_id
+            )
+        )
+    ).scalar_one_or_none()
+
+    conversation = (
+        await db.execute(
+            select(Conversation).where(Conversation.lead_id == lead.id)
+        )
+    ).scalar_one_or_none()
+    if conversation is not None:
+        # A conversa pode ter histórico (já conversaram): remove as mensagens
+        # antes da conversa p/ liberar o UNIQUE(lead_id) sem violar a FK.
+        await db.execute(
+            delete(Message).where(Message.conversation_id == conversation.id)
+        )
+        await db.delete(conversation)
+    await db.delete(purchase)
+
+    lead.status = LeadStatus.open
+    if profile is not None:
+        profile.no_show_count = (profile.no_show_count or 0) + 1
+        motivo = (
+            "O prazo para confirmar a chegada expirou"
+            if auto
+            else "O cliente informou que você não compareceu"
+        )
+        add_notification(
+            db,
+            user_id=profile.user_id,
+            type="lead",
+            title="Não comparecimento registrado",
+            body=(
+                f'{motivo} em "{lead.title}". A vaga foi reaberta para outros '
+                "profissionais e o crédito não é devolvido."
+            ),
+            href="/marketplace",
+        )
+
+
+async def reopen_no_show_purchases(db: AsyncSession, *, now: datetime) -> int:
+    """Worker: reabre leads cujo prazo de confirmação de chegada expirou sem
+    chegada (``arrived_at`` nulo e ``no_show_deadline < now``). Sem reembolso."""
+    rows = (
+        await db.execute(
+            select(LeadPurchase, Lead)
+            .join(Lead, LeadPurchase.lead_id == Lead.id)
+            .where(
+                Lead.status == LeadStatus.purchased,
+                LeadPurchase.arrived_at.is_(None),
+                LeadPurchase.no_show_deadline.isnot(None),
+                LeadPurchase.no_show_deadline < now,
+            )
+        )
+    ).all()
+
+    reopened = 0
+    for purchase, lead in rows:
+        await reopen_lead_no_show(db, purchase=purchase, lead=lead, auto=True)
+        reopened += 1
+
+    if reopened:
+        await db.commit()
+        logger.info("Reabertos %d lead(s) por não comparecimento.", reopened)
+    return reopened
+
+
+__all__ = [
+    "recycle_expired_purchases",
+    "reopen_lead_no_show",
+    "reopen_no_show_purchases",
+]

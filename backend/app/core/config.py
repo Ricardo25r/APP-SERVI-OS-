@@ -103,6 +103,9 @@ class Settings(BaseSettings):
     FRONTEND_URL: str = "http://localhost:3000"
     # Janela (min) p/ o profissional iniciar o contato após desbloquear o lead.
     CONTACT_WINDOW_MINUTES: int = 60
+    # Prazo (dias) p/ confirmar a chegada (código). Esgotado sem chegada nem
+    # "não compareceu" manual, o worker reabre a vaga sozinho (sem reembolso).
+    NO_SHOW_DEADLINE_DAYS: int = 7
     # Worker que devolve ao mercado os leads comprados e não contatados a tempo.
     CONTACT_RECYCLE_ENABLED: bool = True
     CONTACT_RECYCLE_INTERVAL_SECONDS: int = 120

@@ -20,6 +20,7 @@ from app.schemas.leads import LeadContact, LeadRead
 
 __all__ = [
     "LeadPurchaseCreate",
+    "ArrivalConfirm",
     "LeadPurchaseRead",
     "LeadPurchaseResult",
     "WalletBalance",
@@ -63,10 +64,20 @@ class LeadPurchaseRead(BaseModel):
     purchased_at: datetime
     created_at: datetime
     contact_deadline: datetime | None = None
+    arrived_at: datetime | None = None
 
     # Campos compostos montados no service.
     lead: LeadRead | None = None
     contact: LeadContact | None = None
+
+
+class ArrivalConfirm(BaseModel):
+    """Corpo de ``POST /lead-purchases/{id}/confirmar-chegada``.
+
+    O profissional digita o **código de chegada** que o cliente mostra ao
+    recebê-lo presencialmente (validação anti "mandar outra pessoa")."""
+
+    code: str
 
 
 class WalletBalance(BaseModel):

@@ -10,7 +10,7 @@ import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, ForeignKey, Index, Integer, func
+from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -47,6 +47,16 @@ class LeadPurchase(UUIDPKMixin, CreatedAtMixin, Base):
     )
     # Prazo p/ iniciar o contato após desbloquear (purchased_at + janela).
     contact_deadline: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    # Confirmação de serviço (anti no-show): código de chegada (o cliente mostra,
+    # o profissional digita ao chegar), carimbo de chegada e prazo de segurança
+    # p/ reabrir a vaga automaticamente se a chegada não for confirmada.
+    arrival_code: Mapped[str | None] = mapped_column(String(8), nullable=True)
+    arrived_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    no_show_deadline: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
 

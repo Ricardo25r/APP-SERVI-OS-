@@ -70,6 +70,10 @@ class ProfessionalProfile(UUIDPKMixin, TimestampMixin, SoftDeleteMixin, Base):
     total_reviews: Mapped[int] = mapped_column(
         Integer, nullable=False, default=0, server_default=text("0")
     )
+    # Não comparecimentos (desbloqueou e não foi) — reputação anti no-show.
+    no_show_count: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default=text("0")
+    )
     xp: Mapped[int] = mapped_column(
         Integer, nullable=False, default=0, server_default=text("0")
     )

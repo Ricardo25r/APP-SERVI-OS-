@@ -22,7 +22,10 @@ from app.core.config import settings
 from app.core.exceptions import register_exception_handlers
 from app.core.logging import setup_logging
 from app.database.session import async_session_maker
-from app.services.lead_recycle import recycle_expired_purchases
+from app.services.lead_recycle import (
+    recycle_expired_purchases,
+    reopen_no_show_purchases,
+)
 
 setup_logging()
 
@@ -109,9 +112,11 @@ async def _start_recycle_worker() -> None:
             await asyncio.sleep(interval)
             try:
                 async with async_session_maker() as session:
-                    await recycle_expired_purchases(
-                        session, now=datetime.now(UTC)
-                    )
+                    now = datetime.now(UTC)
+                    # 1) Não contatados na janela (refund). 2) Não compareceram
+                    #    até o prazo de chegada (sem refund, +1 no_show).
+                    await recycle_expired_purchases(session, now=now)
+                    await reopen_no_show_purchases(session, now=now)
             except Exception:  # noqa: BLE001 - worker best-effort
                 logger.exception("Falha no worker de reciclo de leads")
 

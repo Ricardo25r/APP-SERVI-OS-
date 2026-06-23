@@ -413,6 +413,17 @@ class LeadService:
         """
         category: Category | None = lead.category
         is_purchased = lead.purchase is not None
+        # Confirmação de serviço: o customer dono vê o código de chegada (p/
+        # mostrar ao profissional) enquanto a chegada não é confirmada.
+        purchase = lead.purchase
+        arrived = purchase is not None and purchase.arrived_at is not None
+        arrival_code = (
+            purchase.arrival_code
+            if purchase is not None
+            and not arrived
+            and lead.customer_id == viewer.id
+            else None
+        )
 
         contact: LeadContact | None = None
         if include_contact and lead.customer is not None:
@@ -463,6 +474,8 @@ class LeadService:
                 else None
             ),
             is_purchased=is_purchased,
+            arrival_code=arrival_code,
+            arrived=arrived,
             contact=contact,
             affordable=affordable,
             media=media,

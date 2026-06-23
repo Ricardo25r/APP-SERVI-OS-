@@ -21,6 +21,7 @@ from app.core.deps import require_roles
 from app.database.session import get_db
 from app.models import User, UserRole
 from app.schemas.lead_purchases import (
+    ArrivalConfirm,
     LeadPurchaseCreate,
     LeadPurchaseListResponse,
     LeadPurchaseRead,
@@ -83,3 +84,38 @@ async def get_purchase(
     """Detalhe da compra do profissional dono (com lead + contato — §4)."""
     service = LeadPurchaseService(db)
     return await service.get(current_user, purchase_id)
+
+
+@router.post(
+    "/{purchase_id}/confirmar-chegada",
+    response_model=LeadPurchaseRead,
+    summary="Confirmar chegada (código)",
+)
+async def confirm_arrival(
+    purchase_id: uuid.UUID,
+    payload: ArrivalConfirm,
+    current_user: User = Depends(require_roles(UserRole.professional)),
+    db: AsyncSession = Depends(get_db),
+) -> LeadPurchaseRead:
+    """Profissional confirma a chegada digitando o **código** que o cliente
+    mostra presencialmente (anti no-show / "mandar outra pessoa"). ``403``
+    código inválido ou não dono; ``409`` chegada já confirmada."""
+    service = LeadPurchaseService(db)
+    return await service.confirm_arrival(current_user, purchase_id, payload.code)
+
+
+@router.post(
+    "/lead/{lead_id}/nao-compareceu",
+    summary="Cliente: profissional não compareceu (reabre a vaga)",
+)
+async def mark_no_show(
+    lead_id: uuid.UUID,
+    current_user: User = Depends(require_roles(UserRole.customer)),
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, bool]:
+    """O **cliente** dono do lead marca que o profissional não compareceu: a vaga
+    é reaberta (sem reembolso) e o não comparecimento é registrado. ``409`` se a
+    chegada já foi confirmada; ``403`` se não for o dono."""
+    service = LeadPurchaseService(db)
+    await service.mark_no_show(current_user, lead_id)
+    return {"reopened": True}

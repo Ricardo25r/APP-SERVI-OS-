@@ -177,6 +177,11 @@ class LeadRead(BaseModel):
     affordable: bool | None = None
     media: list[LeadMediaOut] = []
     distance_km: float | None = None
+    # Confirmação de serviço (anti no-show). ``arrival_code`` só vai para o
+    # customer dono enquanto a chegada não foi confirmada (ele mostra ao
+    # profissional). ``arrived`` indica chegada confirmada via código.
+    arrival_code: str | None = None
+    arrived: bool = False
 
 
 class LeadListResponse(BaseModel):
