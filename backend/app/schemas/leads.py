@@ -182,6 +182,8 @@ class LeadRead(BaseModel):
     # profissional). ``arrived`` indica chegada confirmada via código.
     arrival_code: str | None = None
     arrived: bool = False
+    # Id da compra ativa (para o profissional comprador confirmar a chegada).
+    purchase_id: uuid.UUID | None = None
 
 
 class LeadListResponse(BaseModel):

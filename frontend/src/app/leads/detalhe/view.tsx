@@ -10,10 +10,19 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Coins, MapPin, MessageSquare, Pencil } from "lucide-react";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Coins,
+  KeyRound,
+  MapPin,
+  MessageSquare,
+  Pencil,
+} from "lucide-react";
 
 import { AppHeader } from "@/components/app-shell/app-header";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Card,
   CardContent,
@@ -35,6 +44,7 @@ import {
   LeadStatusBadge,
   leadTypeLabel,
   leadUrgencyLabel,
+  markNoShow,
   updateLead,
   type LeadFormValues,
 } from "@/modules/leads";
@@ -72,6 +82,10 @@ export default function LeadDetailPage() {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+
+  const [noShowOpen, setNoShowOpen] = useState(false);
+  const [marking, setMarking] = useState(false);
+  const [markError, setMarkError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -114,6 +128,23 @@ export default function LeadDetailPage() {
       );
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleNoShow() {
+    if (!lead) return;
+    setMarking(true);
+    setMarkError(null);
+    try {
+      await markNoShow(lead.id);
+      setNoShowOpen(false);
+      await load();
+    } catch (err) {
+      setMarkError(
+        describeApiError(err, "Não foi possível registrar o não comparecimento.")
+      );
+    } finally {
+      setMarking(false);
     }
   }
 
@@ -224,6 +255,39 @@ export default function LeadDetailPage() {
                 </div>
               ) : null}
 
+              {lead.status === "purchased" && lead.arrived ? (
+                <div className="flex items-center gap-2 rounded-xl border border-success/30 bg-success/10 px-3.5 py-2.5 text-sm text-success">
+                  <CheckCircle2 className="h-5 w-5 shrink-0" aria-hidden />
+                  <span>O profissional confirmou a chegada. Bom serviço!</span>
+                </div>
+              ) : lead.status === "purchased" && lead.arrival_code ? (
+                <div className="space-y-3 rounded-xl border border-brand/30 bg-brand/5 p-4">
+                  <div className="flex items-center gap-2 text-sm font-bold text-foreground">
+                    <KeyRound className="h-4 w-4 text-brand" aria-hidden />
+                    Código de chegada
+                  </div>
+                  <p className="text-center font-mono text-4xl font-extrabold tracking-[0.3em] text-brand">
+                    {lead.arrival_code}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Quando o profissional chegar, mostre este código para ele
+                    confirmar a chegada no app. Só mostre quando ele estiver com
+                    você.
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full border-destructive/40 text-destructive hover:bg-destructive/10"
+                    onClick={() => setNoShowOpen(true)}
+                  >
+                    Profissional não compareceu
+                  </Button>
+                  {markError ? (
+                    <p className="text-xs text-destructive">{markError}</p>
+                  ) : null}
+                </div>
+              ) : null}
+
               <p className="whitespace-pre-wrap text-sm">{lead.description}</p>
 
               <div className="grid gap-3 rounded-xl bg-muted/40 p-4 text-sm sm:grid-cols-2">
@@ -319,6 +383,22 @@ export default function LeadDetailPage() {
           </Card>
         )}
       </main>
+
+      <ConfirmDialog
+        open={noShowOpen}
+        title="Profissional não compareceu?"
+        description={
+          <>
+            A solicitação será <span className="font-semibold">reaberta</span>{" "}
+            para outros profissionais. Use só se o profissional realmente não
+            compareceu — isso afeta a reputação dele.
+          </>
+        }
+        confirmLabel="Sim, não compareceu"
+        loading={marking}
+        onConfirm={() => void handleNoShow()}
+        onCancel={() => setNoShowOpen(false)}
+      />
     </>
   );
 }

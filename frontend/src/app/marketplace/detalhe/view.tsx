@@ -18,7 +18,9 @@ import { useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
   CalendarClock,
+  CheckCircle2,
   Coins,
+  KeyRound,
   Loader2,
   Lock,
   MapPin,
@@ -43,6 +45,8 @@ import type { Lead, LeadContact, LeadPurchase } from "@/types";
 import {
   budgetRangeLabel,
   categoryVisual,
+  confirmArrival,
+  describeApiError,
   leadTypeLabel,
   leadUrgencyLabel,
 } from "@/modules/leads";
@@ -80,6 +84,9 @@ export default function MarketplaceLeadDetailPage() {
   const [contact, setContact] = useState<LeadContact | null>(null);
   const [deadline, setDeadline] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
+  const [arrivalCode, setArrivalCode] = useState("");
+  const [confirmingArrival, setConfirmingArrival] = useState(false);
+  const [arrivalError, setArrivalError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -117,6 +124,23 @@ export default function MarketplaceLeadDetailPage() {
       setBuyError(purchaseErrorMessage(err).message);
     } finally {
       setBuying(false);
+    }
+  }
+
+  async function handleConfirmArrival() {
+    if (!lead?.purchase_id) return;
+    setConfirmingArrival(true);
+    setArrivalError(null);
+    try {
+      await confirmArrival(lead.purchase_id, arrivalCode.trim());
+      setArrivalCode("");
+      await load();
+    } catch (err) {
+      setArrivalError(
+        describeApiError(err, "Código inválido. Confira com o cliente.")
+      );
+    } finally {
+      setConfirmingArrival(false);
     }
   }
 
@@ -350,6 +374,53 @@ export default function MarketplaceLeadDetailPage() {
                   <MessageSquare className="h-4 w-4" aria-hidden />
                   Abrir conversa
                 </Link>
+              </div>
+            ) : null}
+
+            {/* Confirmar chegada (anti no-show): digitar o código do cliente. */}
+            {unlocked && lead.arrived ? (
+              <div className="flex items-center gap-2 rounded-xl border border-success/30 bg-success/10 px-4 py-3 text-sm font-semibold text-success">
+                <CheckCircle2 className="h-5 w-5 shrink-0" aria-hidden />
+                Chegada confirmada. Bom trabalho!
+              </div>
+            ) : unlocked && lead.purchase_id ? (
+              <div className="space-y-3 rounded-xl border border-brand/30 bg-brand/5 p-4">
+                <div className="flex items-center gap-2 text-sm font-bold text-foreground">
+                  <KeyRound className="h-4 w-4 text-brand" aria-hidden />
+                  Confirmar chegada
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Ao chegar no cliente, peça o{" "}
+                  <span className="font-semibold">código de chegada</span> e
+                  digite aqui — isso confirma que você compareceu.
+                </p>
+                <div className="flex gap-2">
+                  <input
+                    inputMode="numeric"
+                    maxLength={8}
+                    value={arrivalCode}
+                    onChange={(e) => {
+                      setArrivalCode(e.target.value.replace(/\D/g, ""));
+                      setArrivalError(null);
+                    }}
+                    placeholder="0000"
+                    aria-label="Código de chegada"
+                    className="w-28 rounded-lg border bg-background px-3 py-2 text-center font-mono text-lg tracking-[0.3em] text-foreground outline-none focus:border-brand"
+                  />
+                  <Button
+                    onClick={() => void handleConfirmArrival()}
+                    disabled={confirmingArrival || arrivalCode.trim().length < 4}
+                    className="flex-1 gap-2 bg-brand text-brand-foreground hover:bg-brand/90"
+                  >
+                    {confirmingArrival ? (
+                      <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                    ) : null}
+                    Confirmar chegada
+                  </Button>
+                </div>
+                {arrivalError ? (
+                  <p className="text-xs text-destructive">{arrivalError}</p>
+                ) : null}
               </div>
             ) : null}
 

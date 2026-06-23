@@ -172,6 +172,12 @@ export interface Lead {
   media?: LeadMedia[];
   /** Distância (km) do profissional ao serviço (visão do profissional). */
   distance_km?: number | null;
+  /** Confirmação de serviço: código de chegada (só o cliente dono recebe). */
+  arrival_code?: string | null;
+  /** Confirmação de serviço: o profissional já confirmou a chegada. */
+  arrived?: boolean;
+  /** Id da compra ativa (para o profissional confirmar a chegada). */
+  purchase_id?: string | null;
 }
 
 /** Foto do lead (`LeadMediaOut`). */
@@ -208,6 +214,8 @@ export interface LeadPurchase {
   purchased_at: string;
   /** Prazo p/ iniciar o contato após desbloquear (purchased_at + janela). */
   contact_deadline?: string | null;
+  /** Data/hora da confirmação de chegada (null = não confirmada). */
+  arrived_at?: string | null;
   lead?: Lead;
   contact?: LeadContact;
 }

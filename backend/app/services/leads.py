@@ -476,6 +476,7 @@ class LeadService:
             is_purchased=is_purchased,
             arrival_code=arrival_code,
             arrived=arrived,
+            purchase_id=purchase.id if purchase is not None else None,
             contact=contact,
             affordable=affordable,
             media=media,

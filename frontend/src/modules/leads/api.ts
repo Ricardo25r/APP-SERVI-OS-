@@ -11,6 +11,7 @@ import type {
   Category,
   Lead,
   LeadMedia,
+  LeadPurchase,
   LeadType,
   LeadUrgency,
 } from "@/types";
@@ -98,4 +99,23 @@ export function uploadLeadMedia(
   const form = new FormData();
   form.append("file", file);
   return apiUpload<LeadMedia>(`/leads/${leadId}/media`, form);
+}
+
+/** Profissional confirma a chegada digitando o código que o cliente mostra. */
+export function confirmArrival(
+  purchaseId: string,
+  code: string
+): Promise<LeadPurchase> {
+  return apiPost<LeadPurchase>(
+    `/lead-purchases/${purchaseId}/confirmar-chegada`,
+    { code }
+  );
+}
+
+/** Cliente marca que o profissional não compareceu (reabre a vaga). */
+export function markNoShow(leadId: string): Promise<{ reopened: boolean }> {
+  return apiPost<{ reopened: boolean }>(
+    `/lead-purchases/lead/${leadId}/nao-compareceu`,
+    {}
+  );
 }
