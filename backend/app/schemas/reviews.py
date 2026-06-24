@@ -23,6 +23,8 @@ __all__ = [
     "ReputationSummary",
     "PendingReviewItem",
     "PendingReviewsResponse",
+    "ReviewHighlight",
+    "ReviewHighlightsResponse",
 ]
 
 
@@ -103,3 +105,22 @@ class PendingReviewsResponse(BaseModel):
 
     items: list[PendingReviewItem]
     total: int
+
+
+# --------------------------------------------------------------------------- #
+# Depoimentos em destaque (avaliações positivas públicas — "indique e ganhe"
+# / tela de pacotes). Mostra os dois lados (contratantes e profissionais).
+# --------------------------------------------------------------------------- #
+class ReviewHighlight(BaseModel):
+    """Um depoimento em destaque (avaliação 4–5★ com comentário)."""
+
+    author_name: str
+    author_avatar_url: str | None = None
+    author_role: str
+    score: int
+    comment: str
+    created_at: datetime
+
+
+class ReviewHighlightsResponse(BaseModel):
+    items: list[ReviewHighlight]

@@ -25,6 +25,7 @@ import type { CreditTransaction, CreditWallet, Paginated } from "@/types";
 import { TransactionList } from "@/modules/credits/transaction-list";
 import { messageFromError } from "@/modules/credits/utils";
 import { BuyCreditsSection } from "@/modules/payments";
+import { Testimonials } from "@/modules/reviews/testimonials";
 
 // Beta: quando NEXT_PUBLIC_PAYMENTS_ENABLED=false, a compra fica oculta
 // (o backend também recusa criar pedido). Default = habilitado.
@@ -164,6 +165,8 @@ export default function CreditsPage() {
           )}
         </CardContent>
       </Card>
+
+      <Testimonials title="Quem usa, recomenda" />
     </main>
   );
 }

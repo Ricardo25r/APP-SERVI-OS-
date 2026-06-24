@@ -26,6 +26,7 @@ from app.models import User
 from app.schemas.reviews import (
     PendingReviewsResponse,
     ReviewCreate,
+    ReviewHighlightsResponse,
     ReviewListResponse,
     ReviewOut,
 )
@@ -67,6 +68,19 @@ async def list_pending_reviews(
     service = ReviewService(db)
     items = await service.list_pending(current_user)
     return PendingReviewsResponse(items=items, total=len(items))
+
+
+@router.get(
+    "/highlights",
+    response_model=ReviewHighlightsResponse,
+    summary="Depoimentos em destaque (avaliações positivas públicas)",
+)
+async def review_highlights(
+    db: AsyncSession = Depends(get_db),
+) -> ReviewHighlightsResponse:
+    """Avaliações 4–5★ com comentário, mais recentes (os dois lados). Público."""
+    items = await ReviewService(db).highlights()
+    return ReviewHighlightsResponse(items=items)
 
 
 @router.get(

@@ -43,20 +43,24 @@ from __future__ import annotations
 import uuid
 from decimal import ROUND_HALF_UP, Decimal
 
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.core.exceptions import (
     ConflictError,
     NotFoundError,
     PermissionDeniedError,
 )
+from app.core.storage import presigned_get_url
 from app.models import Lead, Review, User
 from app.repositories.reviews import ReviewRepository
 from app.schemas.reviews import (
     PendingReviewItem,
     ReputationSummary,
     ReviewCreate,
+    ReviewHighlight,
     ReviewOut,
 )
 from app.services.gamification import GamificationService
@@ -69,12 +73,62 @@ __all__ = ["ReviewService", "REPUTATION_SCALE"]
 REPUTATION_SCALE = 200
 
 
+def _short_name(name: str) -> str:
+    """Primeiro nome + inicial do sobrenome (privacidade nos depoimentos)."""
+    parts = (name or "").strip().split()
+    if not parts:
+        return "Usuário"
+    if len(parts) == 1:
+        return parts[0]
+    return f"{parts[0]} {parts[-1][0]}."
+
+
+def _avatar_url(key: str | None) -> str | None:
+    if not key:
+        return None
+    try:
+        return presigned_get_url(key)
+    except Exception:  # noqa: BLE001 — URL é best-effort
+        return None
+
+
 class ReviewService:
     """Orquestra a criação da avaliação + recálculo atômico da reputação."""
 
     def __init__(self, db: AsyncSession) -> None:
         self.db = db
         self.repo = ReviewRepository(db)
+
+    async def highlights(self, limit: int = 12) -> list[ReviewHighlight]:
+        """Avaliações 4–5★ com comentário, mais recentes (depoimentos públicos)."""
+        rows = (
+            (
+                await self.db.execute(
+                    select(Review)
+                    .where(
+                        Review.score >= 4,
+                        Review.comment.isnot(None),
+                        Review.comment != "",
+                    )
+                    .options(selectinload(Review.author))
+                    .order_by(Review.created_at.desc())
+                    .limit(limit)
+                )
+            )
+            .scalars()
+            .all()
+        )
+        return [
+            ReviewHighlight(
+                author_name=_short_name(r.author.name),
+                author_avatar_url=_avatar_url(r.author.avatar_key),
+                author_role=r.author.role.value,
+                score=r.score,
+                comment=r.comment or "",
+                created_at=r.created_at,
+            )
+            for r in rows
+        ]
 
     # ------------------------------------------------------------------ #
     # Criação (author = current_user)
