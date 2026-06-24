@@ -121,7 +121,9 @@ class LeadContact(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     name: str
-    email: str
+    # E-mail e telefone podem vir nulos quando CONTACT_REVEAL_MODE="masked"
+    # (profissional combina pelo chat). O dono sempre vê os próprios dados.
+    email: str | None = None
     phone: str | None = None
 
 

@@ -156,7 +156,7 @@ export interface LeadCustomerSummary {
 export interface LeadContact {
   name: string;
   phone: string | null;
-  email: string;
+  email: string | null;
 }
 
 /** `LeadRead`. */

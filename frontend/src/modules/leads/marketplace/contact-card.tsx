@@ -7,6 +7,9 @@
  */
 "use client";
 
+import Link from "next/link";
+import { MessageCircle } from "lucide-react";
+
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -38,7 +41,18 @@ export function ContactCard({ contact, className }: ContactCardProps) {
             </a>
           </p>
         ) : (
-          <p className="text-muted-foreground">Telefone não informado</p>
+          <div className="space-y-2">
+            <p className="text-muted-foreground">
+              Combine o atendimento pela conversa do app.
+            </p>
+            <Link
+              href="/conversas"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+            >
+              <MessageCircle className="h-4 w-4" aria-hidden />
+              Abrir conversa
+            </Link>
+          </div>
         )}
       </CardContent>
     </Card>

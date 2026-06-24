@@ -23,6 +23,7 @@ from datetime import UTC, datetime, timedelta
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.core.deps import effective_role
 from app.core.exceptions import (
     DomainValidationError,
@@ -454,10 +455,15 @@ class LeadService:
 
         contact: LeadContact | None = None
         if include_contact and lead.customer is not None:
+            is_owner = lead.customer_id == viewer.id
+            # Anti-desintermediação: no modo "masked", o profissional comprador
+            # não recebe telefone/e-mail (combina pelo chat do app); o dono do
+            # pedido sempre vê os próprios dados.
+            masked = not is_owner and settings.CONTACT_REVEAL_MODE == "masked"
             contact = LeadContact(
                 name=lead.customer.name,
-                email=lead.customer.email,
-                phone=lead.customer.phone,
+                email=None if masked else lead.customer.email,
+                phone=None if masked else lead.customer.phone,
             )
 
         media = [
