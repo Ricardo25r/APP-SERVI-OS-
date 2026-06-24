@@ -22,6 +22,7 @@ from datetime import UTC, datetime, timedelta
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.deps import effective_role
 from app.core.exceptions import (
     DomainValidationError,
     NotFoundError,
@@ -140,7 +141,7 @@ class LeadService:
         - Valida que a categoria existe e está ativa.
         - Calcula ``credits_cost`` (imutável) e ``expires_at`` no backend.
         """
-        if current_user.role != UserRole.customer:
+        if effective_role(current_user) != UserRole.customer:
             raise PermissionDeniedError("Apenas contratantes podem criar leads.")
 
         category = await self.repo.category_exists(data.category_id)
@@ -199,7 +200,7 @@ class LeadService:
         limit = page_size
         offset = (page - 1) * page_size
 
-        if current_user.role == UserRole.customer:
+        if effective_role(current_user) == UserRole.customer:
             leads, total = await self.repo.list_owned(
                 current_user.id,
                 status=status,
@@ -215,7 +216,7 @@ class LeadService:
             ]
             return items, total
 
-        if current_user.role == UserRole.professional:
+        if effective_role(current_user) == UserRole.professional:
             profile = await self.repo.get_professional_profile(current_user.id)
             if profile is None:
                 # Sem perfil profissional não há critério de elegibilidade.
@@ -260,12 +261,12 @@ class LeadService:
         if lead is None:
             raise NotFoundError("Lead não encontrado.")
 
-        if current_user.role == UserRole.customer:
+        if effective_role(current_user) == UserRole.customer:
             if lead.customer_id != current_user.id:
                 raise PermissionDeniedError("Você não é o dono deste lead.")
             return self._to_read(lead, viewer=current_user, include_contact=True)
 
-        if current_user.role == UserRole.professional:
+        if effective_role(current_user) == UserRole.professional:
             profile = await self.repo.get_professional_profile(current_user.id)
             if profile is None:
                 raise PermissionDeniedError("Perfil profissional inexistente.")
@@ -381,7 +382,7 @@ class LeadService:
         self, current_user: User, lead_id: uuid.UUID
     ) -> Lead:
         """Carrega o lead garantindo papel customer, ownership e ``status=open``."""
-        if current_user.role != UserRole.customer:
+        if effective_role(current_user) != UserRole.customer:
             raise PermissionDeniedError(
                 "Apenas o contratante dono pode alterar o lead."
             )

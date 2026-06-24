@@ -32,7 +32,11 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.core.exceptions import AuthError, ConflictError
+from app.core.exceptions import (
+    AuthError,
+    ConflictError,
+    PermissionDeniedError,
+)
 from app.core.mailer import render_action_email, send_email
 from app.core.security import (
     create_access_token,
@@ -84,10 +88,15 @@ class AuthService:
         self.tokens = RefreshTokenRepository(db)
 
     # ------------------------------------------------------------------ tokens
-    def _issue_token_pair_payload(self, user: User) -> tuple[str, str]:
-        """Cria (access, refresh) crus para o usuário (claim ``role`` no access)."""
-        access = create_access_token(user.id, extra_claims={"role": user.role.value})
-        refresh = create_refresh_token(user.id)
+    def _issue_token_pair_payload(
+        self, user: User, active_role: UserRole | None = None
+    ) -> tuple[str, str]:
+        """Cria (access, refresh) crus. O claim ``active_role`` (papel ATIVO da
+        sessão — papel duplo) vai em AMBOS os tokens; default = papel do banco."""
+        role = active_role or user.role
+        claims = {"active_role": role.value}
+        access = create_access_token(user.id, extra_claims=claims)
+        refresh = create_refresh_token(user.id, extra_claims=claims)
         return access, refresh
 
     async def _persist_refresh(self, user_id: uuid.UUID, raw_refresh: str) -> None:
@@ -100,9 +109,11 @@ class AuthService:
             expires_at=expires_at,
         )
 
-    async def _issue_and_store(self, user: User) -> TokenPair:
+    async def _issue_and_store(
+        self, user: User, active_role: UserRole | None = None
+    ) -> TokenPair:
         """Emite par access+refresh e persiste o refresh hasheado."""
-        access, refresh = self._issue_token_pair_payload(user)
+        access, refresh = self._issue_token_pair_payload(user, active_role)
         await self._persist_refresh(user.id, refresh)
         return TokenPair(
             access_token=access,
@@ -387,9 +398,17 @@ class AuthService:
         if user is None or user.status != UserStatus.active:
             raise AuthError("Usuário inválido para refresh.")
 
-        # Rotação: revoga o antigo e emite um novo par.
+        # Rotação: revoga o antigo e emite um novo par, MANTENDO o papel ativo
+        # da sessão (papel duplo) que vem no claim do refresh apresentado.
+        active = payload.get("active_role")
+        active_role: UserRole | None = None
+        if isinstance(active, str):
+            try:
+                active_role = UserRole(active)
+            except ValueError:
+                active_role = None
         await self.tokens.revoke(record, now)
-        tokens = await self._issue_and_store(user)
+        tokens = await self._issue_and_store(user, active_role)
         await self.db.commit()
         return RefreshResponse(tokens=tokens)
 
@@ -403,6 +422,21 @@ class AuthService:
             await self.db.commit()
 
     # --------------------------------------------------------------------- me
+    @staticmethod
+    def _available_roles(
+        user: User, has_customer: bool, has_professional: bool
+    ) -> list[UserRole]:
+        """Papéis que o usuário pode assumir (papel duplo): aqueles para os quais
+        tem perfil (ou que já é o papel-base). Admin fica isolado."""
+        if user.role == UserRole.admin:
+            return [UserRole.admin]
+        roles: list[UserRole] = []
+        if has_customer or user.role == UserRole.customer:
+            roles.append(UserRole.customer)
+        if has_professional or user.role == UserRole.professional:
+            roles.append(UserRole.professional)
+        return roles or [user.role]
+
     async def get_me(self, user: User) -> MeOut:
         """Monta o ``MeOut`` do usuário autenticado com flags de perfis."""
         has_customer = await self._profile_exists(CustomerProfile, user.id)
@@ -412,7 +446,37 @@ class AuthService:
             **base,
             has_customer_profile=has_customer,
             has_professional_profile=has_professional,
+            available_roles=self._available_roles(
+                user, has_customer, has_professional
+            ),
         )
+
+    async def switch_role(self, user: User, target: UserRole) -> AuthResponse:
+        """Troca o papel ATIVO da sessão (papel duplo), reemitindo o par de tokens.
+
+        Valida a habilitação (tem o perfil correspondente ou já é o papel-base);
+        ``admin`` nunca via troca. O front substitui os dois tokens e recarrega.
+        """
+        if target == UserRole.customer:
+            entitled = (
+                user.role == UserRole.customer
+                or await self._profile_exists(CustomerProfile, user.id)
+            )
+        elif target == UserRole.professional:
+            entitled = (
+                user.role == UserRole.professional
+                or await self._profile_exists(ProfessionalProfile, user.id)
+            )
+        else:
+            entitled = False
+        if not entitled:
+            raise PermissionDeniedError(
+                "Você ainda não ativou esse tipo de conta."
+            )
+        tokens = await self._issue_and_store(user, target)
+        await self.db.commit()
+        user.active_role = target
+        return AuthResponse(user=UserOut.model_validate(user), tokens=tokens)
 
     async def accept_terms(self, user: User) -> MeOut:
         """Registra o aceite dos Termos de Uso **vigentes** (por versão)."""

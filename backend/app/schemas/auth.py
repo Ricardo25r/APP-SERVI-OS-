@@ -157,6 +157,12 @@ class BirthDateIn(BaseModel):
         return _validate_birth_date(value)
 
 
+class SwitchRoleIn(BaseModel):
+    """Corpo de ``POST /auth/switch-role`` — papel ativo desejado (papel duplo)."""
+
+    active_role: UserRole
+
+
 class TokenPair(BaseModel):
     """Par de tokens emitido no register/login/refresh."""
 
@@ -185,6 +191,9 @@ class UserOut(BaseModel):
     terms_version: str | None = None
     # Data de nascimento (+ `age` derivada). None até o usuário preencher.
     birth_date: date | None = None
+    # Papel ATIVO da sessão (papel duplo). Espelha o claim do token; pode diferir
+    # de `role` (papel-base do banco). None quando não há sessão.
+    active_role: UserRole | None = None
 
     @computed_field  # type: ignore[prop-decorator]
     @property
@@ -220,10 +229,12 @@ class UserOut(BaseModel):
 
 
 class MeOut(UserOut):
-    """``GET /auth/me`` — usuário + flags de existência de perfis."""
+    """``GET /auth/me`` — usuário + flags de perfis + papéis disponíveis."""
 
     has_customer_profile: bool = False
     has_professional_profile: bool = False
+    # Papéis que o usuário pode assumir (papel duplo). Mais de 1 → seletor/troca.
+    available_roles: list[UserRole] = []
 
 
 class AuthResponse(BaseModel):

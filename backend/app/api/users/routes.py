@@ -18,10 +18,10 @@ import uuid
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.deps import get_current_user, require_roles
+from app.core.deps import get_current_user
 from app.core.storage import upload_bytes
 from app.database.session import get_db
-from app.models import User, UserRole
+from app.models import User
 from app.schemas.auth import UserOut
 from app.schemas.users import (
     CategoriesOut,
@@ -89,7 +89,7 @@ async def upload_avatar(
 )
 async def create_customer_profile(
     payload: CustomerProfileIn,
-    current_user: User = Depends(require_roles(UserRole.customer)),
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> CustomerProfileOut:
     """Cria o perfil 1:1 do contratante (409 se já existe)."""
@@ -103,7 +103,7 @@ async def create_customer_profile(
     summary="Obter o próprio perfil de contratante",
 )
 async def get_customer_profile(
-    current_user: User = Depends(require_roles(UserRole.customer)),
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> CustomerProfileOut:
     service = UserProfileService(db)
@@ -117,7 +117,7 @@ async def get_customer_profile(
 )
 async def update_customer_profile(
     payload: CustomerProfileUpdate,
-    current_user: User = Depends(require_roles(UserRole.customer)),
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> CustomerProfileOut:
     service = UserProfileService(db)
@@ -135,7 +135,7 @@ async def update_customer_profile(
 )
 async def create_professional_profile(
     payload: ProfessionalProfileIn,
-    current_user: User = Depends(require_roles(UserRole.professional)),
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> ProfessionalProfileOut:
     """Cria o perfil 1:1 do profissional, a carteira de créditos (saldo 0) e os
@@ -151,7 +151,7 @@ async def create_professional_profile(
     summary="Obter o próprio perfil profissional",
 )
 async def get_professional_profile(
-    current_user: User = Depends(require_roles(UserRole.professional)),
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> ProfessionalProfileOut:
     service = UserProfileService(db)
@@ -165,7 +165,7 @@ async def get_professional_profile(
 )
 async def update_professional_profile(
     payload: ProfessionalProfileUpdate,
-    current_user: User = Depends(require_roles(UserRole.professional)),
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> ProfessionalProfileOut:
     service = UserProfileService(db)
@@ -182,7 +182,7 @@ async def update_professional_profile(
 )
 async def set_professional_categories(
     payload: SetCategoriesIn,
-    current_user: User = Depends(require_roles(UserRole.professional)),
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> CategoriesOut:
     """Substitui o conjunto de categorias vinculadas (422 se alguma não existe)."""
@@ -199,7 +199,7 @@ async def set_professional_categories(
     summary="Listar as categorias do profissional",
 )
 async def get_professional_categories(
-    current_user: User = Depends(require_roles(UserRole.professional)),
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> CategoriesOut:
     service = UserProfileService(db)

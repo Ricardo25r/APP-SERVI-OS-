@@ -24,6 +24,30 @@ from app.database.session import get_db
 from app.models import User, UserRole, UserStatus
 
 
+def _active_role_from_claim(user: User, claim: object) -> UserRole:
+    """Resolve o papel ATIVO da sessão a partir do claim ``active_role`` do token.
+
+    Papel duplo: o claim é escolhido no login/switch (já validado lá), então
+    confiamos nele aqui. Fallback = o papel do banco. ``admin`` só se o usuário
+    for realmente admin (nunca alcançável via troca contratante↔profissional).
+    """
+    if isinstance(claim, str):
+        try:
+            role = UserRole(claim)
+        except ValueError:
+            return user.role
+        if role in (UserRole.customer, UserRole.professional):
+            return role
+        if role == UserRole.admin and user.role == UserRole.admin:
+            return role
+    return user.role
+
+
+def effective_role(user: User) -> UserRole:
+    """Papel efetivo da requisição: o ativo da sessão (se houver) ou o do banco."""
+    return getattr(user, "active_role", None) or user.role
+
+
 def _extract_bearer_token(authorization: str | None) -> str:
     """Extrai o token do header ``Authorization: Bearer <token>``."""
     if not authorization:
@@ -67,6 +91,8 @@ async def get_current_user(
     if user.status != UserStatus.active:
         raise AuthError("Conta inativa.")
 
+    # Papel ativo da sessão (papel duplo) — atributo transiente, não persistido.
+    user.active_role = _active_role_from_claim(user, payload.get("active_role"))
     return user
 
 
@@ -79,7 +105,7 @@ def require_roles(*roles: UserRole):
     allowed = set(roles)
 
     async def _dep(current_user: User = Depends(get_current_user)) -> User:
-        if current_user.role not in allowed:
+        if effective_role(current_user) not in allowed:
             raise PermissionDeniedError(
                 "Você não tem permissão para acessar este recurso."
             )
@@ -88,4 +114,4 @@ def require_roles(*roles: UserRole):
     return _dep
 
 
-__all__ = ["get_current_user", "require_roles"]
+__all__ = ["get_current_user", "require_roles", "effective_role"]

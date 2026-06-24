@@ -37,6 +37,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
+from app.core.deps import effective_role
 from app.core.exceptions import (
     ConflictError,
     NotFoundError,
@@ -100,7 +101,7 @@ class LeadPurchaseService:
         ``409`` lead indisponível ou já comprado, ``403`` profissional não
         elegível, ``402`` saldo insuficiente.
         """
-        if current_user.role != UserRole.professional:
+        if effective_role(current_user) != UserRole.professional:
             raise PermissionDeniedError("Apenas profissionais compram leads.")
 
         profile = await self.lead_repo.get_professional_profile(current_user.id)

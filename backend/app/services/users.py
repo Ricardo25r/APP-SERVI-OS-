@@ -26,14 +26,12 @@ from app.core.exceptions import (
     ConflictError,
     DomainValidationError,
     NotFoundError,
-    PermissionDeniedError,
 )
 from app.models import (
     Category,
     CustomerProfile,
     ProfessionalProfile,
     User,
-    UserRole,
 )
 from app.repositories.users import UserProfileRepository
 from app.schemas.users import (
@@ -63,11 +61,11 @@ class UserProfileService:
     async def create_customer_profile(
         self, current_user: User, data: CustomerProfileIn
     ) -> CustomerProfileOut:
-        """Cria o perfil de contratante (1:1; 409 se já existe)."""
-        if current_user.role != UserRole.customer:
-            raise PermissionDeniedError(
-                "Apenas contratantes podem criar perfil de contratante."
-            )
+        """Cria o perfil de contratante (1:1; 409 se já existe).
+
+        Papel duplo: qualquer usuário pode criar o perfil de contratante (é o
+        que "ativa" a conta de contratante para quem é profissional).
+        """
         existing = await self.repo.get_customer_profile(current_user.id)
         if existing is not None:
             raise ConflictError("Perfil de contratante já existe.")
@@ -117,11 +115,10 @@ class UserProfileService:
 
         Tudo na mesma transação (single commit): perfil, wallet (saldo 0) e os
         vínculos de categoria informados (validando que existem).
+
+        Papel duplo: qualquer usuário pode criar o perfil profissional (é o que
+        "ativa" a conta de profissional para quem é contratante).
         """
-        if current_user.role != UserRole.professional:
-            raise PermissionDeniedError(
-                "Apenas profissionais podem criar perfil profissional."
-            )
         existing = await self.repo.get_professional_profile(
             current_user.id, with_relations=False
         )

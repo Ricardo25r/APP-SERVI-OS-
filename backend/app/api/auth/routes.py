@@ -43,6 +43,7 @@ from app.schemas.auth import (
     RefreshIn,
     RefreshResponse,
     RegisterIn,
+    SwitchRoleIn,
 )
 from app.services.auth import AuthService
 
@@ -193,6 +194,22 @@ async def set_birth_date(
     tardio / gate de quem ainda não informou) e retorna o usuário atualizado."""
     service = AuthService(db)
     return await service.set_birth_date(current_user, payload.birth_date)
+
+
+@router.post(
+    "/switch-role",
+    response_model=AuthResponse,
+    summary="Trocar o papel ativo da sessão (Contratante↔Profissional)",
+)
+async def switch_role(
+    payload: SwitchRoleIn,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> AuthResponse:
+    """Troca o papel ativo (papel duplo) e reemite o par de tokens. Exige ter o
+    perfil correspondente ativado (403 caso contrário). O front troca os tokens."""
+    service = AuthService(db)
+    return await service.switch_role(current_user, payload.active_role)
 
 
 @router.post(
