@@ -57,6 +57,9 @@ class Category(UUIDPKMixin, TimestampMixin, Base):
     group: Mapped[str | None] = mapped_column(
         "category_group", String(60), nullable=True, index=True
     )
+    # Imagem da categoria (chave no storage público). Quando definida pelo admin,
+    # substitui a imagem fixa por slug. A URL é exposta no schema (image_url).
+    image_key: Mapped[str | None] = mapped_column(String(512), nullable=True)
 
     # Relacionamentos (§2.5).
     professional_categories: Mapped[list[ProfessionalCategory]] = relationship(

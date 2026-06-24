@@ -10,13 +10,14 @@
 
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Pencil, Plus, PowerOff, X } from "lucide-react";
+import { ImageIcon, Loader2, Pencil, Plus, PowerOff, X } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectOption } from "@/components/ui/select";
+import { apiUpload } from "@/services/api";
 import type { Category, CategoryTier } from "@/types";
 
 import {
@@ -65,6 +66,7 @@ export function CategoriesManager() {
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [showForm, setShowForm] = useState(false);
   const [toDeactivate, setToDeactivate] = useState<Category | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: categoriesKey,
@@ -132,6 +134,27 @@ export function CategoriesManager() {
       group: form.group.trim() || null,
     };
     saveMutation.mutate({ id: form.editing?.id, input });
+  }
+
+  async function onPickImage(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // permite reenviar a mesma imagem depois
+    if (!file || !form.editing) return;
+    setUploadingImage(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const updated = await apiUpload<Category>(
+        `/categories/${form.editing.id}/image`,
+        fd
+      );
+      setForm((f) => ({ ...f, editing: updated }));
+      invalidate();
+    } catch {
+      /* mantém a imagem atual em caso de falha */
+    } finally {
+      setUploadingImage(false);
+    }
   }
 
   const categories = data ?? [];
@@ -321,6 +344,40 @@ export function CategoriesManager() {
                   Agrupa a categoria na tela do profissional. Vazio = &quot;Outros&quot;.
                 </p>
               </div>
+
+              {form.editing ? (
+                <div className="space-y-2">
+                  <Label>Foto da categoria</Label>
+                  <div className="flex items-center gap-3">
+                    {form.editing.image_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={form.editing.image_url}
+                        alt=""
+                        className="h-14 w-14 shrink-0 rounded-lg border object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border bg-muted text-muted-foreground">
+                        <ImageIcon className="h-5 w-5" aria-hidden />
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={onPickImage}
+                        disabled={uploadingImage}
+                        className="block w-full text-sm text-muted-foreground file:mr-3 file:rounded-md file:border file:border-input file:bg-card file:px-3 file:py-1.5 file:text-sm file:font-medium disabled:opacity-60"
+                      />
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {uploadingImage
+                          ? "Enviando..."
+                          : "JPG/PNG/WEBP até 5 MB. Substitui o ícone padrão."}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
 
               {form.editing ? (
                 <div className="flex items-center gap-2">

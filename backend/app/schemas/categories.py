@@ -15,8 +15,9 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, computed_field
 
+from app.core.storage import presigned_get_url
 from app.models.enums import CategoryTier
 
 __all__ = ["CategoryIn", "CategoryUpdate", "CategoryOut"]
@@ -61,3 +62,15 @@ class CategoryOut(BaseModel):
     tier: CategoryTier
     active: bool
     group: str | None = None
+    # Chave interna (não exposta) + URL pública derivada da foto da categoria.
+    image_key: str | None = Field(default=None, exclude=True)
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def image_url(self) -> str | None:
+        if not self.image_key:
+            return None
+        try:
+            return presigned_get_url(self.image_key)
+        except Exception:  # noqa: BLE001 — URL é best-effort
+            return None

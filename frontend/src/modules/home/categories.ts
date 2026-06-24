@@ -46,6 +46,8 @@ export interface CategoryItem {
   name: string;
   /** Ícone lucide derivado do slug/nome. */
   icon: LucideIcon;
+  /** Foto enviada pelo admin (tem prioridade sobre a imagem fixa por slug). */
+  image?: string | null;
 }
 
 /**
@@ -153,5 +155,6 @@ export async function fetchCategoryItems(max = 7): Promise<CategoryItem[]> {
       slug: c.slug,
       name: c.name,
       icon: iconForCategory(c.slug),
+      image: c.image_url ?? null,
     }));
 }

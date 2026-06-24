@@ -19,6 +19,7 @@ import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import ConflictError, DomainValidationError, NotFoundError
+from app.core.storage import upload_bytes
 from app.models import Category
 from app.repositories.categories import CategoryRepository
 from app.schemas.categories import CategoryIn, CategoryUpdate
@@ -127,6 +128,24 @@ class CategoryService:
             g = fields["group"]
             category.group = (g.strip() or None) if isinstance(g, str) else None
 
+        await self.repo.flush()
+        await self.db.commit()
+        await self.db.refresh(category)
+        return category
+
+    async def set_image(
+        self,
+        category_id: uuid.UUID,
+        data: bytes,
+        *,
+        content_type: str,
+        ext: str,
+    ) -> Category:
+        """Define a foto da categoria (upload no storage público)."""
+        category = await self.get_category(category_id)
+        key = f"categories/{category.id}/{uuid.uuid4().hex}{ext}"
+        upload_bytes(data, key, content_type=content_type)
+        category.image_key = key
         await self.repo.flush()
         await self.db.commit()
         await self.db.refresh(category)

@@ -16,7 +16,16 @@ from __future__ import annotations
 
 import uuid
 
-from fastapi import APIRouter, Depends, Query, Response, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    File,
+    HTTPException,
+    Query,
+    Response,
+    UploadFile,
+    status,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import require_roles
@@ -26,6 +35,10 @@ from app.schemas.categories import CategoryIn, CategoryOut, CategoryUpdate
 from app.services.categories import CategoryService
 
 router = APIRouter()
+
+_MAX_IMG_BYTES = 5 * 1024 * 1024
+_ALLOWED_IMG = {"image/jpeg", "image/png", "image/webp"}
+_IMG_EXT = {"image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp"}
 
 
 @router.get(
@@ -98,6 +111,40 @@ async def update_category(
     """Atualiza parcialmente a categoria. Exige ``role == admin`` (§5.2)."""
     service = CategoryService(db)
     return await service.update_category(category_id, payload)
+
+
+@router.post(
+    "/{category_id}/image",
+    response_model=CategoryOut,
+    summary="Definir/atualizar a foto da categoria (admin)",
+)
+async def set_category_image(
+    category_id: uuid.UUID,
+    file: UploadFile = File(...),
+    _admin: User = Depends(require_roles(UserRole.admin)),
+    db: AsyncSession = Depends(get_db),
+) -> Category:
+    """Upload da foto da categoria (JPG/PNG/WEBP, até 5 MB). Exige ``admin``."""
+    if file.content_type not in _ALLOWED_IMG:
+        raise HTTPException(
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail="Formato inválido. Use JPG, PNG ou WEBP.",
+        )
+    data = await file.read()
+    if not data:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Arquivo vazio."
+        )
+    if len(data) > _MAX_IMG_BYTES:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail="Imagem muito grande (máximo 5 MB).",
+        )
+    ext = _IMG_EXT.get(file.content_type, "")
+    service = CategoryService(db)
+    return await service.set_image(
+        category_id, data, content_type=file.content_type, ext=ext
+    )
 
 
 @router.delete(

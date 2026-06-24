@@ -339,7 +339,7 @@ export function LeadForm({
           >
             {categories.map((c) => {
               const visual = categoryVisual({ slug: c.slug, name: c.name });
-              const img = categoryImage(c.slug);
+              const img = c.image_url ?? categoryImage(c.slug);
               const selected = values.category_id === c.id;
               return (
                 <button

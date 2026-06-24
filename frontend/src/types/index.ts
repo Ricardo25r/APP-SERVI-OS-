@@ -77,6 +77,8 @@ export interface Category {
   active: boolean;
   /** Grupo para a UI (ex.: "Reformas e Construção"); null = "Outros". */
   group?: string | null;
+  /** Foto da categoria definida pelo admin (substitui a imagem fixa por slug). */
+  image_url?: string | null;
   created_at: string;
   updated_at: string;
 }

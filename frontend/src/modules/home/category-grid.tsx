@@ -75,7 +75,7 @@ export function CategoryGrid({ hrefFor }: CategoryGridProps) {
   return (
     <div className="grid grid-cols-4 gap-3 sm:grid-cols-4 lg:grid-cols-8">
       {items.map((item, i) => {
-        const img = categoryImage(item.slug);
+        const img = item.image ?? categoryImage(item.slug);
         return (
           <Link
             key={item.slug}
