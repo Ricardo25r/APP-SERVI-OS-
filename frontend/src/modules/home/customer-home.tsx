@@ -22,6 +22,7 @@ import {
   MessageSquare,
   PencilLine,
   Plus,
+  Search,
   ShieldCheck,
   Star,
   type LucideIcon,
@@ -77,6 +78,13 @@ interface Shortcut {
 
 const SHORTCUTS: Shortcut[] = [
   {
+    href: "/profissionais",
+    label: "Encontrar profissionais",
+    description: "Busque, compare avaliações e escolha",
+    icon: Search,
+    color: "blue",
+  },
+  {
     href: "/leads",
     label: "Minhas solicitações",
     description: "Acompanhe e gerencie seus pedidos",
@@ -108,7 +116,10 @@ export function CustomerHome({ user }: { user: User }) {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const q = query.trim();
-    router.push(q ? `/leads/new?busca=${encodeURIComponent(q)}` : "/leads/new");
+    // Busca de PROFISSIONAIS (vitrine) — entrega o "buscar e comparar".
+    router.push(
+      q ? `/profissionais?q=${encodeURIComponent(q)}` : "/profissionais"
+    );
   };
 
   return (
