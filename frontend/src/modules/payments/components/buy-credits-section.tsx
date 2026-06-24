@@ -196,17 +196,21 @@ export function BuyCreditsSection({ onPaid, className }: BuyCreditsSectionProps)
                 <Check className="h-3 w-3" aria-hidden />
               </span>
             </div>
-            <div className="flex items-center gap-3 rounded-xl border bg-card p-3 opacity-60">
+            <div className="flex items-center gap-3 rounded-xl border bg-card p-3">
               <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <CreditCard className="h-5 w-5" aria-hidden />
               </span>
               <span className="flex-1 text-sm font-semibold text-foreground">
-                Cartão de crédito
+                Cartão de crédito e boleto
               </span>
-              <span className="text-xs font-medium text-muted-foreground">
-                Em breve
+              <span className="text-xs font-medium text-success">
+                Disponível
               </span>
             </div>
+            <p className="text-xs text-muted-foreground">
+              Você escolhe entre Pix, cartão ou boleto na tela segura do Mercado
+              Pago.
+            </p>
           </div>
 
           {createOrder.isError && (
