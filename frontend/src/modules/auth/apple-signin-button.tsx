@@ -61,14 +61,19 @@ function loadApple(): Promise<AppleId | null> {
 interface AppleSignInButtonProps {
   onSuccess: (resp: AuthResponse) => void;
   onError: (message: string) => void;
+  /** Papel para contas NOVAS (ignorado pelo backend se a conta já existe). */
+  role?: "customer" | "professional";
 }
 
 export function AppleSignInButton({
   onSuccess,
   onError,
+  role,
 }: AppleSignInButtonProps) {
   const clientId = process.env.NEXT_PUBLIC_APPLE_CLIENT_ID;
   const appleRef = useRef<AppleId | null>(null);
+  const roleRef = useRef(role);
+  roleRef.current = role;
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -115,6 +120,7 @@ export function AppleSignInButton({
       const resp = await apiPost<AuthResponse>("/auth/apple", {
         id_token: idToken,
         name: fullName,
+        role: roleRef.current,
       });
       onSuccess(resp);
     } catch (err) {

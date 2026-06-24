@@ -222,13 +222,19 @@ export function ProfessionalProfileSection() {
           setGeoLoading(false);
         }
       },
-      () => {
+      (err) => {
         setGeoLoading(false);
-        setGeoMsg("Não foi possível obter sua localização (permissão negada).");
+        const msg =
+          err.code === err.PERMISSION_DENIED
+            ? "Permissão de localização negada. Toque no cadeado/ícone ao lado do endereço (ou nos Ajustes do navegador) e permita a localização para este site."
+            : err.code === err.POSITION_UNAVAILABLE
+              ? "Não foi possível obter sua localização (sinal indisponível). Verifique se o GPS/localização do aparelho está ligado e tente de novo."
+              : "Tempo esgotado ao obter a localização. Tente novamente, de preferência com melhor sinal.";
+        setGeoMsg(msg);
       },
       // maximumAge: reaproveita um fix recente (até 2 min) → resposta quase
       // instantânea quando o aparelho já tem a posição; sem alta precisão (rápido).
-      { timeout: 10000, enableHighAccuracy: false, maximumAge: 120000 }
+      { timeout: 15000, enableHighAccuracy: false, maximumAge: 120000 }
     );
   }
 

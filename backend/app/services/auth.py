@@ -162,10 +162,13 @@ class AuthService:
     _APPLE_ISSUER = "https://appleid.apple.com"
     _APPLE_KEYS_URL = "https://appleid.apple.com/auth/keys"
 
-    async def login_with_google(self, id_token: str) -> AuthResponse:
+    async def login_with_google(
+        self, id_token: str, role: str | None = None
+    ) -> AuthResponse:
         """Login/cadastro com **Google**: valida o ID token, vincula por
         ``google_sub`` (fallback e-mail) ou cria a conta, e emite o par de tokens
-        próprio (mesmo shape do login por senha)."""
+        próprio (mesmo shape do login por senha). ``role`` só vale para contas
+        NOVAS (``professional`` ou, padrão, ``customer``); nunca ``admin``."""
         claims = await self._verify_google_id_token(id_token)
         google_sub = str(claims["sub"])
         email = (claims.get("email") or "").lower()
@@ -187,7 +190,11 @@ class AuthService:
                     email=email,
                     phone=None,
                     password_hash=None,
-                    role=UserRole.customer,
+                    role=(
+                        UserRole.professional
+                        if role == "professional"
+                        else UserRole.customer
+                    ),
                     status=UserStatus.active,
                     auth_provider="google",
                     google_sub=google_sub,
@@ -248,11 +255,12 @@ class AuthService:
         return claims
 
     async def login_with_apple(
-        self, id_token: str, name: str | None = None
+        self, id_token: str, name: str | None = None, role: str | None = None
     ) -> AuthResponse:
         """Login/cadastro com **Apple**: valida o ID token (JWKS RS256), vincula
         por ``apple_sub`` (fallback e-mail) ou cria a conta, e emite o par de
-        tokens próprio. ``name`` só chega na 1ª autorização (a Apple não repete)."""
+        tokens próprio. ``name`` só chega na 1ª autorização (a Apple não repete);
+        ``role`` só vale p/ contas NOVAS (``professional`` ou padrão ``customer``)."""
         claims = await self._verify_apple_id_token(id_token)
         apple_sub = str(claims["sub"])
         email = (claims.get("email") or "").lower()
@@ -275,7 +283,11 @@ class AuthService:
                     email=email,
                     phone=None,
                     password_hash=None,
-                    role=UserRole.customer,
+                    role=(
+                        UserRole.professional
+                        if role == "professional"
+                        else UserRole.customer
+                    ),
                     status=UserStatus.active,
                     auth_provider="apple",
                     apple_sub=apple_sub,

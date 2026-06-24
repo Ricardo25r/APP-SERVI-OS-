@@ -71,6 +71,11 @@ class GoogleAuthIn(BaseModel):
     plugin nativo). O backend valida assinatura/audiência e emite o JWT próprio."""
 
     id_token: str = Field(min_length=10)
+    role: str | None = Field(
+        default=None,
+        description="Papel p/ contas NOVAS: 'customer' | 'professional'. "
+        "Ignorado se a conta já existe.",
+    )
 
 
 class AppleAuthIn(BaseModel):
@@ -79,6 +84,11 @@ class AppleAuthIn(BaseModel):
 
     id_token: str = Field(min_length=10)
     name: str | None = Field(default=None, max_length=120)
+    role: str | None = Field(
+        default=None,
+        description="Papel p/ contas NOVAS: 'customer' | 'professional'. "
+        "Ignorado se a conta já existe.",
+    )
 
 
 class RefreshIn(BaseModel):

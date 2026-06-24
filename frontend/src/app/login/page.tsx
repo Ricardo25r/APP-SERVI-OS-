@@ -27,6 +27,7 @@ import { ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth";
 import { apiPost } from "@/services/api";
 import type { AuthResponse } from "@/types";
@@ -125,6 +126,9 @@ export default function LoginPage() {
 
   const [formError, setFormError] = useState<string | null>(null);
   const [inAppBrowser, setInAppBrowser] = useState(false);
+  const [signupRole, setSignupRole] = useState<"customer" | "professional">(
+    "customer"
+  );
 
   // Navegadores embutidos (Instagram/Facebook/etc.) bloqueiam o login Google —
   // detectamos para orientar o usuário a abrir no navegador do sistema.
@@ -206,6 +210,40 @@ export default function LoginPage() {
 
             {/* Botões sociais (Google ativo; Apple "Em breve" até o Services ID) */}
             <div className="mt-6 space-y-3">
+              {/* Papel para quem está CRIANDO conta pelo Google (ignorado no login) */}
+              <div className="rounded-lg border bg-muted/30 p-3">
+                <p className="mb-2 text-xs font-medium text-muted-foreground">
+                  Novo por aqui? Crie sua conta como:
+                </p>
+                <div
+                  role="radiogroup"
+                  aria-label="Tipo de conta para novo cadastro"
+                  className="grid grid-cols-2 gap-2"
+                >
+                  {(
+                    [
+                      ["customer", "Contratante"],
+                      ["professional", "Profissional"],
+                    ] as const
+                  ).map(([value, label]) => (
+                    <button
+                      key={value}
+                      type="button"
+                      role="radio"
+                      aria-checked={signupRole === value}
+                      onClick={() => setSignupRole(value)}
+                      className={cn(
+                        "rounded-md border py-2 text-sm font-medium transition-colors",
+                        signupRole === value
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-input text-foreground hover:bg-accent"
+                      )}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
               {inAppBrowser ? (
                 <p className="rounded-md border border-brand/30 bg-brand/10 px-3 py-2 text-xs text-foreground">
                   Você abriu por dentro de um app (Instagram/Facebook). O login
@@ -220,6 +258,7 @@ export default function LoginPage() {
                   return (
                     <GoogleSignInButton
                       key="google"
+                      role={signupRole}
                       onSuccess={handleSocialSuccess}
                       onError={setFormError}
                     />
@@ -229,6 +268,7 @@ export default function LoginPage() {
                   return (
                     <AppleSignInButton
                       key="apple"
+                      role={signupRole}
                       onSuccess={handleSocialSuccess}
                       onError={setFormError}
                     />

@@ -60,14 +60,19 @@ function loadGis(): Promise<GoogleId | null> {
 interface GoogleSignInButtonProps {
   onSuccess: (resp: AuthResponse) => void;
   onError: (message: string) => void;
+  /** Papel para contas NOVAS (ignorado pelo backend se a conta já existe). */
+  role?: "customer" | "professional";
 }
 
 export function GoogleSignInButton({
   onSuccess,
   onError,
+  role,
 }: GoogleSignInButtonProps) {
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_WEB_CLIENT_ID;
   const ref = useRef<HTMLDivElement>(null);
+  const roleRef = useRef(role);
+  roleRef.current = role;
 
   useEffect(() => {
     if (!clientId || !ref.current) return;
@@ -83,6 +88,7 @@ export function GoogleSignInButton({
         callback: (r) => {
           void apiPost<AuthResponse>("/auth/google", {
             id_token: r.credential,
+            role: roleRef.current,
           })
             .then(onSuccess)
             .catch(() => onError("Não foi possível entrar com o Google."));

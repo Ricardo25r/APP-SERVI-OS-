@@ -94,7 +94,7 @@ async def google_login(
     """Valida o **ID token** do Google e emite o par de tokens próprio (cria ou
     vincula a conta por e-mail). Token inválido / não configurado → 401."""
     service = AuthService(db)
-    return await service.login_with_google(payload.id_token)
+    return await service.login_with_google(payload.id_token, payload.role)
 
 
 @router.post(
@@ -110,7 +110,9 @@ async def apple_login(
     """Valida o **ID token** da Apple (JWKS RS256) e emite o par de tokens próprio
     (cria ou vincula a conta por e-mail). Token inválido / não configurado → 401."""
     service = AuthService(db)
-    return await service.login_with_apple(payload.id_token, payload.name)
+    return await service.login_with_apple(
+        payload.id_token, payload.name, payload.role
+    )
 
 
 @router.post(
