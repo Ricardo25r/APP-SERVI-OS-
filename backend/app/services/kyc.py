@@ -9,13 +9,13 @@ from __future__ import annotations
 import uuid
 from datetime import UTC, datetime
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.exceptions import NotFoundError, PermissionDeniedError
 from app.core.storage import get_private_object, upload_private_bytes
-from app.models import User
+from app.models import ProfessionalProfile, User
 from app.schemas.kyc import KycPendingItem, KycStatusOut
 from app.services.notifications import add_notification
 
@@ -140,5 +140,11 @@ class KycService:
                 else f"Sua verificação foi recusada: {reason}. Reenvie os documentos."
             ),
             href="/profile",
+        )
+        # Reflete a verificação no perfil profissional (selo "verificado" real).
+        await self.db.execute(
+            update(ProfessionalProfile)
+            .where(ProfessionalProfile.user_id == user.id)
+            .values(verified=approve)
         )
         await self.db.commit()

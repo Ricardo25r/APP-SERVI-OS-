@@ -91,7 +91,7 @@ class Settings(BaseSettings):
     # quando PAYMENTS_ENABLED=true). Defina false para lançar sem pagamento.
     PAYMENTS_ENABLED: bool = True
     # Créditos de boas-vindas concedidos ao profissional no cadastro (0 = off).
-    FREE_SIGNUP_CREDITS: int = 0
+    FREE_SIGNUP_CREDITS: int = 3
     # Indique e ganhe: créditos ao indicador quando o indicado faz a 1ª compra.
     REFERRAL_BONUS_CREDITS: int = 5
 

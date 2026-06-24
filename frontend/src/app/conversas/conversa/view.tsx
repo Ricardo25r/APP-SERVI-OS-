@@ -15,7 +15,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, ChevronRight, UserRound } from "lucide-react";
 
 import { AppHeader } from "@/components/app-shell/app-header";
 import { Avatar } from "@/components/ui/avatar";
@@ -154,11 +154,22 @@ export default function ConversaThreadPage() {
           ) : null}
 
           {counterpartId ? (
-            <div className="flex justify-end border-b px-4 py-1.5">
+            <div className="flex items-center justify-between gap-2 border-b px-4 py-1.5">
+              {user.role === "customer" ? (
+                <Link
+                  href={`/profissionais/perfil?id=${counterpartId}`}
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+                >
+                  <UserRound className="h-3.5 w-3.5" aria-hidden />
+                  Ver perfil / contratar de novo
+                </Link>
+              ) : (
+                <span />
+              )}
               <ReportButton
                 targetType="user"
                 targetId={counterpartId}
-                label="Denunciar usuário"
+                label="Denunciar"
               />
             </div>
           ) : null}
