@@ -19,6 +19,7 @@ from pydantic import (
     field_validator,
 )
 
+from app.core.config import settings
 from app.core.storage import presigned_get_url
 from app.models import UserRole, UserStatus
 
@@ -140,6 +141,8 @@ class UserOut(BaseModel):
     created_at: datetime
     # Chave interna da foto (não exposta); a URL presignada vem em avatar_url.
     avatar_key: str | None = Field(default=None, exclude=True)
+    # Versão dos termos que o usuário aceitou (+ flag `terms_accepted` derivada).
+    terms_version: str | None = None
 
     @computed_field  # type: ignore[prop-decorator]
     @property
@@ -150,6 +153,12 @@ class UserOut(BaseModel):
             return presigned_get_url(self.avatar_key)
         except Exception:  # noqa: BLE001 - URL é best-effort
             return None
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def terms_accepted(self) -> bool:
+        """True se o usuário já aceitou a versão VIGENTE dos Termos de Uso."""
+        return self.terms_version == settings.TERMS_VERSION
 
 
 class MeOut(UserOut):

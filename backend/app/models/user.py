@@ -80,6 +80,12 @@ class User(UUIDPKMixin, TimestampMixin, SoftDeleteMixin, Base):
     phone_verified_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
+    # Aceite dos Termos de Uso: quando aceitou + versão aceita. O banner reaparece
+    # quando a versão vigente (settings.TERMS_VERSION) muda.
+    terms_accepted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    terms_version: Mapped[str | None] = mapped_column(String(20), nullable=True)
 
     # Relacionamentos (§2.1).
     customer_profile: Mapped[CustomerProfile | None] = relationship(

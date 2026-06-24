@@ -164,6 +164,21 @@ async def me(
 
 
 @router.post(
+    "/accept-terms",
+    response_model=MeOut,
+    summary="Registrar aceite dos Termos de Uso (versão vigente)",
+)
+async def accept_terms(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> MeOut:
+    """Marca o aceite dos Termos de Uso vigentes pelo usuário autenticado e
+    retorna o usuário atualizado (``terms_accepted=true``)."""
+    service = AuthService(db)
+    return await service.accept_terms(current_user)
+
+
+@router.post(
     "/password-reset/request",
     response_model=PasswordResetRequestOut,
     summary="Solicitar reset de senha (resposta genérica, anti-enumeração)",

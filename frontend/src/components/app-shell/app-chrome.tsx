@@ -5,6 +5,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { BottomNav } from "@/components/app-shell/bottom-nav";
+import { TermsGate } from "@/components/terms-gate";
 import { useUnreadMessagesCount } from "@/modules/chat";
 
 /**
@@ -29,6 +30,7 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
         {children}
       </div>
       <BottomNav unreadCount={unreadMessages} />
+      <TermsGate />
     </>
   );
 }

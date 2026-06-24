@@ -413,6 +413,14 @@ class AuthService:
             has_professional_profile=has_professional,
         )
 
+    async def accept_terms(self, user: User) -> MeOut:
+        """Registra o aceite dos Termos de Uso **vigentes** (por versão)."""
+        user.terms_accepted_at = datetime.now(UTC)
+        user.terms_version = settings.TERMS_VERSION
+        await self.db.commit()
+        await self.db.refresh(user)
+        return await self.get_me(user)
+
     async def _profile_exists(self, model, user_id: uuid.UUID) -> bool:
         """Existe perfil (não soft-deleted) deste tipo para o usuário?"""
         result = await self.db.execute(

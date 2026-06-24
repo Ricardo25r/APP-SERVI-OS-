@@ -111,6 +111,9 @@ class Settings(BaseSettings):
     # Login com Apple (Services ID — aud do ID token; verificado via JWKS/RS256).
     # Aceita lista separada por vírgula (Services ID web + Bundle ID nativo iOS).
     APPLE_CLIENT_ID: str = ""
+    # Versão vigente dos Termos de Uso. Mudar isto faz o banner de aceite
+    # reaparecer para TODOS (o aceite é registrado por versão).
+    TERMS_VERSION: str = "2026-06-24"
     # Janela (min) p/ o profissional iniciar o contato após desbloquear o lead.
     CONTACT_WINDOW_MINUTES: int = 60
     # Prazo (dias) p/ confirmar a chegada (código). Esgotado sem chegada nem

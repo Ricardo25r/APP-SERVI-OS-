@@ -51,6 +51,8 @@ export interface User {
   /** Flags opcionais devolvidas por `GET /auth/me`. */
   has_customer_profile?: boolean;
   has_professional_profile?: boolean;
+  /** True se o usuário aceitou a versão VIGENTE dos Termos de Uso. */
+  terms_accepted?: boolean;
 }
 
 /** `CategoryRead`. */
