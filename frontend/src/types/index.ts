@@ -57,6 +57,10 @@ export interface User {
   birth_date?: string | null;
   /** Idade em anos derivada de `birth_date` (null se não informada). */
   age?: number | null;
+  /** Papel ATIVO da sessão (papel duplo); pode diferir de `role` (papel-base). */
+  active_role?: UserRole | null;
+  /** Papéis que o usuário pode assumir (de `GET /auth/me`). >1 → seletor/troca. */
+  available_roles?: UserRole[];
 }
 
 /** `CategoryRead`. */

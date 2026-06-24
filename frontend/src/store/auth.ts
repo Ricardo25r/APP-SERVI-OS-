@@ -59,9 +59,17 @@ export const useAuthStore = create<AuthState>()(
 
       setUser: (user) => set({ user }),
 
-      clear: () => set({ user: null, accessToken: null, refreshToken: null }),
+      clear: () => {
+        if (typeof sessionStorage !== "undefined")
+          sessionStorage.removeItem("faztudo-role-chosen");
+        set({ user: null, accessToken: null, refreshToken: null });
+      },
 
-      logout: () => set({ user: null, accessToken: null, refreshToken: null }),
+      logout: () => {
+        if (typeof sessionStorage !== "undefined")
+          sessionStorage.removeItem("faztudo-role-chosen");
+        set({ user: null, accessToken: null, refreshToken: null });
+      },
 
       setHasHydrated: (value) => set({ hasHydrated: value }),
     }),

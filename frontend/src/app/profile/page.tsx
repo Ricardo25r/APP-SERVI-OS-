@@ -24,6 +24,7 @@ import { useRequireAuth } from "@/hooks/use-auth";
 import { ApiError, apiGet } from "@/services/api";
 import type { ProfessionalProfile } from "@/types";
 
+import { AccountModeCard } from "@/modules/profile/account-mode-card";
 import { CustomerProfileSection } from "@/modules/profile/customer-profile-section";
 import { ProfessionalProfileSection } from "@/modules/profile/professional-profile-section";
 import { ProfessionalCategoriesSection } from "@/modules/profile/professional-categories-section";
@@ -92,6 +93,8 @@ export default function ProfilePage() {
         user={user}
         reputation={role === "professional" ? reputation : undefined}
       />
+
+      <AccountModeCard />
 
       <ProfileLinksSection />
 

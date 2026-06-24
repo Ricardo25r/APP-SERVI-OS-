@@ -37,13 +37,18 @@ export function useAuth(): UseAuthResult {
   const logout = useAuthStore((s: AuthState) => s.logout);
 
   const isAuthenticated = Boolean(accessToken && user);
+  // Papel duplo: o papel EFETIVO é o ATIVO da sessão (`active_role`, vindo do
+  // token via /auth/me ou /auth/switch-role), com fallback no papel-base do
+  // banco. Admin não é alternável (vem sempre do papel-base). Como quase toda a
+  // UI lê o papel daqui, esta é a única troca necessária p/ a UI seguir o modo.
+  const effectiveRole = user?.active_role ?? user?.role ?? null;
 
   return {
     user,
-    role: user?.role ?? null,
+    role: effectiveRole,
     isAuthenticated,
-    isCustomer: user?.role === "customer",
-    isProfessional: user?.role === "professional",
+    isCustomer: effectiveRole === "customer",
+    isProfessional: effectiveRole === "professional",
     isAdmin: user?.role === "admin",
     hasHydrated,
     logout,
