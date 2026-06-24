@@ -13,7 +13,7 @@ from __future__ import annotations
 import uuid
 from datetime import UTC, datetime
 
-from sqlalchemy import Select, func, or_, select
+from sqlalchemy import Select, and_, func, or_, select
 from sqlalchemy.orm import selectinload
 
 from app.models import (
@@ -161,6 +161,44 @@ class LeadRepository:
             .scalar_subquery()
         )
 
+        # Matching geográfico: cidade/estado exatos OU dentro do raio de
+        # atendimento do profissional (Haversine), quando ele e o lead têm
+        # coordenadas. Amplia o volume sem perder o caso por cidade.
+        city_match = and_(
+            func.lower(Lead.city) == (profile.city or "").lower(),
+            func.lower(Lead.state) == (profile.state or "").lower(),
+        )
+        geo_conditions = [city_match]
+        if (
+            profile.latitude is not None
+            and profile.longitude is not None
+            and profile.service_radius_km
+        ):
+            distance_km = 6371.0 * func.acos(
+                func.least(
+                    1.0,
+                    func.greatest(
+                        -1.0,
+                        func.cos(func.radians(profile.latitude))
+                        * func.cos(func.radians(Lead.latitude))
+                        * func.cos(
+                            func.radians(Lead.longitude)
+                            - func.radians(profile.longitude)
+                        )
+                        + func.sin(func.radians(profile.latitude))
+                        * func.sin(func.radians(Lead.latitude)),
+                    ),
+                )
+            )
+            geo_conditions.append(
+                and_(
+                    Lead.latitude.isnot(None),
+                    Lead.longitude.isnot(None),
+                    distance_km <= profile.service_radius_km,
+                )
+            )
+        geo_match = or_(*geo_conditions)
+
         stmt: Select = (
             select(Lead)
             .join(Category, Category.id == Lead.category_id)
@@ -170,8 +208,7 @@ class LeadRepository:
                 Lead.status == LeadStatus.open,
                 or_(Lead.expires_at.is_(None), Lead.expires_at > now),
                 Lead.category_id.in_(prof_categories),
-                func.lower(Lead.city) == (profile.city or "").lower(),
-                func.lower(Lead.state) == (profile.state or "").lower(),
+                geo_match,
                 # Anti-fraude (papel duplo): nunca os próprios pedidos do usuário
                 # (cobre a lista do marketplace E a revalidação na compra, que
                 # reusa este filtro via ``is_professional_eligible``).
