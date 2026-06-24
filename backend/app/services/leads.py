@@ -38,6 +38,7 @@ from app.models import (
     LeadMedia,
     LeadStatus,
     LeadType,
+    LeadUrgency,
     ProfessionalProfile,
     User,
     UserRole,
@@ -83,15 +84,27 @@ PREMIUM_COST: int = 5
 LEAD_EXPIRATION_DAYS: int = 30
 
 
-def classify_credits_cost(tier: CategoryTier, lead_type: LeadType) -> int:
-    """Custo em créditos do lead (§5.1).
+def classify_credits_cost(
+    tier: CategoryTier,
+    lead_type: LeadType,
+    urgency: LeadUrgency | None = None,
+) -> int:
+    """Custo em créditos do lead (§5.1) — configurável por env (#57).
 
-    ``base = TIER_COST[tier]``; se ``lead_type`` for temporary/permanent, eleva ao
-    mínimo de ``PREMIUM_COST`` (5). Caso contrário, mantém o custo base.
+    Base por faixa (``settings.LEAD_COST_*``); temporary/permanent eleva ao
+    mínimo premium; urgência "imediato" soma ``LEAD_COST_URGENT_SURCHARGE``.
+    Ajustável via variáveis de ambiente (sem deploy de código).
     """
-    base = TIER_COST[tier]
+    tier_cost = {
+        CategoryTier.simple: settings.LEAD_COST_SIMPLE,
+        CategoryTier.medium: settings.LEAD_COST_MEDIUM,
+        CategoryTier.premium: settings.LEAD_COST_PREMIUM,
+    }
+    base = tier_cost[tier]
     if lead_type in PREMIUM_PROMOTED_TYPES:
-        return max(base, PREMIUM_COST)
+        base = max(base, settings.LEAD_COST_PREMIUM)
+    if urgency == LeadUrgency.immediate:
+        base += settings.LEAD_COST_URGENT_SURCHARGE
     return base
 
 
@@ -170,7 +183,9 @@ class LeadService:
             latitude=data.latitude,
             longitude=data.longitude,
             status=LeadStatus.open,
-            credits_cost=classify_credits_cost(category.tier, data.lead_type),
+            credits_cost=classify_credits_cost(
+                category.tier, data.lead_type, data.urgency
+            ),
             expires_at=now + timedelta(days=LEAD_EXPIRATION_DAYS),
         )
         self.repo.add(lead)

@@ -142,6 +142,12 @@ class Settings(BaseSettings):
     # chat do app. "full" revela o contato. O dono do pedido sempre vê os
     # próprios dados. Trocar via env var, sem deploy.
     CONTACT_REVEAL_MODE: str = "masked"
+    # Custo do lead em créditos por faixa (#57) — ajustável por env, sem deploy.
+    LEAD_COST_SIMPLE: int = 1
+    LEAD_COST_MEDIUM: int = 3
+    LEAD_COST_PREMIUM: int = 5
+    # Acréscimo de crédito para lead com urgência "imediato".
+    LEAD_COST_URGENT_SURCHARGE: int = 1
     # Worker que devolve ao mercado os leads comprados e não contatados a tempo.
     CONTACT_RECYCLE_ENABLED: bool = True
     CONTACT_RECYCLE_INTERVAL_SECONDS: int = 120
