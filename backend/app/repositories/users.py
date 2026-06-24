@@ -20,6 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.models import (
+    AvailabilityStatus,
     Category,
     CreditWallet,
     CustomerProfile,
@@ -129,6 +130,9 @@ class UserProfileRepository:
                 ProfessionalProfile.deleted_at.is_(None),
                 User.deleted_at.is_(None),
                 User.status == UserStatus.active,
+                # Não lista quem se marcou indisponível (#49).
+                ProfessionalProfile.availability_status
+                != AvailabilityStatus.unavailable,
             )
         )
         if category_id is not None:
@@ -153,6 +157,7 @@ class UserProfileRepository:
                 )
             )
         stmt = stmt.order_by(
+            ProfessionalProfile.verified.desc(),
             ProfessionalProfile.rating.desc(),
             ProfessionalProfile.total_reviews.desc(),
         ).limit(limit)

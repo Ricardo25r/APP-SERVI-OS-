@@ -17,6 +17,7 @@ from sqlalchemy import Select, and_, func, or_, select
 from sqlalchemy.orm import selectinload
 
 from app.models import (
+    AvailabilityStatus,
     Category,
     Lead,
     LeadStatus,
@@ -302,6 +303,9 @@ class LeadRepository:
                 func.lower(ProfessionalProfile.city) == city.lower(),
                 func.lower(ProfessionalProfile.state) == state.lower(),
                 ProfessionalProfile.user_id != exclude_user_id,
+                # Não notifica quem se marcou indisponível (#49).
+                ProfessionalProfile.availability_status
+                != AvailabilityStatus.unavailable,
             )
             .distinct()
         )
