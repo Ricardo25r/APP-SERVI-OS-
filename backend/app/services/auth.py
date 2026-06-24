@@ -454,6 +454,9 @@ class AuthService:
         has_customer = await self._profile_exists(CustomerProfile, user.id)
         has_professional = await self._profile_exists(ProfessionalProfile, user.id)
         base = UserOut.model_validate(user).model_dump()
+        # avatar_key é exclude=True → some no model_dump; sem ele o MeOut recalcula
+        # avatar_url como null e a foto "desaparece" no /auth/me. Preserva.
+        base["avatar_key"] = user.avatar_key
         return MeOut(
             **base,
             has_customer_profile=has_customer,
