@@ -240,6 +240,37 @@ class LeadRepository:
         result = await self.db.execute(select(stmt.exists()))
         return bool(result.scalar())
 
+    async def eligible_professional_user_ids(
+        self,
+        *,
+        category_id: uuid.UUID,
+        city: str | None,
+        state: str | None,
+        exclude_user_id: uuid.UUID,
+    ) -> list[uuid.UUID]:
+        """``user_id`` dos profissionais elegíveis a um lead (mesma categoria +
+        cidade/estado, ativos), EXCETO o dono (anti-fraude). Usado no push de
+        nova oportunidade quando um lead é criado."""
+        if not city or not state:
+            return []
+        stmt = (
+            select(ProfessionalProfile.user_id)
+            .join(
+                ProfessionalCategory,
+                ProfessionalCategory.professional_id == ProfessionalProfile.id,
+            )
+            .where(
+                ProfessionalProfile.deleted_at.is_(None),
+                ProfessionalCategory.category_id == category_id,
+                func.lower(ProfessionalProfile.city) == city.lower(),
+                func.lower(ProfessionalProfile.state) == state.lower(),
+                ProfessionalProfile.user_id != exclude_user_id,
+            )
+            .distinct()
+        )
+        result = await self.db.execute(stmt)
+        return [row[0] for row in result.all()]
+
     # ------------------------------------------------------------------ #
     # Suporte
     # ------------------------------------------------------------------ #

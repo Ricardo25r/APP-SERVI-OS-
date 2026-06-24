@@ -16,6 +16,7 @@ presignadas) e calcula ``distance_km`` (Haversine) para o profissional.
 
 from __future__ import annotations
 
+import contextlib
 import math
 import uuid
 from datetime import UTC, datetime, timedelta
@@ -49,6 +50,7 @@ from app.schemas.leads import (
     LeadRead,
     LeadUpdate,
 )
+from app.services.push import PushService
 
 __all__ = [
     "LeadService",
@@ -175,6 +177,25 @@ class LeadService:
         # Recarrega com relações para montar a resposta (contato visível ao dono).
         created = await self.repo.get_by_id(lead.id)
         assert created is not None  # acabou de ser criado nesta transação
+
+        # Push de NOVA OPORTUNIDADE aos profissionais elegíveis (best-effort —
+        # nunca quebra a criação do lead; o dono é excluído por anti-fraude).
+        with contextlib.suppress(Exception):
+            pro_ids = await self.repo.eligible_professional_user_ids(
+                category_id=created.category_id,
+                city=created.city,
+                state=created.state,
+                exclude_user_id=created.customer_id,
+            )
+            if pro_ids:
+                await PushService(self.db).send_to_users(
+                    pro_ids,
+                    title="Nova oportunidade!",
+                    body=f"{created.title} — {created.city}/{created.state}",
+                    url="/marketplace",
+                    tag="nova-oportunidade",
+                )
+
         return self._to_read(created, viewer=current_user, include_contact=True)
 
     # ------------------------------------------------------------------ #

@@ -28,6 +28,7 @@ antes de qualquer ``commit``, e fazemos ``rollback`` da transação inteira.
 
 from __future__ import annotations
 
+import contextlib
 import secrets
 import uuid
 from datetime import UTC, datetime, timedelta
@@ -73,6 +74,7 @@ from app.services.lead_recycle import (
 from app.services.leads import LeadService, _haversine_km
 from app.services.notification_emails import send_lead_purchased_email
 from app.services.notifications import add_notification
+from app.services.push import PushService
 
 __all__ = ["LeadPurchaseService"]
 
@@ -212,6 +214,7 @@ class LeadPurchaseService:
             # Dados para o e-mail best-effort ao contratante (enviado PÓS-commit;
             # buscamos aqui, na transação, o e-mail/nome do dono do lead).
             _customer = await self.db.get(User, lead.customer_id)
+            email_customer_id = lead.customer_id
             email_to = _customer.email if _customer is not None else None
             email_to_name = _customer.name if _customer is not None else ""
             email_lead_title = lead.title
@@ -266,6 +269,16 @@ class LeadPurchaseService:
                 professional_name=email_professional_name,
                 lead_title=email_lead_title,
                 conversation_href=email_conversation_href,
+            )
+
+        # Push de "pedido aceito" ao contratante (best-effort, na tela do celular).
+        with contextlib.suppress(Exception):
+            await PushService(self.db).send_to_user(
+                email_customer_id,
+                title="Pedido aceito!",
+                body=f'{email_professional_name} aceitou "{email_lead_title}".',
+                url=email_conversation_href,
+                tag="pedido-aceito",
             )
 
         return LeadPurchaseResult(
