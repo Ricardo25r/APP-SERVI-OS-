@@ -14,8 +14,8 @@ import {
 } from "@/components/ui/card";
 import type { LeadPurchase } from "@/types";
 
-import { ReportButton } from "@/modules/reports/report-button";
 import { ContactCard } from "./contact-card";
+import { DisputeButton } from "./dispute-button";
 import { formatDate } from "./utils";
 
 interface PurchaseListProps {
@@ -61,15 +61,9 @@ export function PurchaseList({ purchases }: PurchaseListProps) {
                 Comprado em {formatDate(purchase.purchased_at)}
               </p>
               {contact && <ContactCard contact={contact} />}
-              {lead?.id ? (
-                <div className="pt-1">
-                  <ReportButton
-                    targetType="lead"
-                    targetId={lead.id}
-                    label="Reportar problema com o pedido"
-                  />
-                </div>
-              ) : null}
+              <div className="pt-1">
+                <DisputeButton purchaseId={purchase.id} />
+              </div>
             </CardContent>
           </Card>
         );

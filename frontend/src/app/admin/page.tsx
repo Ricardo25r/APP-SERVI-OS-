@@ -21,6 +21,7 @@ import {
   LifeBuoy,
   Map,
   Rocket,
+  Scale,
   ScrollText,
   ShieldCheck,
   Tags,
@@ -117,6 +118,12 @@ const SHORTCUTS: Shortcut[] = [
     label: "Denúncias",
     description: "Analise denúncias de abuso enviadas pelos usuários.",
     icon: Flag,
+  },
+  {
+    href: "/admin/disputas",
+    label: "Disputas",
+    description: "Reembolse ou recuse disputas de pedido dos profissionais.",
+    icon: Scale,
   },
 ];
 

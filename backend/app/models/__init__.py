@@ -35,6 +35,7 @@ from app.models.enums import (
 from app.models.error_log import ErrorLog
 from app.models.favorite import Favorite
 from app.models.lead import Lead
+from app.models.lead_dispute import LeadDispute
 from app.models.lead_media import LeadMedia
 from app.models.lead_purchase import LeadPurchase
 from app.models.message import Message
@@ -82,6 +83,7 @@ __all__ = [
     "ErrorLog",
     "Favorite",
     "Lead",
+    "LeadDispute",
     "LeadMedia",
     "CreditWallet",
     "CreditTransaction",
