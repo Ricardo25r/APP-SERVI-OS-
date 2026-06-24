@@ -36,6 +36,7 @@ import {
   markNotificationRead,
   type ApiNotification,
 } from "@/modules/notifications/api";
+import { PushPreferences } from "@/modules/notifications/push-preferences";
 
 type NotificationCategory = "lead" | "system";
 type ChipColor = "blue" | "orange" | "green" | "muted";
@@ -220,6 +221,8 @@ export default function NotificacoesPage() {
             Marcar lidas
           </Button>
         </div>
+
+        <PushPreferences />
 
         <div
           role="tablist"

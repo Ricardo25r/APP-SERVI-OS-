@@ -151,6 +151,15 @@ class Settings(BaseSettings):
     # Worker que devolve ao mercado os leads comprados e não contatados a tempo.
     CONTACT_RECYCLE_ENABLED: bool = True
     CONTACT_RECYCLE_INTERVAL_SECONDS: int = 120
+    # Re-engajamento / win-back (#53): avisa por push usuários inativos que ainda
+    # aceitam marketing. Conservador: inativo há >= N dias, no máximo 1 por janela
+    # de cooldown. Throttle de marketing por usuário via Redis.
+    WINBACK_ENABLED: bool = True
+    WINBACK_INACTIVE_DAYS: int = 14
+    WINBACK_INTERVAL_SECONDS: int = 21600  # 6h entre varreduras
+    WINBACK_COOLDOWN_DAYS: int = 14
+    WINBACK_BATCH_LIMIT: int = 200
+    PUSH_MARKETING_COOLDOWN_SECONDS: int = 86400  # 1 push de marketing/dia/usuário
     # Lead "travado": só o profissional falou (ex.: um "oi") e o cliente nunca
     # respondeu. Após este prazo o lead volta ao mercado e o crédito é devolvido.
     STALE_PURCHASE_HOURS: int = 48

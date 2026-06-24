@@ -15,10 +15,11 @@ import logging
 import uuid
 from collections.abc import Sequence
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.models import PushSubscription, User
+from app.models import NotificationPreference, PushSubscription, User
 from app.repositories.push import PushRepository
 from app.schemas.push import PushSubscriptionIn
 
@@ -30,6 +31,31 @@ logger = logging.getLogger("app.services.push")
 def push_enabled() -> bool:
     """True se as chaves VAPID estão configuradas (senão envio é no-op)."""
     return bool(settings.VAPID_PRIVATE_KEY and settings.VAPID_PUBLIC_KEY)
+
+
+def _category_for_tag(tag: str | None) -> str | None:
+    """Mapeia o ``tag`` do push para a categoria de preferência (#53).
+
+    Retorna ``None`` para categorias transacionais (KYC, suporte, avaliação,
+    disputa), que são sempre enviadas.
+    """
+    if not tag:
+        return None
+    t = tag.lower()
+    if "chat" in t or "message" in t or "conversa" in t:
+        return "chat"
+    if "lead" in t or "popular" in t or "pedido" in t:
+        return "leads"
+    if "marketing" in t or "winback" in t or "novidade" in t:
+        return "marketing"
+    return None
+
+
+_PREF_COLUMN = {
+    "chat": NotificationPreference.allow_chat,
+    "leads": NotificationPreference.allow_leads,
+    "marketing": NotificationPreference.allow_marketing,
+}
 
 
 def _send_one(sub_info: dict, payload: str) -> str:
@@ -113,6 +139,49 @@ class PushService:
             {"title": title, "body": body, "url": url or "/", "tag": tag}
         )
 
+    async def _filter_by_pref(
+        self, user_ids: list[uuid.UUID], category: str | None
+    ) -> list[uuid.UUID]:
+        """Remove quem desligou esta categoria (padrão = permitido — #53)."""
+        column = _PREF_COLUMN.get(category) if category else None
+        if column is None:
+            return user_ids
+        blocked = set(
+            (
+                await self.db.execute(
+                    select(NotificationPreference.user_id).where(
+                        NotificationPreference.user_id.in_(user_ids),
+                        column.is_(False),
+                    )
+                )
+            )
+            .scalars()
+            .all()
+        )
+        return [u for u in user_ids if u not in blocked]
+
+    async def _throttle_marketing(
+        self, user_ids: list[uuid.UUID]
+    ) -> list[uuid.UUID]:
+        """Cap de 1 push de marketing por usuário na janela (Redis; fail-open)."""
+        try:
+            from app.core.ratelimit import _redis
+
+            client = _redis()
+            allowed: list[uuid.UUID] = []
+            for uid in user_ids:
+                ok = await client.set(
+                    f"push:mkt:{uid}",
+                    "1",
+                    ex=settings.PUSH_MARKETING_COOLDOWN_SECONDS,
+                    nx=True,
+                )
+                if ok:
+                    allowed.append(uid)
+            return allowed
+        except Exception:  # noqa: BLE001 - fail-open se o Redis cair
+            return user_ids
+
     async def send_to_user(
         self,
         user_id: uuid.UUID,
@@ -122,10 +191,9 @@ class PushService:
         url: str | None = None,
         tag: str | None = None,
     ) -> None:
-        if not push_enabled():
-            return
-        subs = await self.repo.list_for_user(user_id)
-        await self._dispatch(subs, self._payload(title, body, url, tag))
+        await self.send_to_users(
+            [user_id], title=title, body=body, url=url, tag=tag
+        )
 
     async def send_to_users(
         self,
@@ -138,5 +206,12 @@ class PushService:
     ) -> None:
         if not push_enabled() or not user_ids:
             return
-        subs = await self.repo.list_for_users(list(user_ids))
+        ids = list(dict.fromkeys(user_ids))
+        category = _category_for_tag(tag)
+        ids = await self._filter_by_pref(ids, category)
+        if category == "marketing":
+            ids = await self._throttle_marketing(ids)
+        if not ids:
+            return
+        subs = await self.repo.list_for_users(ids)
         await self._dispatch(subs, self._payload(title, body, url, tag))

@@ -11,7 +11,27 @@ __all__ = [
     "NotificationOut",
     "NotificationListResponse",
     "UnreadCountOut",
+    "NotificationPrefsOut",
+    "NotificationPrefsUpdate",
 ]
+
+
+class NotificationPrefsOut(BaseModel):
+    """Preferências de push do usuário (#53)."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    allow_chat: bool = True
+    allow_leads: bool = True
+    allow_marketing: bool = True
+
+
+class NotificationPrefsUpdate(BaseModel):
+    """Atualização parcial das preferências de push."""
+
+    allow_chat: bool | None = None
+    allow_leads: bool | None = None
+    allow_marketing: bool | None = None
 
 
 class NotificationOut(BaseModel):

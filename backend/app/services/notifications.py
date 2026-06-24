@@ -16,8 +16,12 @@ from datetime import UTC, datetime
 from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import Notification, User
-from app.schemas.notifications import NotificationOut
+from app.models import Notification, NotificationPreference, User
+from app.schemas.notifications import (
+    NotificationOut,
+    NotificationPrefsOut,
+    NotificationPrefsUpdate,
+)
 
 __all__ = ["NotificationService", "add_notification"]
 
@@ -60,6 +64,44 @@ class NotificationService:
 
     def __init__(self, db: AsyncSession) -> None:
         self.db = db
+
+    # ------------------------------------------------------------------ #
+    # Preferências de push (#53)
+    # ------------------------------------------------------------------ #
+    async def get_preferences(self, user: User) -> NotificationPrefsOut:
+        pref = (
+            await self.db.execute(
+                select(NotificationPreference).where(
+                    NotificationPreference.user_id == user.id
+                )
+            )
+        ).scalar_one_or_none()
+        if pref is None:
+            return NotificationPrefsOut()
+        return NotificationPrefsOut.model_validate(pref)
+
+    async def update_preferences(
+        self, user: User, data: NotificationPrefsUpdate
+    ) -> NotificationPrefsOut:
+        pref = (
+            await self.db.execute(
+                select(NotificationPreference).where(
+                    NotificationPreference.user_id == user.id
+                )
+            )
+        ).scalar_one_or_none()
+        if pref is None:
+            pref = NotificationPreference(user_id=user.id)
+            self.db.add(pref)
+        if data.allow_chat is not None:
+            pref.allow_chat = data.allow_chat
+        if data.allow_leads is not None:
+            pref.allow_leads = data.allow_leads
+        if data.allow_marketing is not None:
+            pref.allow_marketing = data.allow_marketing
+        await self.db.commit()
+        await self.db.refresh(pref)
+        return NotificationPrefsOut.model_validate(pref)
 
     async def list_for_user(
         self,

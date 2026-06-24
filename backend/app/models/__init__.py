@@ -46,6 +46,7 @@ from app.models.mixins import (
     UUIDPKMixin,
 )
 from app.models.notification import Notification
+from app.models.notification_preference import NotificationPreference
 from app.models.payment_order import PaymentOrder
 from app.models.payment_settings import PaymentSettings
 from app.models.portfolio_item import PortfolioItem
@@ -103,6 +104,7 @@ __all__ = [
     "Conversation",
     "Message",
     "Notification",
+    "NotificationPreference",
     "PushSubscription",
     "XpTransaction",
     "Achievement",

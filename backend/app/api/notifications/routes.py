@@ -22,6 +22,8 @@ from app.database.session import get_db
 from app.models import User
 from app.schemas.notifications import (
     NotificationListResponse,
+    NotificationPrefsOut,
+    NotificationPrefsUpdate,
     UnreadCountOut,
 )
 from app.services.notifications import NotificationService
@@ -63,6 +65,35 @@ async def unread_count(
     """Quantidade de não lidas (para o badge do sino)."""
     service = NotificationService(db)
     return UnreadCountOut(count=await service.unread_count(current_user))
+
+
+@router.get(
+    "/preferences",
+    response_model=NotificationPrefsOut,
+    summary="Minhas preferências de push",
+)
+async def get_preferences(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> NotificationPrefsOut:
+    """Preferências de push do usuário (padrão: tudo ligado)."""
+    return await NotificationService(db).get_preferences(current_user)
+
+
+@router.put(
+    "/preferences",
+    response_model=NotificationPrefsOut,
+    summary="Atualizar preferências de push",
+)
+async def update_preferences(
+    payload: NotificationPrefsUpdate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> NotificationPrefsOut:
+    """Liga/desliga categorias de push (conversa, pedidos, novidades)."""
+    return await NotificationService(db).update_preferences(
+        current_user, payload
+    )
 
 
 @router.post(

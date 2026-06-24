@@ -26,6 +26,7 @@ from app.services.lead_recycle import (
     recycle_expired_purchases,
     reopen_no_show_purchases,
 )
+from app.services.winback import send_winback_batch
 
 setup_logging()
 
@@ -125,3 +126,27 @@ async def _start_recycle_worker() -> None:
 
     asyncio.create_task(_loop())
     logger.info("Worker de reciclo de leads iniciado.")
+
+
+@app.on_event("startup")
+async def _start_winback_worker() -> None:
+    """Worker em background: re-engaja usuários inativos por push (#53).
+    Best-effort; respeita preferências/throttle/cooldown; nunca derruba o app."""
+    if not settings.WINBACK_ENABLED:
+        return
+
+    async def _loop() -> None:
+        interval = max(settings.WINBACK_INTERVAL_SECONDS, 600)
+        while True:
+            await asyncio.sleep(interval)
+            try:
+                async with async_session_maker() as session:
+                    now = datetime.now(UTC)
+                    sent = await send_winback_batch(session, now=now)
+                    if sent:
+                        logger.info("Win-back: %d push enviado(s).", sent)
+            except Exception:  # noqa: BLE001 - worker best-effort
+                logger.exception("Falha no worker de win-back")
+
+    asyncio.create_task(_loop())
+    logger.info("Worker de win-back iniciado.")
