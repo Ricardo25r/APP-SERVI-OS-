@@ -12,6 +12,7 @@ Concentra regra de negócio, validações e **commits** (§3.5):
 
 from __future__ import annotations
 
+import contextlib
 import re
 import unicodedata
 import uuid
@@ -19,7 +20,7 @@ import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import ConflictError, DomainValidationError, NotFoundError
-from app.core.storage import upload_bytes
+from app.core.storage import delete_object, upload_bytes
 from app.models import Category
 from app.repositories.categories import CategoryRepository
 from app.schemas.categories import CategoryIn, CategoryUpdate
@@ -143,12 +144,17 @@ class CategoryService:
     ) -> Category:
         """Define a foto da categoria (upload no storage público)."""
         category = await self.get_category(category_id)
+        old_key = category.image_key
         key = f"categories/{category.id}/{uuid.uuid4().hex}{ext}"
         upload_bytes(data, key, content_type=content_type)
         category.image_key = key
         await self.repo.flush()
         await self.db.commit()
         await self.db.refresh(category)
+        # Remove a foto anterior do bucket (evita objeto órfão). Best-effort.
+        if old_key and old_key != key:
+            with contextlib.suppress(Exception):
+                delete_object(old_key)
         return category
 
     async def deactivate_category(self, category_id: uuid.UUID) -> None:

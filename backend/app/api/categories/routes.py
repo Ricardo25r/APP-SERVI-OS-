@@ -29,6 +29,7 @@ from fastapi import (
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import require_roles
+from app.core.ratelimit import rate_limit
 from app.database.session import get_db
 from app.models import Category, User, UserRole
 from app.schemas.categories import CategoryIn, CategoryOut, CategoryUpdate
@@ -117,6 +118,9 @@ async def update_category(
     "/{category_id}/image",
     response_model=CategoryOut,
     summary="Definir/atualizar a foto da categoria (admin)",
+    dependencies=[
+        Depends(rate_limit("category_image", limit=20, window_seconds=300))
+    ],
 )
 async def set_category_image(
     category_id: uuid.UUID,
@@ -129,6 +133,13 @@ async def set_category_image(
         raise HTTPException(
             status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
             detail="Formato inválido. Use JPG, PNG ou WEBP.",
+        )
+    # Rejeita cedo pelo tamanho declarado (evita bufferizar corpos enormes na
+    # memória antes da checagem pós-leitura abaixo).
+    if file.size is not None and file.size > _MAX_IMG_BYTES:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail="Imagem muito grande (máximo 5 MB).",
         )
     data = await file.read()
     if not data:
