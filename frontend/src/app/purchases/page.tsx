@@ -54,6 +54,12 @@ export default function PurchasesPage() {
     );
   }
 
+  const totalLeads = purchases.length;
+  const creditsSpent = purchases.reduce(
+    (s, p) => s + (p.credits_used ?? 0),
+    0
+  );
+
   return (
     <main className="mx-auto max-w-5xl px-6 py-10">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
@@ -93,7 +99,25 @@ export default function PurchasesPage() {
           </Button>
         </div>
       ) : (
-        <PurchaseList purchases={purchases} />
+        <>
+          <div className="mb-6 grid grid-cols-2 gap-3 sm:max-w-md">
+            <div className="rounded-xl bg-secondary p-4">
+              <p className="text-xs text-muted-foreground">
+                Leads desbloqueados
+              </p>
+              <p className="mt-1 text-2xl font-bold tabular-nums text-foreground">
+                {totalLeads}
+              </p>
+            </div>
+            <div className="rounded-xl bg-secondary p-4">
+              <p className="text-xs text-muted-foreground">Créditos gastos</p>
+              <p className="mt-1 text-2xl font-bold tabular-nums text-foreground">
+                {creditsSpent}
+              </p>
+            </div>
+          </div>
+          <PurchaseList purchases={purchases} />
+        </>
       )}
     </main>
   );
