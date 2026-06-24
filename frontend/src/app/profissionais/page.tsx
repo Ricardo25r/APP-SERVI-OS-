@@ -4,8 +4,8 @@
  * Vitrine de **profissionais** (`/profissionais`) — busca pelo cliente.
  *
  * O cliente busca por categoria + cidade + texto e vê uma lista ordenada por
- * reputação (nota, selo de verificado). Cada card abre o perfil público.
- * `GET /users/professionals`.
+ * reputação (nota, selo de verificado). Sem busca, mostra "Salvos" no topo.
+ * Cada card abre o perfil público. `GET /users/professionals` + `/users/favorites`.
  */
 
 import { useState } from "react";
@@ -33,6 +33,46 @@ interface ProItem {
   rating: number;
   total_reviews: number;
   verified: boolean;
+}
+
+function ProCard({ p }: { p: ProItem }) {
+  return (
+    <Link
+      href={`/profissionais/perfil?id=${p.user_id}`}
+      className="flex items-center gap-3 rounded-2xl border bg-card p-4 shadow-sm transition-colors hover:border-primary/40 hover:bg-accent/30"
+    >
+      <Avatar src={p.avatar_url} name={p.name} size="lg" />
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-1.5">
+          <span className="truncate font-bold text-foreground">{p.name}</span>
+          {p.verified ? (
+            <BadgeCheck
+              className="h-4 w-4 shrink-0 text-success"
+              aria-label="Verificado"
+            />
+          ) : null}
+        </div>
+        {p.headline ? (
+          <p className="truncate text-sm text-muted-foreground">{p.headline}</p>
+        ) : null}
+        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1">
+            <StarRating value={p.rating} size="sm" />
+            <span className="tabular-nums">
+              {p.rating.toFixed(1)} ({p.total_reviews})
+            </span>
+          </span>
+          {p.city ? (
+            <span className="flex items-center gap-1">
+              <MapPin className="h-3.5 w-3.5" aria-hidden />
+              {p.city}
+              {p.state ? `/${p.state}` : ""}
+            </span>
+          ) : null}
+        </div>
+      </div>
+    </Link>
+  );
 }
 
 export default function ProfissionaisPage() {
@@ -63,6 +103,12 @@ export default function ProfissionaisPage() {
     enabled: auth.isAuthenticated,
   });
 
+  const { data: favs } = useQuery({
+    queryKey: ["favorites"],
+    queryFn: () => apiGet<{ items: ProItem[] }>("/users/favorites"),
+    enabled: auth.isAuthenticated,
+  });
+
   if (!auth.hasHydrated || !auth.isAuthenticated) {
     return (
       <main className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
@@ -73,6 +119,9 @@ export default function ProfissionaisPage() {
 
   const items = data?.items ?? [];
   const categories = cats ?? [];
+  const favItems = favs?.items ?? [];
+  const noSearch =
+    !applied.categoryId && !applied.city.trim() && !applied.q.trim();
 
   return (
     <main className="mx-auto max-w-2xl space-y-5 px-4 py-6 sm:px-6 sm:py-8">
@@ -133,6 +182,21 @@ export default function ProfissionaisPage() {
         </Button>
       </form>
 
+      {noSearch && favItems.length > 0 ? (
+        <section className="space-y-3">
+          <h2 className="text-sm font-bold text-foreground">
+            Seus profissionais salvos
+          </h2>
+          <ul className="space-y-3">
+            {favItems.map((p) => (
+              <li key={p.user_id}>
+                <ProCard p={p} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
       {isLoading ? (
         <p className="py-8 text-center text-sm text-muted-foreground">
           Carregando...
@@ -146,51 +210,20 @@ export default function ProfissionaisPage() {
           .
         </p>
       ) : (
-        <ul className="space-y-3">
-          {items.map((p) => (
-            <li key={p.user_id}>
-              <Link
-                href={`/profissionais/perfil?id=${p.user_id}`}
-                className="flex items-center gap-3 rounded-2xl border bg-card p-4 shadow-sm transition-colors hover:border-primary/40 hover:bg-accent/30"
-              >
-                <Avatar src={p.avatar_url} name={p.name} size="lg" />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5">
-                    <span className="truncate font-bold text-foreground">
-                      {p.name}
-                    </span>
-                    {p.verified ? (
-                      <BadgeCheck
-                        className="h-4 w-4 shrink-0 text-success"
-                        aria-label="Verificado"
-                      />
-                    ) : null}
-                  </div>
-                  {p.headline ? (
-                    <p className="truncate text-sm text-muted-foreground">
-                      {p.headline}
-                    </p>
-                  ) : null}
-                  <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <StarRating value={p.rating} size="sm" />
-                      <span className="tabular-nums">
-                        {p.rating.toFixed(1)} ({p.total_reviews})
-                      </span>
-                    </span>
-                    {p.city ? (
-                      <span className="flex items-center gap-1">
-                        <MapPin className="h-3.5 w-3.5" aria-hidden />
-                        {p.city}
-                        {p.state ? `/${p.state}` : ""}
-                      </span>
-                    ) : null}
-                  </div>
-                </div>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <section className="space-y-3">
+          {noSearch && favItems.length > 0 ? (
+            <h2 className="text-sm font-bold text-foreground">
+              Todos os profissionais
+            </h2>
+          ) : null}
+          <ul className="space-y-3">
+            {items.map((p) => (
+              <li key={p.user_id}>
+                <ProCard p={p} />
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
     </main>
   );

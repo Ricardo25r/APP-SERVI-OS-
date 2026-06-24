@@ -23,6 +23,7 @@ from app.models import (
     Category,
     CreditWallet,
     CustomerProfile,
+    Favorite,
     ProfessionalCategory,
     ProfessionalProfile,
     User,
@@ -155,6 +156,57 @@ class UserProfileRepository:
             ProfessionalProfile.rating.desc(),
             ProfessionalProfile.total_reviews.desc(),
         ).limit(limit)
+        return list((await self.db.execute(stmt)).all())
+
+    # ------------------------------------------------------------------ #
+    # Favoritos (profissionais salvos pelo cliente)
+    # ------------------------------------------------------------------ #
+    async def is_favorite(
+        self, user_id: uuid.UUID, pro_user_id: uuid.UUID
+    ) -> bool:
+        row = (
+            await self.db.execute(
+                select(Favorite.id).where(
+                    Favorite.user_id == user_id,
+                    Favorite.professional_user_id == pro_user_id,
+                )
+            )
+        ).first()
+        return row is not None
+
+    async def add_favorite(
+        self, user_id: uuid.UUID, pro_user_id: uuid.UUID
+    ) -> None:
+        if not await self.is_favorite(user_id, pro_user_id):
+            self.db.add(
+                Favorite(user_id=user_id, professional_user_id=pro_user_id)
+            )
+            await self.db.flush()
+
+    async def remove_favorite(
+        self, user_id: uuid.UUID, pro_user_id: uuid.UUID
+    ) -> None:
+        await self.db.execute(
+            delete(Favorite).where(
+                Favorite.user_id == user_id,
+                Favorite.professional_user_id == pro_user_id,
+            )
+        )
+
+    async def list_favorites(
+        self, user_id: uuid.UUID
+    ) -> list[tuple[ProfessionalProfile, User]]:
+        stmt = (
+            select(ProfessionalProfile, User)
+            .join(User, ProfessionalProfile.user_id == User.id)
+            .join(Favorite, Favorite.professional_user_id == User.id)
+            .where(
+                Favorite.user_id == user_id,
+                ProfessionalProfile.deleted_at.is_(None),
+                User.deleted_at.is_(None),
+            )
+            .order_by(Favorite.created_at.desc())
+        )
         return list((await self.db.execute(stmt)).all())
 
     # ------------------------------------------------------------------ #

@@ -158,25 +158,44 @@ class UserProfileService:
         rows = await self.repo.search_professionals(
             category_id=category_id, city=city, state=state, query=query
         )
-        items: list[ProfessionalSearchItem] = []
-        for profile, user in rows:
-            avatar = None
-            if user.avatar_key:
-                with contextlib.suppress(Exception):
-                    avatar = presigned_get_url(user.avatar_key)
-            items.append(
-                ProfessionalSearchItem(
-                    user_id=user.id,
-                    name=user.name,
-                    avatar_url=avatar,
-                    headline=profile.headline,
-                    city=profile.city,
-                    state=profile.state,
-                    rating=profile.rating,
-                    total_reviews=profile.total_reviews,
-                    verified=(user.kyc_status == "approved"),
-                )
-            )
+        items = [self._search_item(profile, user) for profile, user in rows]
+        return ProfessionalSearchList(items=items, total=len(items))
+
+    def _search_item(
+        self, profile: ProfessionalProfile, user: User
+    ) -> ProfessionalSearchItem:
+        avatar = None
+        if user.avatar_key:
+            with contextlib.suppress(Exception):
+                avatar = presigned_get_url(user.avatar_key)
+        return ProfessionalSearchItem(
+            user_id=user.id,
+            name=user.name,
+            avatar_url=avatar,
+            headline=profile.headline,
+            city=profile.city,
+            state=profile.state,
+            rating=profile.rating,
+            total_reviews=profile.total_reviews,
+            verified=(user.kyc_status == "approved"),
+        )
+
+    # ================================================================== #
+    # Favoritos (profissionais salvos pelo cliente)
+    # ================================================================== #
+    async def add_favorite(self, user: User, pro_user_id: uuid.UUID) -> None:
+        await self.repo.add_favorite(user.id, pro_user_id)
+        await self.db.commit()
+
+    async def remove_favorite(
+        self, user: User, pro_user_id: uuid.UUID
+    ) -> None:
+        await self.repo.remove_favorite(user.id, pro_user_id)
+        await self.db.commit()
+
+    async def list_favorites(self, user: User) -> ProfessionalSearchList:
+        rows = await self.repo.list_favorites(user.id)
+        items = [self._search_item(profile, u) for profile, u in rows]
         return ProfessionalSearchList(items=items, total=len(items))
 
     # ================================================================== #
@@ -328,7 +347,7 @@ class UserProfileService:
         return await self._build_professional_out(current_user.id)
 
     async def get_public_professional_profile(
-        self, user_id: uuid.UUID
+        self, user_id: uuid.UUID, *, viewer_id: uuid.UUID | None = None
     ) -> ProfessionalProfilePublicOut:
         """Perfil público de um profissional (sem dados sensíveis)."""
         profile = await self.repo.get_professional_profile(user_id)
@@ -339,6 +358,11 @@ class UserProfileService:
         if user is not None and user.avatar_key:
             with contextlib.suppress(Exception):
                 avatar = presigned_get_url(user.avatar_key)
+        is_fav = (
+            await self.repo.is_favorite(viewer_id, user_id)
+            if viewer_id is not None
+            else False
+        )
         return ProfessionalProfilePublicOut(
             id=profile.id,
             user_id=profile.user_id,
@@ -353,6 +377,7 @@ class UserProfileService:
             name=user.name if user is not None else None,
             avatar_url=avatar,
             verified=bool(user is not None and user.kyc_status == "approved"),
+            is_favorited=is_fav,
             categories=self._categories_out(profile.categories),
         )
 

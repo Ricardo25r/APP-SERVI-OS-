@@ -226,8 +226,13 @@ class ProfessionalProfilePublicOut(BaseModel):
     name: str | None = None
     avatar_url: str | None = None
     verified: bool = False
+    is_favorited: bool = False
 
     categories: list[CategoryRefOut] = Field(default_factory=list)
+
+
+class FavoriteIn(BaseModel):
+    professional_user_id: uuid.UUID
 
 
 class ProfessionalSearchItem(BaseModel):

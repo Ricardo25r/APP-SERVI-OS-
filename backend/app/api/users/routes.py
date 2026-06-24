@@ -37,6 +37,7 @@ from app.schemas.users import (
     CustomerProfileIn,
     CustomerProfileOut,
     CustomerProfileUpdate,
+    FavoriteIn,
     ProfessionalProfileIn,
     ProfessionalProfileOut,
     ProfessionalProfilePublicOut,
@@ -279,6 +280,55 @@ async def search_professionals(
 
 
 # --------------------------------------------------------------------------- #
+# Favoritos (profissionais salvos pelo cliente)
+# --------------------------------------------------------------------------- #
+@router.get(
+    "/favorites",
+    response_model=ProfessionalSearchList,
+    summary="Meus profissionais favoritos",
+)
+async def list_favorites(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> ProfessionalSearchList:
+    return await UserProfileService(db).list_favorites(current_user)
+
+
+@router.post(
+    "/favorites",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+    summary="Favoritar um profissional",
+)
+async def add_favorite(
+    payload: FavoriteIn,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> Response:
+    await UserProfileService(db).add_favorite(
+        current_user, payload.professional_user_id
+    )
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.delete(
+    "/favorites/{professional_user_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+    summary="Remover dos favoritos",
+)
+async def remove_favorite(
+    professional_user_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> Response:
+    await UserProfileService(db).remove_favorite(
+        current_user, professional_user_id
+    )
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+# --------------------------------------------------------------------------- #
 # Perfil público
 # --------------------------------------------------------------------------- #
 @router.get(
@@ -294,4 +344,6 @@ async def get_public_professional_profile(
     """Leitura pública (qualquer usuário autenticado) do perfil de um
     profissional; sem dados sensíveis."""
     service = UserProfileService(db)
-    return await service.get_public_professional_profile(user_id)
+    return await service.get_public_professional_profile(
+        user_id, viewer_id=current_user.id
+    )

@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { apiGet } from "@/services/api";
+import { FavoriteButton } from "@/modules/profissionais/favorite-button";
 import { ReportButton } from "@/modules/reports/report-button";
 import { ReviewList } from "@/modules/reviews/review-list";
 import { StarRating } from "@/modules/reviews/star-rating";
@@ -35,6 +36,7 @@ interface PublicProfile {
   rating: number;
   total_reviews: number;
   verified: boolean;
+  is_favorited: boolean;
   categories?: { id: string; name: string }[];
 }
 
@@ -136,10 +138,16 @@ export default function ProfessionalPublicView() {
                 </div>
               ) : null}
 
-              <div className="flex items-center justify-between gap-2 pt-1">
+              <div className="flex items-center gap-2 pt-1">
                 <Link href="/leads/new" className="flex-1">
                   <Button className="w-full">Solicitar serviço</Button>
                 </Link>
+                <FavoriteButton
+                  proUserId={data.user_id}
+                  initial={data.is_favorited}
+                />
+              </div>
+              <div className="flex justify-end">
                 <ReportButton targetType="user" targetId={data.user_id} />
               </div>
             </CardContent>
