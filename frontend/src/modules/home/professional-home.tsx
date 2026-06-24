@@ -37,6 +37,7 @@ import type {
   User,
 } from "@/types";
 
+import { CrossRoleBanner } from "@/modules/home/cross-role-banner";
 import { categoryVisual } from "@/modules/leads/category-icon";
 import { ContactCard } from "@/modules/leads/marketplace/contact-card";
 import {
@@ -306,6 +307,8 @@ export function ProfessionalHome({ user }: { user: User }) {
           label="Avaliação"
         />
       </div>
+
+      <CrossRoleBanner />
 
       {/* Leads disponíveis */}
       <section className="space-y-3">

@@ -33,6 +33,7 @@ import { SectionHeader } from "@/components/ui/section-header";
 import { IconChip } from "@/components/ui/icon-chip";
 import type { User } from "@/types";
 import { CategoryGrid } from "@/modules/home/category-grid";
+import { CrossRoleBanner } from "@/modules/home/cross-role-banner";
 
 const TRUST: { icon: LucideIcon; label: string }[] = [
   { icon: ShieldCheck, label: "Profissionais verificados" },
@@ -191,6 +192,8 @@ export function CustomerHome({ user }: { user: User }) {
           </div>
         </div>
       </section>
+
+      <CrossRoleBanner />
 
       {/* Categorias populares */}
       <section className="py-8">
