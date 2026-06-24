@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { SectionHeader } from "@/components/ui/section-header";
 import { useRequireAuth } from "@/hooks/use-auth";
+import { useIsNativeApp } from "@/hooks/use-native-app";
 import { apiGet } from "@/services/api";
 import type { CreditTransaction, CreditWallet, Paginated } from "@/types";
 
@@ -33,6 +34,10 @@ const paymentsEnabled = process.env.NEXT_PUBLIC_PAYMENTS_ENABLED !== "false";
 
 export default function CreditsPage() {
   const auth = useRequireAuth("professional");
+  // No app nativo Android a compra fica oculta (política de pagamentos do
+  // Google Play). A venda continua no site/PWA. Spending de crédito é liberado.
+  const isNativeApp = useIsNativeApp();
+  const showPurchase = paymentsEnabled && !isNativeApp;
 
   const [balance, setBalance] = useState<number | null>(null);
   const [transactions, setTransactions] = useState<CreditTransaction[]>([]);
@@ -75,7 +80,7 @@ export default function CreditsPage() {
     <main className="mx-auto max-w-2xl space-y-6 px-4 py-8 sm:px-6 sm:py-10">
       <header>
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-          {paymentsEnabled ? "Comprar créditos" : "Créditos"}
+          {showPurchase ? "Comprar créditos" : "Créditos"}
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Use seus créditos para desbloquear leads no marketplace.
@@ -116,9 +121,25 @@ export default function CreditsPage() {
         </CardContent>
       </Card>
 
-      {/* Comprar créditos (catálogo + pagamento + CTA). No beta, fica oculto. */}
-      {paymentsEnabled ? (
+      {/* Comprar créditos (catálogo + pagamento). Oculto no beta e no app
+          nativo (Android) — compra fica no site, por política da loja. */}
+      {showPurchase ? (
         <BuyCreditsSection onPaid={() => void load()} />
+      ) : isNativeApp ? (
+        <Card className="border-dashed">
+          <CardContent className="space-y-1 p-5 text-center sm:p-6">
+            <p className="text-sm font-semibold text-foreground">
+              Compra de créditos pelo site
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Para adicionar créditos, acesse o FazTudo pelo navegador em{" "}
+              <span className="font-medium text-foreground">
+                faztudoapp.com.br
+              </span>
+              . Aqui no app você usa seus créditos normalmente.
+            </p>
+          </CardContent>
+        </Card>
       ) : (
         <Card className="border-dashed">
           <CardContent className="space-y-1 p-5 text-center sm:p-6">
