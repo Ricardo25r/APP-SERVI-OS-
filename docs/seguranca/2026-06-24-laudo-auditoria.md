@@ -225,10 +225,10 @@ O FazTudo é um marketplace de leads pagos por créditos (FastAPI + Next.js, emp
 - **V11** — push *unsubscribe* escopado ao dono.
 - **V12** — `/docs` e `/openapi.json` fechados em qualquer ambiente não-dev/test.
 - **V16** — `bcrypt__rounds=12` (confirmado: não invalida hashes existentes).
+- **V3 + V5** (commit `db53ac0`) — `token_version`: o reset de senha e o bloqueio/suspensão (admin) **invalidam os access tokens vivos** e o token de reset vira **uso único**. Claim `ver` em todos os tokens, checado em `get_current_user`/`refresh` (helper tolerante → 401, não 500). 2 testes dedicados + review adversarial 3× sem blockers. ⚠️ **Aplicar a migration no container após o deploy:** `docker exec faztudo-backend python -m alembic upgrade head` (é backward-compatible: tokens antigos seguem válidos até expirar/trocar senha).
 
 **⏸️ Adiados (com motivo):**
 - **V1 (token storage)** — exige design dedicado: cookie `HttpOnly` **quebra o app Capacitor** (WebView é cross-site `https://localhost` → `faztudoapp.com.br`; `SameSite` não envia o cookie). Caminho certo: Secure Storage/Keystore no app + cookie/BFF na web. Mitigação imediata já aplicada = CSP (V2). **Fazer como tarefa própria, com teste no app.**
-- **V3 (token_version) + V5 (reset uso único)** — exigem coluna nova + **migration Alembic**. Adiados porque o **Docker estava desligado** (não dá pra aplicar/testar a migration no container, conforme CLAUDE.md) e há uma migration de referral (fase 29) ainda não commitada (resolver a cadeia antes). Fazer com o Docker no ar.
 - **V14 (MP webhook secret obrigatório)** — **não automatizado de propósito**: tornar obrigatório no fail-fast pode **impedir o boot em produção** se o secret não estiver setado. Decisão do dono: confirmar `MERCADOPAGO_WEBHOOK_SECRET` no `.env` de produção e então ligar.
 - **V6** (upgrade `next`) — precisa de build + regressão; mitigado pelo export estático. **V7** (política de senha) — decisão de produto. **V9, V10, V13, V15, V17, V19** — backlog P3.
 
