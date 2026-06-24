@@ -22,7 +22,7 @@ from app.core.deps import get_current_user
 from app.core.storage import upload_bytes
 from app.database.session import get_db
 from app.models import User
-from app.schemas.auth import UserOut
+from app.schemas.auth import ReferralInfoOut, UserOut
 from app.schemas.users import (
     CategoriesOut,
     CustomerProfileIn,
@@ -34,6 +34,7 @@ from app.schemas.users import (
     ProfessionalProfileUpdate,
     SetCategoriesIn,
 )
+from app.services.referrals import ReferralService
 from app.services.users import UserProfileService
 
 router = APIRouter()
@@ -76,6 +77,22 @@ async def upload_avatar(
     await db.commit()
     await db.refresh(current_user)
     return current_user
+
+
+@router.get(
+    "/me/referral",
+    response_model=ReferralInfoOut,
+    summary="Meu código de indicação (indique e ganhe)",
+)
+async def my_referral(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> ReferralInfoOut:
+    """Código de indicação do usuário + total de indicados + créditos ganhos."""
+    code, total, earned = await ReferralService(db).referral_info(current_user)
+    return ReferralInfoOut(
+        code=code, total_referrals=total, credits_earned=earned
+    )
 
 
 # --------------------------------------------------------------------------- #

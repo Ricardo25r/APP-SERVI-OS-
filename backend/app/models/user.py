@@ -5,10 +5,22 @@ Autenticação e identidade. Entidade crítica (soft delete). Ver §2.1 do contr
 
 from __future__ import annotations
 
+import uuid
 from datetime import date, datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Date, DateTime, Enum, Index, Integer, String, text
+from sqlalchemy import (
+    Boolean,
+    Date,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    text,
+)
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.base import Base
@@ -94,6 +106,19 @@ class User(UUIDPKMixin, TimestampMixin, SoftDeleteMixin, Base):
     # cadastro. Documento valida dígitos verificadores no schema. Ambos nullable.
     gender: Mapped[str | None] = mapped_column(String(20), nullable=True)
     document: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    # Indique e ganhe: código de indicação (único) + quem indicou este usuário +
+    # se o bônus do indicador já foi creditado (1x, na 1ª compra do indicado).
+    referral_code: Mapped[str | None] = mapped_column(
+        String(12), nullable=True, unique=True
+    )
+    referred_by_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    referral_credited: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default=text("false")
+    )
 
     # Relacionamentos (§2.1).
     customer_profile: Mapped[CustomerProfile | None] = relationship(

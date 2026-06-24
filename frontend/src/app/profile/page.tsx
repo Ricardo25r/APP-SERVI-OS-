@@ -18,7 +18,9 @@
  */
 "use client";
 
+import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
+import { ChevronRight, Gift } from "lucide-react";
 
 import { useRequireAuth } from "@/hooks/use-auth";
 import { ApiError, apiGet } from "@/services/api";
@@ -95,6 +97,27 @@ export default function ProfilePage() {
       />
 
       <AccountModeCard />
+
+      <Link
+        href="/indique"
+        className="flex items-center gap-3 rounded-2xl border bg-card p-4 shadow-sm transition-colors hover:bg-accent/40"
+      >
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand/15 text-brand">
+          <Gift className="h-5 w-5" aria-hidden />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-bold text-foreground">
+            Indique e ganhe créditos
+          </span>
+          <span className="block text-xs text-muted-foreground">
+            Compartilhe com amigos e ganhe créditos.
+          </span>
+        </span>
+        <ChevronRight
+          className="h-5 w-5 shrink-0 text-muted-foreground"
+          aria-hidden
+        />
+      </Link>
 
       <ProfileLinksSection />
 

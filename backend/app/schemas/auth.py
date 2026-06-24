@@ -118,6 +118,8 @@ class RegisterIn(BaseModel):
     birth_date: date | None = None
     gender: str | None = None
     document: str | None = None
+    # Código de indicação de quem indicou (indique e ganhe). Opcional.
+    referral_code: str | None = None
 
     @field_validator("name")
     @classmethod
@@ -230,6 +232,14 @@ class SwitchRoleIn(BaseModel):
     """Corpo de ``POST /auth/switch-role`` — papel ativo desejado (papel duplo)."""
 
     active_role: UserRole
+
+
+class ReferralInfoOut(BaseModel):
+    """``GET /users/me/referral`` — indique e ganhe."""
+
+    code: str
+    total_referrals: int
+    credits_earned: int
 
 
 class TokenPair(BaseModel):

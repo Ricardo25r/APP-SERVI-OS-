@@ -132,6 +132,14 @@ class AuthService:
         if await self.users.phone_exists(data.phone):
             raise ConflictError("Telefone já está em uso.")
 
+        # Indique e ganhe: vincula o indicador (se veio código) e gera o código
+        # próprio deste usuário.
+        from app.services.referrals import ReferralService
+
+        referrals = ReferralService(self.db)
+        referred_by_id = await referrals.resolve_referrer_id(data.referral_code)
+        referral_code = await referrals.generate_code()
+
         user = User(
             name=data.name,
             email=email,
@@ -141,6 +149,8 @@ class AuthService:
             birth_date=data.birth_date,
             gender=data.gender,
             document=data.document,
+            referral_code=referral_code,
+            referred_by_id=referred_by_id,
             status=UserStatus.active,
         )
 

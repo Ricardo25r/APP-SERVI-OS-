@@ -89,6 +89,8 @@ class Settings(BaseSettings):
     PAYMENTS_ENABLED: bool = True
     # Créditos de boas-vindas concedidos ao profissional no cadastro (0 = off).
     FREE_SIGNUP_CREDITS: int = 0
+    # Indique e ganhe: créditos ao indicador quando o indicado faz a 1ª compra.
+    REFERRAL_BONUS_CREDITS: int = 5
 
     # Alertas de monitoramento (e-mail via SMTP). Segredos só via env.
     ALERTS_ENABLED: bool = False

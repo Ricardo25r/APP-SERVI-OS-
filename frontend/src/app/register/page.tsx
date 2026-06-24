@@ -202,6 +202,8 @@ function RegisterForm() {
 
   // Pré-seleciona o tipo de conta conforme a Tela 10 (Escolha de Perfil).
   const initialRole = roleFromParam(searchParams.get("role"));
+  // Indique e ganhe: código do indicador, vindo do link /register?ref=CODE.
+  const referralCode = searchParams.get("ref");
 
   const {
     register,
@@ -242,6 +244,7 @@ function RegisterForm() {
         birth_date: values.birthDate || undefined,
         document: values.document || undefined,
         gender: values.gender || undefined,
+        referral_code: referralCode || undefined,
       });
       const session = toSession(resp);
       setAuth(session);

@@ -281,6 +281,14 @@ class LeadPurchaseService:
                 tag="pedido-aceito",
             )
 
+        # Indique e ganhe: credita o indicador na 1ª compra do indicado (1x).
+        with contextlib.suppress(Exception):
+            from app.services.referrals import ReferralService
+
+            await ReferralService(self.db).reward_on_first_purchase(
+                current_user.id
+            )
+
         return LeadPurchaseResult(
             purchase=purchase_read,
             lead=lead_read,
