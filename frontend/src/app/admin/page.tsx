@@ -16,6 +16,7 @@ import {
   ChevronRight,
   ClipboardList,
   CreditCard,
+  Flag,
   Gift,
   LifeBuoy,
   Map,
@@ -110,6 +111,12 @@ const SHORTCUTS: Shortcut[] = [
     label: "Verificações",
     description: "Analise documentos + selfie dos profissionais (KYC).",
     icon: ShieldCheck,
+  },
+  {
+    href: "/admin/denuncias",
+    label: "Denúncias",
+    description: "Analise denúncias de abuso enviadas pelos usuários.",
+    icon: Flag,
   },
 ];
 

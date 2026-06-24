@@ -50,6 +50,7 @@ from app.models.professional_category import ProfessionalCategory
 from app.models.professional_profile import ProfessionalProfile
 from app.models.push_subscription import PushSubscription
 from app.models.refresh_token import RefreshToken
+from app.models.report import Report
 from app.models.review import Review
 from app.models.sprint import (
     Sprint,
@@ -87,6 +88,7 @@ __all__ = [
     "PaymentOrder",
     "PaymentSettings",
     "Review",
+    "Report",
     "Conversation",
     "Message",
     "Notification",

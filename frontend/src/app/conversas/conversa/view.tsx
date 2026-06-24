@@ -30,6 +30,7 @@ import {
   fetchConversation,
 } from "@/modules/chat";
 import type { Conversation } from "@/modules/chat";
+import { ReportButton } from "@/modules/reports/report-button";
 
 export default function ConversaThreadPage() {
   const { user, isAuthenticated, hasHydrated } = useRequireAuth();
@@ -61,6 +62,7 @@ export default function ConversaThreadPage() {
   const name = conversation ? counterpartName(conversation) : "Conversa";
   const leadTitle = conversation ? conversationLeadTitle(conversation) : null;
   const leadId = conversation?.lead?.id;
+  const counterpartId = conversation?.counterpart?.id;
   // Link para o detalhe do serviço conforme o papel de quem vê.
   const leadHref =
     leadId && user.role === "professional"
@@ -151,6 +153,15 @@ export default function ConversaThreadPage() {
             )
           ) : null}
 
+          {counterpartId ? (
+            <div className="flex justify-end border-b px-4 py-1.5">
+              <ReportButton
+                targetType="user"
+                targetId={counterpartId}
+                label="Denunciar usuário"
+              />
+            </div>
+          ) : null}
           <MessageThread conversationId={id} currentUserId={user.id} />
           <MessageInput conversationId={id} currentUserId={user.id} />
         </div>
