@@ -83,6 +83,13 @@ class User(UUIDPKMixin, TimestampMixin, SoftDeleteMixin, Base):
     client_no_show_count: Mapped[int] = mapped_column(
         Integer, nullable=False, default=0, server_default=text("0")
     )
+    # Versão da sessão (laudo 2026-06-24, V3/V5). Incrementada ao bloquear/
+    # suspender a conta e ao trocar a senha (reset). O claim ``ver`` é gravado
+    # nos tokens; tokens com versão antiga são rejeitados em get_current_user —
+    # invalida access tokens vivos pós-bloqueio e torna o token de reset uso-único.
+    token_version: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default=text("0")
+    )
     # Login social: provedor que prova a identidade + ids estáveis do provedor.
     auth_provider: Mapped[str] = mapped_column(
         String(20), nullable=False, default="local", server_default="local"

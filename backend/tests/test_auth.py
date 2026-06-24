@@ -283,3 +283,78 @@ async def test_password_reset_confirm_invalid_token_401(
         json={"reset_token": "nao-e-um-jwt", "new_password": "qualquer-senha-8"},
     )
     assert resp.status_code == 401, resp.text
+
+
+# --------------------------------------------------------------------------- #
+# token_version: revogação de access token (V3) + reset de uso único (V5)
+# --------------------------------------------------------------------------- #
+@pytest.mark.asyncio
+async def test_password_reset_invalidates_old_access_token(
+    client: httpx.AsyncClient,
+) -> None:
+    """Após o reset, o access token EMITIDO ANTES é rejeitado (V3 — token_version).
+
+    O reset incrementa ``users.token_version``; o claim ``ver`` do access token
+    antigo fica defasado e ``get_current_user`` passa a recusá-lo (401), fechando
+    a janela em que um access token vivo continuaria valendo após a troca de senha.
+    """
+    email = "verreset@faztudo.com"
+    await _register(
+        client, email=email, phone="11922221111", password="senha-antiga-123"
+    )
+    login = await client.post(
+        "/api/v1/auth/login",
+        json={"email": email, "password": "senha-antiga-123"},
+    )
+    old_access = login.json()["tokens"]["access_token"]
+
+    # Antes do reset, o access token funciona em /me.
+    me_before = await client.get(
+        "/api/v1/auth/me", headers={"Authorization": f"Bearer {old_access}"}
+    )
+    assert me_before.status_code == 200, me_before.text
+
+    # Reset de senha (request → confirm).
+    req = await client.post(
+        "/api/v1/auth/password-reset/request", json={"email": email}
+    )
+    reset_token = req.json()["reset_token"]
+    confirm = await client.post(
+        "/api/v1/auth/password-reset/confirm",
+        json={"reset_token": reset_token, "new_password": "senha-nova-456"},
+    )
+    assert confirm.status_code == 204, confirm.text
+
+    # O access token ANTIGO agora é rejeitado (versão defasada).
+    me_after = await client.get(
+        "/api/v1/auth/me", headers={"Authorization": f"Bearer {old_access}"}
+    )
+    assert me_after.status_code == 401, me_after.text
+
+
+@pytest.mark.asyncio
+async def test_password_reset_token_is_single_use(
+    client: httpx.AsyncClient,
+) -> None:
+    """O token de reset é de uso único: a 2ª utilização do MESMO token → 401 (V5)."""
+    email = "singleuse@faztudo.com"
+    await _register(
+        client, email=email, phone="11944443333", password="senha-antiga-123"
+    )
+    req = await client.post(
+        "/api/v1/auth/password-reset/request", json={"email": email}
+    )
+    reset_token = req.json()["reset_token"]
+
+    first = await client.post(
+        "/api/v1/auth/password-reset/confirm",
+        json={"reset_token": reset_token, "new_password": "senha-nova-1-456"},
+    )
+    assert first.status_code == 204, first.text
+
+    # Reapresentar o MESMO token de reset → 401 (versão já avançou).
+    second = await client.post(
+        "/api/v1/auth/password-reset/confirm",
+        json={"reset_token": reset_token, "new_password": "senha-nova-2-789"},
+    )
+    assert second.status_code == 401, second.text

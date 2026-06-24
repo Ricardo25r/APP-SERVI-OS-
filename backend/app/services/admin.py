@@ -230,11 +230,13 @@ class AdminService:
                 },
             )
             # Bloqueio/suspensão encerra as sessões ativas: revoga todos os
-            # refresh tokens do usuário (mesma transação que a mudança de status).
+            # refresh tokens E incrementa token_version, invalidando os access
+            # tokens já emitidos (laudo V3) — mesma transação que a mudança.
             if new_status in (UserStatus.blocked, UserStatus.suspended):
                 await self.tokens.revoke_all_for_user(
                     target.id, datetime.now(UTC)
                 )
+                target.token_version = (target.token_version or 0) + 1
             await self.repo.flush()
             await self.db.commit()
             await self.db.refresh(target)

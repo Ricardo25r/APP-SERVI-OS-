@@ -88,15 +88,17 @@ def create_refresh_token(
 def create_password_reset_token(
     subject: str | Any,
     expires_delta: timedelta | None = None,
+    extra_claims: dict[str, Any] | None = None,
 ) -> str:
     """Gera um JWT efêmero de reset de senha (claim ``type=password_reset``).
 
     MVP: o token é retornado na resposta de ``/auth/password-reset/request``
-    (sem envio de email — §7). O confirm valida ``type == password_reset``.
+    (sem envio de email — §7). O confirm valida ``type == password_reset`` e o
+    claim ``ver`` (token_version) — o que o torna de uso único (laudo V5).
     """
     if expires_delta is None:
         expires_delta = timedelta(minutes=PASSWORD_RESET_TOKEN_EXPIRE_MINUTES)
-    return _create_token(subject, expires_delta, "password_reset")
+    return _create_token(subject, expires_delta, "password_reset", extra_claims)
 
 
 def decode_token(token: str) -> dict[str, Any]:
@@ -105,6 +107,19 @@ def decode_token(token: str) -> dict[str, Any]:
     Lança `jwt.PyJWTError` (ou subclasse) se o token for inválido/expirado.
     """
     return jwt.decode(token, settings.JWT_SECRET, algorithms=[ALGORITHM])
+
+
+def claim_version(payload: dict[str, Any]) -> int:
+    """Lê o claim ``ver`` (token_version) de forma tolerante (laudo V3/V5).
+
+    - Ausente → ``0`` (compatível com tokens emitidos antes do V3).
+    - Malformado (null/não-numérico) → ``-1``, forçando *mismatch* com qualquer
+      ``token_version`` (≥ 0) → 401, em vez de estourar 500 num cast.
+    """
+    try:
+        return int(payload.get("ver", 0))
+    except (TypeError, ValueError):
+        return -1
 
 
 def hash_password(plain: str) -> str:

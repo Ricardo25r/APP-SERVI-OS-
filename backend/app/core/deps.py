@@ -19,7 +19,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import AuthError, PermissionDeniedError
-from app.core.security import decode_token
+from app.core.security import claim_version, decode_token
 from app.database.session import get_db
 from app.models import User, UserRole, UserStatus
 
@@ -90,6 +90,12 @@ async def get_current_user(
         raise AuthError("Usuário não encontrado.")
     if user.status != UserStatus.active:
         raise AuthError("Conta inativa.")
+
+    # Revogação por versão (laudo V3): tokens emitidos antes de um bloqueio/
+    # suspensão ou troca de senha carregam um ``ver`` defasado → rejeitados.
+    # Tokens antigos (pré-deploy) não têm ``ver`` → tratados como 0 (compatível).
+    if claim_version(payload) != (user.token_version or 0):
+        raise AuthError("Sessão expirada. Faça login novamente.")
 
     # Papel ativo da sessão (papel duplo) — atributo transiente, não persistido.
     user.active_role = _active_role_from_claim(user, payload.get("active_role"))

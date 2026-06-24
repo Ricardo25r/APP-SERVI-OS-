@@ -39,6 +39,7 @@ from app.core.exceptions import (
 )
 from app.core.mailer import render_action_email, send_email
 from app.core.security import (
+    claim_version,
     create_access_token,
     create_password_reset_token,
     create_refresh_token,
@@ -94,7 +95,9 @@ class AuthService:
         """Cria (access, refresh) crus. O claim ``active_role`` (papel ATIVO da
         sessão — papel duplo) vai em AMBOS os tokens; default = papel do banco."""
         role = active_role or user.role
-        claims = {"active_role": role.value}
+        # ``ver`` (token_version) acompanha os tokens p/ revogação por versão
+        # (laudo V3): bloqueio/reset incrementam e invalidam os tokens antigos.
+        claims = {"active_role": role.value, "ver": user.token_version or 0}
         access = create_access_token(user.id, extra_claims=claims)
         refresh = create_refresh_token(user.id, extra_claims=claims)
         return access, refresh
@@ -410,6 +413,11 @@ class AuthService:
         if user is None or user.status != UserStatus.active:
             raise AuthError("Usuário inválido para refresh.")
 
+        # Revogação por versão (laudo V3): refresh com ``ver`` defasado (após
+        # bloqueio/troca de senha) é rejeitado, mesmo que o registro exista.
+        if claim_version(payload) != (user.token_version or 0):
+            raise AuthError("Sessão expirada (faça login novamente).")
+
         # Rotação: revoga o antigo e emite um novo par, MANTENDO o papel ativo
         # da sessão (papel duplo) que vem no claim do refresh apresentado.
         active = payload.get("active_role")
@@ -536,7 +544,9 @@ class AuthService:
         reset_token: str | None = None
         user = await self.users.get_by_email(data.email)
         if user is not None:
-            token = create_password_reset_token(user.id)
+            token = create_password_reset_token(
+                user.id, extra_claims={"ver": user.token_version or 0}
+            )
             self._send_reset_email(user, token)
             if settings.APP_ENV != "production":
                 reset_token = token
@@ -595,7 +605,16 @@ class AuthService:
         if user is None:
             raise AuthError("Usuário não encontrado.")
 
+        # Uso único (laudo V5): o token de reset carrega o ``ver`` do momento da
+        # emissão; se já foi usado (ou outro reset rodou), a versão avançou e
+        # este token é rejeitado.
+        if claim_version(payload) != (user.token_version or 0):
+            raise AuthError("Token de reset já utilizado ou expirado.")
+
         user.password_hash = hash_password(data.new_password)
+        # Avança a versão: invalida ESTE token de reset (uso único) e todos os
+        # access tokens vivos; os refresh são revogados logo abaixo.
+        user.token_version = (user.token_version or 0) + 1
         await self.db.flush()
         # Invalida sessões existentes após troca de senha.
         await self.tokens.revoke_all_for_user(user.id, datetime.now(UTC))
