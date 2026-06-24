@@ -27,6 +27,7 @@ import { ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/ui/password-input";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth";
 import { apiPost } from "@/services/api";
@@ -340,9 +341,8 @@ export default function LoginPage() {
                     Esqueceu a senha?
                   </Link>
                 </div>
-                <Input
+                <PasswordInput
                   id="password"
-                  type="password"
                   autoComplete="current-password"
                   placeholder="Sua senha"
                   aria-invalid={Boolean(errors.password)}

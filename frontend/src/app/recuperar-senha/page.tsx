@@ -31,6 +31,7 @@ import { CheckCircle2, KeyRound, MailCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { apiPost } from "@/services/api";
 import {
@@ -319,9 +320,8 @@ function ResetStep({
 
       <div className="space-y-2">
         <Label htmlFor="new-password">Nova senha</Label>
-        <Input
+        <PasswordInput
           id="new-password"
-          type="password"
           autoComplete="new-password"
           placeholder="Mínimo de 8 caracteres"
           aria-invalid={Boolean(errors.newPassword)}
@@ -338,9 +338,8 @@ function ResetStep({
 
       <div className="space-y-2">
         <Label htmlFor="confirm-password">Confirmar nova senha</Label>
-        <Input
+        <PasswordInput
           id="confirm-password"
-          type="password"
           autoComplete="new-password"
           placeholder="Repita a nova senha"
           aria-invalid={Boolean(errors.confirmPassword)}

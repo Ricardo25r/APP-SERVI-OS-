@@ -26,6 +26,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/ui/password-input";
 import { useAuthStore } from "@/store/auth";
 import { apiPost } from "@/services/api";
 import type { AuthResponse, UserRole } from "@/types";
@@ -212,9 +213,8 @@ function RegisterForm() {
 
         <div className="space-y-2">
           <Label htmlFor="password">Senha</Label>
-          <Input
+          <PasswordInput
             id="password"
-            type="password"
             autoComplete="new-password"
             placeholder="Mínimo de 8 caracteres"
             aria-invalid={Boolean(errors.password)}
