@@ -38,10 +38,14 @@ def upload_bytes(data: bytes, key: str, content_type: str | None = None) -> None
     )
 
 
-def delete_object(key: str) -> None:
-    """Remove o objeto ``key`` do bucket (via endpoint interno do Docker)."""
+def delete_object(key: str, *, bucket: str | None = None) -> None:
+    """Remove o objeto ``key`` do bucket (via endpoint interno do Docker).
+
+    ``bucket`` permite apagar de um bucket específico (ex.: o privado de KYC);
+    por padrão usa o bucket público ``S3_BUCKET``.
+    """
     _client(settings.S3_ENDPOINT).delete_object(
-        Bucket=settings.S3_BUCKET, Key=key
+        Bucket=bucket or settings.S3_BUCKET, Key=key
     )
 
 

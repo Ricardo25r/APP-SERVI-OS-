@@ -17,8 +17,11 @@ Decisões:
 
 from __future__ import annotations
 
+import contextlib
 import uuid
+from datetime import UTC, datetime
 
+from sqlalchemy import delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -27,12 +30,17 @@ from app.core.exceptions import (
     DomainValidationError,
     NotFoundError,
 )
+from app.core.storage import delete_object
 from app.models import (
     Category,
     CustomerProfile,
+    Lead,
     ProfessionalProfile,
     User,
+    UserRole,
+    UserStatus,
 )
+from app.models.refresh_token import RefreshToken
 from app.repositories.users import UserProfileRepository
 from app.schemas.users import (
     CategoryRefOut,
@@ -54,6 +62,84 @@ class UserProfileService:
     def __init__(self, db: AsyncSession) -> None:
         self.db = db
         self.repo = UserProfileRepository(db)
+
+    # ================================================================== #
+    # Exclusão de conta (LGPD Art. 18 / exigência das app stores)
+    # ================================================================== #
+    async def delete_account(self, user: User) -> None:
+        """Exclui a conta do usuário autenticado.
+
+        Soft-delete + **anonimização** dos dados pessoais (direito de
+        eliminação da LGPD), preservando integridade referencial: leads,
+        avaliações e compras permanecem com o autor anonimizado. Revoga as
+        sessões e invalida os tokens vivos (token_version). Conta de admin não
+        é excluível por aqui (evita travar o sistema sem dono).
+        """
+        if user.role == UserRole.admin:
+            raise ConflictError(
+                "Conta de administrador não pode ser excluída por aqui."
+            )
+        now = datetime.now(UTC)
+
+        # Revoga sessões (refresh) + invalida access tokens vivos.
+        await self.db.execute(
+            delete(RefreshToken).where(RefreshToken.user_id == user.id)
+        )
+        user.token_version = (user.token_version or 0) + 1
+
+        # Apaga mídias pessoais do storage (best-effort): avatar (bucket público)
+        # e documento/selfie do KYC (bucket privado).
+        if user.avatar_key:
+            with contextlib.suppress(Exception):
+                delete_object(user.avatar_key)
+        for key in (user.kyc_document_key, user.kyc_selfie_key):
+            if key:
+                with contextlib.suppress(Exception):
+                    delete_object(key, bucket=settings.S3_KYC_BUCKET)
+
+        # Soft-delete dos perfis (somem de busca/ranking/matching) e cancela os
+        # pedidos abertos (ninguém compra lead de conta excluída). Via UPDATE
+        # para não disparar lazy-load de relacionamento em contexto async.
+        await self.db.execute(
+            update(CustomerProfile)
+            .where(
+                CustomerProfile.user_id == user.id,
+                CustomerProfile.deleted_at.is_(None),
+            )
+            .values(deleted_at=now)
+        )
+        await self.db.execute(
+            update(ProfessionalProfile)
+            .where(
+                ProfessionalProfile.user_id == user.id,
+                ProfessionalProfile.deleted_at.is_(None),
+            )
+            .values(deleted_at=now)
+        )
+        await self.db.execute(
+            update(Lead)
+            .where(Lead.customer_id == user.id, Lead.deleted_at.is_(None))
+            .values(deleted_at=now)
+        )
+
+        # Anonimiza PII, mantendo a linha para integridade referencial.
+        user.name = "Conta excluída"
+        user.email = f"deleted-{user.id}@faztudo.invalid"
+        user.phone = None
+        user.password_hash = None
+        user.document = None
+        user.gender = None
+        user.birth_date = None
+        user.google_sub = None
+        user.apple_sub = None
+        user.avatar_key = None
+        user.kyc_document_key = None
+        user.kyc_selfie_key = None
+        user.kyc_status = "none"
+        user.kyc_reject_reason = None
+        user.status = UserStatus.blocked
+        user.deleted_at = now
+        await self.db.commit()
 
     # ================================================================== #
     # Customer profile

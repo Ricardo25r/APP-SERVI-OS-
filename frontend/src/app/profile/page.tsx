@@ -28,6 +28,7 @@ import type { ProfessionalProfile } from "@/types";
 
 import { AccountModeCard } from "@/modules/profile/account-mode-card";
 import { CustomerProfileSection } from "@/modules/profile/customer-profile-section";
+import { DeleteAccountCard } from "@/modules/profile/delete-account-card";
 import { KycSection } from "@/modules/profile/kyc-section";
 import { ProfessionalProfileSection } from "@/modules/profile/professional-profile-section";
 import { ProfessionalCategoriesSection } from "@/modules/profile/professional-categories-section";
@@ -137,6 +138,8 @@ export default function ProfilePage() {
           Administradores não possuem perfil de cliente ou profissional.
         </p>
       )}
+
+      {role !== "admin" && <DeleteAccountCard />}
     </main>
   );
 }

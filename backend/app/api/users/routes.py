@@ -15,7 +15,15 @@ from __future__ import annotations
 
 import uuid
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    File,
+    HTTPException,
+    Response,
+    UploadFile,
+    status,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import get_current_user
@@ -93,6 +101,26 @@ async def my_referral(
     return ReferralInfoOut(
         code=code, total_referrals=total, credits_earned=earned
     )
+
+
+@router.delete(
+    "/me",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+    summary="Excluir minha conta (LGPD — irreversível)",
+)
+async def delete_my_account(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> Response:
+    """Exclui (anonimiza + desativa) a conta do usuário autenticado.
+
+    Irreversível: revoga as sessões, anonimiza os dados pessoais e remove o
+    usuário das listagens. Atende ao direito de eliminação (LGPD Art. 18) e à
+    exigência de exclusão de conta das app stores.
+    """
+    await UserProfileService(db).delete_account(current_user)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 # --------------------------------------------------------------------------- #
