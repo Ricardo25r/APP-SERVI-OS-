@@ -36,6 +36,7 @@ from app.models import (
     UserStatus,
 )
 from app.schemas.admin import (
+    AdminCoverage,
     AdminLeadListResponse,
     AdminLeadRead,
     AdminMetrics,
@@ -65,6 +66,23 @@ async def get_metrics(
 ) -> AdminMetrics:
     """Contagens e finanças agregadas (sem N+1 — §8)."""
     return await AdminService(db).metrics()
+
+
+# --------------------------------------------------------------------------- #
+# 1b. Cobertura de prestadores (média de idade + por categoria)
+# --------------------------------------------------------------------------- #
+@router.get(
+    "/coverage",
+    response_model=AdminCoverage,
+    summary="Cobertura de prestadores (média de idade + nº por categoria)",
+)
+async def get_coverage(
+    _admin: User = Depends(require_roles(UserRole.admin)),
+    db: AsyncSession = Depends(get_db),
+) -> AdminCoverage:
+    """Média de idade dos prestadores + contagem por categoria (inclui as
+    categorias sem nenhum prestador) — mapa de cobertura."""
+    return await AdminService(db).coverage()
 
 
 # --------------------------------------------------------------------------- #

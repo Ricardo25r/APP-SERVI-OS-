@@ -19,18 +19,21 @@ salvo onde indicado. As métricas de "usuários por papel" contam apenas ativos
 from __future__ import annotations
 
 import uuid
+from datetime import date
 
 from sqlalchemy import Select, case, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import (
     AuditLog,
+    Category,
     Conversation,
     Lead,
     LeadPurchase,
     LeadStatus,
     PaymentOrder,
     PaymentOrderStatus,
+    ProfessionalCategory,
     Review,
     SupportTicket,
     User,
@@ -72,6 +75,66 @@ class AdminRepository:
         stmt = select(Lead.status, func.count()).group_by(Lead.status)
         result = await self.db.execute(stmt)
         return {status: int(count) for status, count in result.all()}
+
+    async def coverage_by_category(self) -> list[tuple[str, int]]:
+        """(nome da categoria, nº de prestadores) — inclui categorias com 0.
+
+        LEFT OUTER JOIN categorias→vínculos garante que categorias sem nenhum
+        prestador apareçam com contagem 0. Ordena por contagem desc, depois nome.
+        """
+        stmt = (
+            select(
+                Category.name,
+                func.count(ProfessionalCategory.professional_id),
+            )
+            .select_from(Category)
+            .outerjoin(
+                ProfessionalCategory,
+                ProfessionalCategory.category_id == Category.id,
+            )
+            .where(Category.active.is_(True))
+            .group_by(Category.id, Category.name)
+            .order_by(
+                func.count(ProfessionalCategory.professional_id).desc(),
+                Category.name,
+            )
+        )
+        result = await self.db.execute(stmt)
+        return [(name, int(count)) for name, count in result.all()]
+
+    async def professional_age_stats(self) -> tuple[int, int, float | None]:
+        """(total de profissionais ativos, com data de nascimento, idade média)."""
+        total = int(
+            (
+                await self.db.execute(
+                    select(func.count())
+                    .select_from(User)
+                    .where(
+                        User.role == UserRole.professional,
+                        User.deleted_at.is_(None),
+                    )
+                )
+            ).scalar_one()
+        )
+        rows = await self.db.execute(
+            select(User.birth_date).where(
+                User.role == UserRole.professional,
+                User.deleted_at.is_(None),
+                User.birth_date.is_not(None),
+            )
+        )
+        dates = [r[0] for r in rows.all()]
+        avg: float | None = None
+        if dates:
+            today = date.today()
+            ages = [
+                today.year
+                - d.year
+                - ((today.month, today.day) < (d.month, d.day))
+                for d in dates
+            ]
+            avg = round(sum(ages) / len(ages), 1)
+        return total, len(dates), avg
 
     async def count_lead_purchases(self) -> int:
         stmt = select(func.count()).select_from(LeadPurchase)

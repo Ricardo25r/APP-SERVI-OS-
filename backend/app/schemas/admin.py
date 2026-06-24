@@ -31,6 +31,8 @@ __all__ = [
     "LeadStatusCounts",
     "FinanceSummary",
     "AdminMetrics",
+    "CategoryCoverage",
+    "AdminCoverage",
     # Usuários
     "AdminUserRead",
     "AdminUserListResponse",
@@ -91,6 +93,25 @@ class AdminMetrics(BaseModel):
     conversations: int
     support_tickets_open: int = 0
     finance: FinanceSummary
+
+
+class CategoryCoverage(BaseModel):
+    """Nº de prestadores cadastrados em uma categoria."""
+
+    category: str
+    count: int
+
+
+class AdminCoverage(BaseModel):
+    """Cobertura de prestadores: média de idade + contagem por categoria."""
+
+    total_professionals: int
+    professionals_with_birth_date: int
+    average_age: float | None = None
+    categories_total: int
+    categories_with_professionals: int
+    categories_without_professionals: int
+    categories: list[CategoryCoverage]
 
 
 # --------------------------------------------------------------------------- #

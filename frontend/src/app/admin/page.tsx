@@ -17,6 +17,7 @@ import {
   CreditCard,
   Gift,
   LifeBuoy,
+  Map,
   Rocket,
   ScrollText,
   Tags,
@@ -89,6 +90,12 @@ const SHORTCUTS: Shortcut[] = [
     label: "Sprints",
     description: "Esteira de ideias: bugs, melhorias, consertos e ideias do produto.",
     icon: Rocket,
+  },
+  {
+    href: "/admin/cobertura",
+    label: "Cobertura",
+    description: "Prestadores por categoria (quais têm e quais faltam) + média de idade.",
+    icon: Map,
   },
 ];
 

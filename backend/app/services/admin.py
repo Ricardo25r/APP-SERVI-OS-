@@ -40,11 +40,13 @@ from app.models import (
 from app.repositories.admin import AdminRepository
 from app.repositories.auth import RefreshTokenRepository
 from app.schemas.admin import (
+    AdminCoverage,
     AdminLeadRead,
     AdminMetrics,
     AdminPaymentRead,
     AdminUserRead,
     AuditLogRead,
+    CategoryCoverage,
     FinanceSummary,
     LeadStatusCounts,
     RoleCounts,
@@ -130,6 +132,31 @@ class AdminService:
                 revenue_brl=round(revenue_cents / 100, 2),
                 refunded_orders=refunded_orders,
             ),
+        )
+
+    # ------------------------------------------------------------------ #
+    # Cobertura de prestadores (GET /admin/coverage)
+    # ------------------------------------------------------------------ #
+    async def coverage(self) -> AdminCoverage:
+        """Média de idade dos prestadores + contagem por categoria (cobertura)."""
+        per_cat = await self.repo.coverage_by_category()
+        total, with_birth, avg = await self.repo.professional_age_stats()
+        categories = [
+            CategoryCoverage(category=name, count=count)
+            for name, count in per_cat
+        ]
+        return AdminCoverage(
+            total_professionals=total,
+            professionals_with_birth_date=with_birth,
+            average_age=avg,
+            categories_total=len(categories),
+            categories_with_professionals=sum(
+                1 for c in categories if c.count > 0
+            ),
+            categories_without_professionals=sum(
+                1 for c in categories if c.count == 0
+            ),
+            categories=categories,
         )
 
     # ------------------------------------------------------------------ #
