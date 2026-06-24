@@ -235,6 +235,10 @@ class FavoriteIn(BaseModel):
     professional_user_id: uuid.UUID
 
 
+class BlockIn(BaseModel):
+    user_id: uuid.UUID
+
+
 class ProfessionalSearchItem(BaseModel):
     """Item do catálogo de profissionais (busca pelo cliente)."""
 

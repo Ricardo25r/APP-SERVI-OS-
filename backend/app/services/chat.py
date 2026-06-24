@@ -33,6 +33,7 @@ from __future__ import annotations
 import uuid
 from datetime import UTC, datetime
 
+from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import (
@@ -46,6 +47,7 @@ from app.models import (
     ConversationStatus,
     Message,
     User,
+    UserBlock,
 )
 from app.repositories.chat import ChatRepository
 from app.schemas.chat import (
@@ -194,6 +196,32 @@ class ChatService:
     # ------------------------------------------------------------------ #
     # Envio de mensagem
     # ------------------------------------------------------------------ #
+    async def _assert_not_blocked(
+        self, user_a: uuid.UUID, user_b: uuid.UUID
+    ) -> None:
+        """Impede mensagens entre usuários que se bloquearam (#52)."""
+        blocked = (
+            await self.db.execute(
+                select(UserBlock.id).where(
+                    or_(
+                        and_(
+                            UserBlock.blocker_id == user_a,
+                            UserBlock.blocked_id == user_b,
+                        ),
+                        and_(
+                            UserBlock.blocker_id == user_b,
+                            UserBlock.blocked_id == user_a,
+                        ),
+                    )
+                )
+            )
+        ).first()
+        if blocked is not None:
+            raise PermissionDeniedError(
+                "Não é possível enviar mensagens: usuário bloqueado."
+            )
+
+    # ------------------------------------------------------------------ #
     async def send_message(
         self, current_user: User, conversation_id: uuid.UUID, *, message: str
     ) -> MessageOut:
@@ -210,6 +238,12 @@ class ChatService:
             raise DomainValidationError(
                 "Conversa arquivada não aceita novas mensagens."
             )
+        other_id = (
+            conversation.customer_id
+            if current_user.id == conversation.professional_id
+            else conversation.professional_id
+        )
+        await self._assert_not_blocked(current_user.id, other_id)
 
         text = (message or "").strip()
         if not text:

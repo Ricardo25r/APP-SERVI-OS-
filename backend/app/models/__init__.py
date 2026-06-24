@@ -64,6 +64,7 @@ from app.models.sprint import (
 )
 from app.models.support_ticket import SupportTicket
 from app.models.user import User
+from app.models.user_block import UserBlock
 from app.models.xp_transaction import XpTransaction
 
 __all__ = [
@@ -75,6 +76,7 @@ __all__ = [
     "SoftDeleteMixin",
     # Models
     "User",
+    "UserBlock",
     "RefreshToken",
     "CustomerProfile",
     "ProfessionalProfile",

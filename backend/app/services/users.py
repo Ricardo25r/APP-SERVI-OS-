@@ -199,6 +199,19 @@ class UserProfileService:
         return ProfessionalSearchList(items=items, total=len(items))
 
     # ================================================================== #
+    # Bloqueio entre usuários
+    # ================================================================== #
+    async def block_user(self, user: User, target_id: uuid.UUID) -> None:
+        if target_id == user.id:
+            raise ConflictError("Não é possível bloquear a si mesmo.")
+        await self.repo.add_block(user.id, target_id)
+        await self.db.commit()
+
+    async def unblock_user(self, user: User, target_id: uuid.UUID) -> None:
+        await self.repo.remove_block(user.id, target_id)
+        await self.db.commit()
+
+    # ================================================================== #
     # Customer profile
     # ================================================================== #
     async def create_customer_profile(

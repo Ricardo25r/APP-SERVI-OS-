@@ -33,6 +33,7 @@ from app.database.session import get_db
 from app.models import User
 from app.schemas.auth import ReferralInfoOut, UserOut
 from app.schemas.users import (
+    BlockIn,
     CategoriesOut,
     CustomerProfileIn,
     CustomerProfileOut,
@@ -325,6 +326,39 @@ async def remove_favorite(
     await UserProfileService(db).remove_favorite(
         current_user, professional_user_id
     )
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+# --------------------------------------------------------------------------- #
+# Bloqueio entre usuários
+# --------------------------------------------------------------------------- #
+@router.post(
+    "/blocks",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+    summary="Bloquear um usuário",
+)
+async def block_user(
+    payload: BlockIn,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> Response:
+    await UserProfileService(db).block_user(current_user, payload.user_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.delete(
+    "/blocks/{user_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+    summary="Desbloquear um usuário",
+)
+async def unblock_user(
+    user_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> Response:
+    await UserProfileService(db).unblock_user(current_user, user_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 

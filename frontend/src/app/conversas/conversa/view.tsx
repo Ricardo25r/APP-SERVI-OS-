@@ -13,7 +13,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, ChevronRight, UserRound } from "lucide-react";
 
@@ -22,6 +22,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useRequireAuth } from "@/hooks/use-auth";
+import { apiPost } from "@/services/api";
 import {
   MessageInput,
   MessageThread,
@@ -35,7 +36,23 @@ import { ReportButton } from "@/modules/reports/report-button";
 export default function ConversaThreadPage() {
   const { user, isAuthenticated, hasHydrated } = useRequireAuth();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const id = searchParams.get("id") ?? undefined;
+
+  async function blockUser(targetId: string) {
+    if (
+      !window.confirm(
+        "Bloquear este usuário? Vocês não poderão mais trocar mensagens."
+      )
+    )
+      return;
+    try {
+      await apiPost("/users/blocks", { user_id: targetId });
+      router.push("/conversas");
+    } catch {
+      /* mantém a conversa em caso de falha */
+    }
+  }
 
   const { data: conversation } = useQuery<Conversation>({
     queryKey: ["chat", "conversation", id],
@@ -166,11 +183,20 @@ export default function ConversaThreadPage() {
               ) : (
                 <span />
               )}
-              <ReportButton
-                targetType="user"
-                targetId={counterpartId}
-                label="Denunciar"
-              />
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => void blockUser(counterpartId)}
+                  className="text-xs font-medium text-muted-foreground hover:text-destructive"
+                >
+                  Bloquear
+                </button>
+                <ReportButton
+                  targetType="user"
+                  targetId={counterpartId}
+                  label="Denunciar"
+                />
+              </div>
             </div>
           ) : null}
           <MessageThread conversationId={id} currentUserId={user.id} />

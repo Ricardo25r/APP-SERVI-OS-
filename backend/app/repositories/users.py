@@ -28,6 +28,7 @@ from app.models import (
     ProfessionalCategory,
     ProfessionalProfile,
     User,
+    UserBlock,
     UserStatus,
 )
 
@@ -213,6 +214,36 @@ class UserProfileRepository:
             .order_by(Favorite.created_at.desc())
         )
         return list((await self.db.execute(stmt)).all())
+
+    # ------------------------------------------------------------------ #
+    # Bloqueio entre usuários
+    # ------------------------------------------------------------------ #
+    async def add_block(
+        self, blocker_id: uuid.UUID, blocked_id: uuid.UUID
+    ) -> None:
+        exists = (
+            await self.db.execute(
+                select(UserBlock.id).where(
+                    UserBlock.blocker_id == blocker_id,
+                    UserBlock.blocked_id == blocked_id,
+                )
+            )
+        ).first()
+        if exists is None:
+            self.db.add(
+                UserBlock(blocker_id=blocker_id, blocked_id=blocked_id)
+            )
+            await self.db.flush()
+
+    async def remove_block(
+        self, blocker_id: uuid.UUID, blocked_id: uuid.UUID
+    ) -> None:
+        await self.db.execute(
+            delete(UserBlock).where(
+                UserBlock.blocker_id == blocker_id,
+                UserBlock.blocked_id == blocked_id,
+            )
+        )
 
     # ------------------------------------------------------------------ #
     # Carteira de créditos (criada junto do perfil profissional — §2.8)
