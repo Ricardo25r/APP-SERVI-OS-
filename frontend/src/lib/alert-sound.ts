@@ -10,10 +10,14 @@
 let audio: HTMLAudioElement | null = null;
 let unlocked = false;
 
+// Beep tocado a cada alerta: repete 4 vezes, 1 por segundo.
+const REPEAT_COUNT = 4;
+const REPEAT_INTERVAL_MS = 1000;
+
 function getAudio(): HTMLAudioElement | null {
   if (typeof window === "undefined" || typeof Audio === "undefined") return null;
   if (!audio) {
-    audio = new Audio("/sounds/new-opportunity.wav");
+    audio = new Audio("/sounds/notification.mp3");
     audio.preload = "auto";
     audio.volume = 0.9;
   }
@@ -39,14 +43,26 @@ export function unlockAlertSound(): void {
     });
 }
 
-/** Toca o som de alerta (best-effort). */
+/** Toca o som de alerta: o beep repetido 4 vezes, 1 por segundo (best-effort). */
 export function playAlertSound(): void {
   const a = getAudio();
   if (!a) return;
-  try {
-    a.currentTime = 0;
-    void a.play();
-  } catch {
-    /* autoplay bloqueado: ignora (o popup visual continua aparecendo) */
-  }
+  const beep = () => {
+    try {
+      a.currentTime = 0;
+      void a.play();
+    } catch {
+      /* autoplay bloqueado: ignora (o popup visual continua aparecendo) */
+    }
+  };
+  beep();
+  let count = 1;
+  const timer = window.setInterval(() => {
+    if (count >= REPEAT_COUNT) {
+      window.clearInterval(timer);
+      return;
+    }
+    beep();
+    count += 1;
+  }, REPEAT_INTERVAL_MS);
 }
