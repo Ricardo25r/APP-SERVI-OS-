@@ -67,6 +67,28 @@ npm --prefix frontend run build:app
 
 ---
 
+## Build reproduzível por linha de comando (o que funcionou — sem GUI)
+
+Toolchain instalado em pasta do usuário (sem admin):
+- **JDK 21** (Temurin, portable): `C:\Users\inova\android-build\jdk21\jdk-21.0.11+10`
+  - ⚠️ **Capacitor 8 exige toolchain Java 21** (os plugins pedem `languageVersion=21`). JDK 17 falha com `ToolchainProvisioningException`.
+- **Android SDK**: `C:\Users\inova\AppData\Local\Android\Sdk` (cmdline-tools + platform-tools + platforms;android-36 + build-tools;36.0.0)
+  - Licenças aceitas via arquivos em `Sdk\licenses\` (`android-sdk-license`, `android-sdk-preview-license`).
+
+Comando de build (PowerShell):
+```powershell
+$env:JAVA_HOME = "C:\Users\inova\android-build\jdk21\jdk-21.0.11+10"
+$env:ANDROID_HOME = "C:\Users\inova\AppData\Local\Android\Sdk"
+$env:ANDROID_SDK_ROOT = $env:ANDROID_HOME
+$env:PATH = "$env:JAVA_HOME\bin;$env:ANDROID_HOME\platform-tools;$env:PATH"
+Set-Location "C:\FazTudo\frontend\android"
+.\gradlew.bat assembleDebug --no-daemon
+```
+Saída: `frontend/android/app/build/outputs/apk/debug/app-debug.apk` (~15 MB).
+Cópia de entrega: `C:\FazTudo\dist\FazTudo-debug.apk`.
+
+Para regenerar depois de mudar o frontend: `npm --prefix frontend run build:app` (refaz o `out/` + `cap sync`) e então o `gradlew assembleDebug` acima.
+
 ## Riscos conhecidos
 
 - **Embedded WebView + OAuth:** ver item D / marco 2.
