@@ -29,6 +29,7 @@ from app.schemas.reviews import (
     ReviewHighlightsResponse,
     ReviewListResponse,
     ReviewOut,
+    ReviewReplyIn,
 )
 from app.services.reviews import ReviewService
 
@@ -52,6 +53,21 @@ async def create_review(
     participou/lead sem compra, ``409`` já avaliou este lead."""
     service = ReviewService(db)
     return await service.create(current_user, payload)
+
+
+@router.post(
+    "/{review_id}/reply",
+    response_model=ReviewOut,
+    summary="Responder a uma avaliação recebida (apenas o avaliado)",
+)
+async def reply_review(
+    review_id: uuid.UUID,
+    payload: ReviewReplyIn,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> ReviewOut:
+    """O avaliado responde (uma vez) a uma avaliação recebida (#51)."""
+    return await ReviewService(db).reply(current_user, review_id, payload.reply)
 
 
 @router.get(

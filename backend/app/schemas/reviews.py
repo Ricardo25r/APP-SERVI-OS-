@@ -18,6 +18,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 __all__ = [
     "ReviewCreate",
+    "ReviewReplyIn",
     "ReviewOut",
     "ReviewListResponse",
     "ReputationSummary",
@@ -46,6 +47,14 @@ class ReviewCreate(BaseModel):
     comment: str | None = Field(default=None, max_length=1000)
 
 
+class ReviewReplyIn(BaseModel):
+    """Resposta do avaliado a uma avaliação recebida (#51)."""
+
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    reply: str = Field(min_length=1, max_length=1000)
+
+
 # --------------------------------------------------------------------------- #
 # Saída
 # --------------------------------------------------------------------------- #
@@ -60,6 +69,8 @@ class ReviewOut(BaseModel):
     lead_id: uuid.UUID
     score: int
     comment: str | None
+    reply: str | None = None
+    reply_at: datetime | None = None
     created_at: datetime
 
 

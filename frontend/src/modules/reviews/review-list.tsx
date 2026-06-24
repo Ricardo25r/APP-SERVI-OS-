@@ -7,15 +7,72 @@
  */
 "use client";
 
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, MessageSquare } from "lucide-react";
 
 import { Avatar } from "@/components/ui/avatar";
 import { EmptyState } from "@/components/ui/empty-state";
+import { apiPost } from "@/services/api";
 
 import { fetchUserReviews } from "./api";
 import { StarRating } from "./star-rating";
 import type { ReceivedReview } from "./types";
+
+function ReviewReply({
+  review,
+  canReply,
+}: {
+  review: ReceivedReview;
+  canReply: boolean;
+}) {
+  const [reply, setReply] = useState<string | null>(review.reply ?? null);
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  if (reply) {
+    return (
+      <p className="mt-2 rounded-lg bg-muted/50 px-3 py-2 text-xs text-foreground">
+        <span className="font-semibold">Resposta:</span> {reply}
+      </p>
+    );
+  }
+  if (!canReply || !review.id) return null;
+
+  async function submit() {
+    const t = text.trim();
+    if (!t) return;
+    setBusy(true);
+    try {
+      await apiPost(`/reviews/${review.id}/reply`, { reply: t });
+      setReply(t);
+    } catch {
+      /* mantém o formulário */
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="mt-2 flex gap-2">
+      <input
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder="Responder a esta avaliação..."
+        maxLength={1000}
+        className="flex-1 rounded-md border border-input bg-card px-2.5 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+      />
+      <button
+        type="button"
+        onClick={() => void submit()}
+        disabled={busy}
+        className="rounded-md border border-input px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-secondary disabled:opacity-60"
+      >
+        Responder
+      </button>
+    </div>
+  );
+}
 import {
   formatReviewDate,
   reviewAuthorName,
@@ -32,6 +89,8 @@ interface ReviewListProps {
   emptyLabel?: string;
   /** Exibe um resumo (média + total) acima da lista. */
   showSummary?: boolean;
+  /** Permite ao dono responder às avaliações recebidas (#51). */
+  canReply?: boolean;
 }
 
 export function ReviewList({
@@ -39,6 +98,7 @@ export function ReviewList({
   className,
   emptyLabel = "Ainda não há avaliações.",
   showSummary = false,
+  canReply = false,
 }: ReviewListProps) {
   const { data, isLoading, isError, error } = useQuery<ReceivedReview[]>({
     queryKey: userReviewsKey(userId),
@@ -125,6 +185,7 @@ export function ReviewList({
                     {review.comment}
                   </p>
                 )}
+                <ReviewReply review={review} canReply={canReply} />
               </div>
             </div>
           </li>

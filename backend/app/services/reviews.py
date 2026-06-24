@@ -40,7 +40,9 @@ Atualização de reputação (mesma transação) — mapeamento MVP:
 
 from __future__ import annotations
 
+import re
 import uuid
+from datetime import UTC, datetime
 from decimal import ROUND_HALF_UP, Decimal
 
 from sqlalchemy import select
@@ -90,6 +92,19 @@ def _avatar_url(key: str | None) -> str | None:
         return presigned_get_url(key)
     except Exception:  # noqa: BLE001 — URL é best-effort
         return None
+
+
+_PHONE_RE = re.compile(r"(?:\d[\s().-]?){8,}")
+_EMAIL_RE = re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+")
+
+
+def _sanitize_comment(text: str | None) -> str | None:
+    """Mascara telefone/e-mail no texto público (moderação básica — #51)."""
+    if not text:
+        return text
+    masked = _EMAIL_RE.sub("[contato oculto]", text)
+    masked = _PHONE_RE.sub("[contato oculto]", masked)
+    return masked
 
 
 class ReviewService:
@@ -156,7 +171,7 @@ class ReviewService:
             target_id=target_id,
             lead_id=lead.id,
             score=data.score,
-            comment=data.comment,
+            comment=_sanitize_comment(data.comment),
         )
         self.repo.add(review)
         try:
@@ -197,6 +212,33 @@ class ReviewService:
     # ------------------------------------------------------------------ #
     # Elegibilidade / derivação do alvo
     # ------------------------------------------------------------------ #
+    async def reply(
+        self, current_user: User, review_id: uuid.UUID, text: str
+    ) -> ReviewOut:
+        """Resposta do avaliado a uma avaliação recebida (uma vez — #51)."""
+        review = await self.db.get(Review, review_id)
+        if review is None:
+            raise NotFoundError("Avaliação não encontrada.")
+        if review.target_id != current_user.id:
+            raise PermissionDeniedError(
+                "Apenas o avaliado pode responder a esta avaliação."
+            )
+        if review.reply:
+            raise ConflictError("Você já respondeu esta avaliação.")
+        review.reply = _sanitize_comment(text.strip())
+        review.reply_at = datetime.now(UTC)
+        add_notification(
+            self.db,
+            user_id=review.author_id,
+            type="review",
+            title="Resposta à sua avaliação",
+            body=f"{current_user.name} respondeu à sua avaliação.",
+            href="/avaliacoes",
+        )
+        await self.db.commit()
+        await self.db.refresh(review)
+        return ReviewOut.model_validate(review)
+
     def _resolve_target(self, lead: Lead, current_user: User) -> uuid.UUID:
         """Deriva o ``target_id`` (o outro lado) ou levanta 403.
 

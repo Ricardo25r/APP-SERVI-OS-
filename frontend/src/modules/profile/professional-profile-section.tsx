@@ -554,6 +554,7 @@ export function ProfessionalProfileSection() {
           <CardContent>
             <ReviewList
               userId={profile.user_id}
+              canReply
               emptyLabel="Você ainda não recebeu avaliações."
             />
           </CardContent>

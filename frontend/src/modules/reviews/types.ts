@@ -32,6 +32,9 @@ export interface ReceivedReview {
   /** ...ou inline. */
   author_name?: string | null;
   reviewer_name?: string | null;
+  /** Resposta do avaliado (#51). */
+  reply?: string | null;
+  reply_at?: string | null;
 }
 
 /** Resposta paginada de avaliações recebidas. */

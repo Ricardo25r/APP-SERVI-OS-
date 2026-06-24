@@ -19,10 +19,12 @@ Regras de modelagem:
 from __future__ import annotations
 
 import uuid
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 from sqlalchemy import (
     CheckConstraint,
+    DateTime,
     ForeignKey,
     Index,
     Integer,
@@ -67,6 +69,11 @@ class Review(UUIDPKMixin, CreatedAtMixin, Base):
     )
     score: Mapped[int] = mapped_column(Integer, nullable=False)
     comment: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    # Resposta do avaliado à avaliação (direito de defesa — #51). Definida 1x.
+    reply: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    reply_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
     # Relacionamentos (FKs ambíguas → ``foreign_keys`` explícito).
     author: Mapped[User] = relationship("User", foreign_keys=[author_id])
