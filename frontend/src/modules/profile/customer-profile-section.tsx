@@ -12,7 +12,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { Loader2, MapPin } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -56,6 +56,60 @@ export function CustomerProfileSection() {
   const queryClient = useQueryClient();
   const [form, setForm] = useState<CustomerProfileForm>({ city: "", state: "" });
   const [saved, setSaved] = useState(false);
+  const [geoLoading, setGeoLoading] = useState(false);
+  const [geoMsg, setGeoMsg] = useState<string | null>(null);
+
+  // Detecta a posição do aparelho e preenche UF + cidade automaticamente.
+  function detectLocation() {
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      setGeoMsg("Geolocalização não suportada neste dispositivo.");
+      return;
+    }
+    setGeoLoading(true);
+    setGeoMsg(null);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        try {
+          const res = await fetch(
+            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=pt`
+          );
+          const d = await res.json();
+          const uf =
+            String(d.principalSubdivisionCode || "").split("-")[1] || "";
+          const city = d.city || d.locality || "";
+          setForm((f) => ({
+            ...f,
+            state: uf || f.state,
+            city: city || f.city,
+          }));
+          setSaved(false);
+          setGeoMsg(
+            city
+              ? `Localização encontrada: ${city}${uf ? `/${uf}` : ""}.`
+              : "Localização capturada. Confira a cidade abaixo."
+          );
+        } catch {
+          setGeoMsg(
+            "Não consegui identificar sua cidade. Selecione manualmente abaixo."
+          );
+        } finally {
+          setGeoLoading(false);
+        }
+      },
+      (err) => {
+        setGeoLoading(false);
+        setGeoMsg(
+          err.code === err.PERMISSION_DENIED
+            ? "Permissão de localização negada. Toque no cadeado/ícone ao lado do endereço (ou nos Ajustes do navegador) e permita a localização para este site."
+            : err.code === err.POSITION_UNAVAILABLE
+              ? "Não foi possível obter sua localização. Verifique se o GPS/localização do aparelho está ligado e tente de novo."
+              : "Tempo esgotado ao obter a localização. Tente novamente com melhor sinal."
+        );
+      },
+      { timeout: 15000, enableHighAccuracy: false, maximumAge: 120000 }
+    );
+  }
 
   const {
     data: profile,
@@ -151,6 +205,24 @@ export function CustomerProfileSection() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-sm font-medium leading-none">Localização</span>
+            <button
+              type="button"
+              onClick={detectLocation}
+              disabled={geoLoading || mutation.isPending}
+              className="inline-flex items-center gap-1.5 rounded-md border border-primary/30 bg-primary/5 px-2.5 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary/10 disabled:opacity-60"
+            >
+              {geoLoading ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
+              ) : (
+                <MapPin className="h-3.5 w-3.5" aria-hidden />
+              )}
+              {geoLoading ? "Detectando..." : "Usar minha localização"}
+            </button>
+          </div>
+          {geoMsg && <p className="text-xs text-muted-foreground">{geoMsg}</p>}
+
           <div className="grid gap-4 sm:grid-cols-[auto_1fr]">
             <div className="space-y-2">
               <Label htmlFor="customer-state">Estado (UF)</Label>
