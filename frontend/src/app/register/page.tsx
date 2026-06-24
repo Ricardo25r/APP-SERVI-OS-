@@ -41,26 +41,32 @@ import {
   useRedirectAuthenticated,
 } from "@/modules/auth";
 
-const registerSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(2, "Informe seu nome completo."),
-  email: z
-    .string()
-    .min(1, "Informe seu e-mail.")
-    .email("E-mail inválido."),
-  phone: z
-    .string()
-    .trim()
-    .min(10, "Informe um telefone válido (com DDD)."),
-  password: z
-    .string()
-    .min(8, "A senha deve ter pelo menos 8 caracteres."),
-  role: z.enum(["customer", "professional"], {
-    errorMap: () => ({ message: "Selecione o tipo de conta." }),
-  }),
-});
+const registerSchema = z
+  .object({
+    name: z
+      .string()
+      .trim()
+      .min(2, "Informe seu nome completo."),
+    email: z
+      .string()
+      .min(1, "Informe seu e-mail.")
+      .email("E-mail inválido."),
+    phone: z
+      .string()
+      .trim()
+      .min(10, "Informe um telefone válido (com DDD)."),
+    password: z
+      .string()
+      .min(8, "A senha deve ter pelo menos 8 caracteres."),
+    confirmPassword: z.string().min(1, "Confirme a senha."),
+    role: z.enum(["customer", "professional"], {
+      errorMap: () => ({ message: "Selecione o tipo de conta." }),
+    }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "As senhas não conferem.",
+    path: ["confirmPassword"],
+  });
 
 type RegisterValues = z.infer<typeof registerSchema>;
 
@@ -109,6 +115,7 @@ function RegisterForm() {
       email: "",
       phone: "",
       password: "",
+      confirmPassword: "",
       role: initialRole,
     },
   });
@@ -222,6 +229,24 @@ function RegisterForm() {
             {...register("password")}
           />
           <FieldError id="password-error" message={errors.password?.message} />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="confirmPassword">Confirmar senha</Label>
+          <PasswordInput
+            id="confirmPassword"
+            autoComplete="new-password"
+            placeholder="Digite a senha novamente"
+            aria-invalid={Boolean(errors.confirmPassword)}
+            aria-describedby={
+              errors.confirmPassword ? "confirmPassword-error" : undefined
+            }
+            {...register("confirmPassword")}
+          />
+          <FieldError
+            id="confirmPassword-error"
+            message={errors.confirmPassword?.message}
+          />
         </div>
 
         <div className="space-y-2">
