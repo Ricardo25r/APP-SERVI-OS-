@@ -77,8 +77,8 @@ class PushService:
         )
         await self.db.commit()
 
-    async def unsubscribe(self, endpoint: str) -> None:
-        await self.repo.delete_by_endpoint(endpoint)
+    async def unsubscribe(self, user: User, endpoint: str) -> None:
+        await self.repo.delete_by_endpoint(endpoint, user_id=user.id)
         await self.db.commit()
 
     async def _dispatch(

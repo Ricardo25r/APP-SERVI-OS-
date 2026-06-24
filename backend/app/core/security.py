@@ -24,7 +24,11 @@ ALGORITHM = settings.JWT_ALGORITHM
 PASSWORD_RESET_TOKEN_EXPIRE_MINUTES = 30
 
 # Contexto de hashing de senha (bcrypt) — conforme §3.11 do contrato.
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# ``bcrypt__rounds=12`` fixa o custo explicitamente (não depende do default da
+# lib, que pode variar entre versões) — laudo 2026-06-24, V16.
+pwd_context = CryptContext(
+    schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=12
+)
 
 # bcrypt limita a senha a 72 bytes; truncamos de forma determinística.
 _BCRYPT_MAX_BYTES = 72

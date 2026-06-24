@@ -31,9 +31,12 @@ setup_logging()
 
 logger = logging.getLogger("faztudo.api")
 
-# Em produção, a documentação interativa e o schema OpenAPI ficam desativados
-# (reduz superfície de exposição). Fora de produção, mantém os padrões do FastAPI.
-_is_production = settings.APP_ENV == "production"
+# A documentação interativa e o schema OpenAPI ficam desativados em QUALQUER
+# ambiente que não seja explicitamente de desenvolvimento/teste (reduz a
+# superfície de exposição — laudo 2026-06-24, V12). Antes só "production"
+# fechava; "staging" ou um APP_ENV mal definido deixava /docs aberto.
+_docs_enabled = settings.APP_ENV in ("development", "test")
+_is_production = not _docs_enabled
 
 app = FastAPI(
     title="FazTudo API",

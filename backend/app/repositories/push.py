@@ -52,10 +52,18 @@ class PushRepository:
         self.db.add(sub)
         return sub
 
-    async def delete_by_endpoint(self, endpoint: str) -> None:
+    async def delete_by_endpoint(
+        self, endpoint: str, user_id: uuid.UUID
+    ) -> None:
+        """Remove a inscrição pelo ``endpoint``, escopada ao dono (anti-BOLA).
+
+        Sem o filtro por ``user_id``, um usuário autenticado poderia desinscrever
+        o dispositivo de outro conhecendo/forjando o ``endpoint`` (laudo V11).
+        """
         await self.db.execute(
             delete(PushSubscription).where(
-                PushSubscription.endpoint == endpoint
+                PushSubscription.endpoint == endpoint,
+                PushSubscription.user_id == user_id,
             )
         )
 

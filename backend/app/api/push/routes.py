@@ -64,9 +64,9 @@ async def subscribe(
 )
 async def unsubscribe(
     payload: PushUnsubscribeIn,
-    _current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, bool]:
-    """Remove a inscrição pelo ``endpoint`` (idempotente)."""
-    await PushService(db).unsubscribe(payload.endpoint)
+    """Remove a inscrição do PRÓPRIO usuário pelo ``endpoint`` (idempotente)."""
+    await PushService(db).unsubscribe(current_user, payload.endpoint)
     return {"ok": True}

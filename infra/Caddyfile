@@ -9,6 +9,22 @@
 :80 {
 	encode gzip zstd
 
+	# --- Headers de segurança (laudo 2026-06-24, V2) ---
+	# Aplicados a TODAS as respostas (SPA + /api/* + mídia). O HTTPS é terminado
+	# no Traefik à frente; o browser honra o HSTS na resposta HTTPS repassada.
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "geolocation=(self), camera=(self), microphone=()"
+		# CSP em modo REPORT-ONLY: NÃO bloqueia nada ainda — apenas reporta
+		# violações no console do navegador. Revise os relatórios e então troque
+		# a chave para "Content-Security-Policy" (enforce), ajustando as fontes.
+		Content-Security-Policy-Report-Only "default-src 'self'; script-src 'self' 'unsafe-inline' https://accounts.google.com https://apis.google.com https://*.mercadopago.com https://*.mercadolibre.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://accounts.google.com https://*.mercadopago.com; frame-src 'self' https://accounts.google.com https://*.mercadopago.com https://*.mercadolibre.com https://www.openstreetmap.org; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'"
+		-Server
+	}
+
 	handle /api/* {
 		reverse_proxy backend:8000
 	}
