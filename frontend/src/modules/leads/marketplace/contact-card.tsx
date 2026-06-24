@@ -1,9 +1,8 @@
 /**
- * `ContactCard` — exibe o CONTATO LIBERADO do contratante após a compra
- * (nome + telefone). NÃO deve ser renderizado antes da compra. O e-mail não é
- * exibido de propósito: o contato é feito pelo telefone/WhatsApp.
- *
- * Inclui atalho direto (tel:) para facilitar o primeiro contato.
+ * `ContactCard` — após a compra, mostra o nome do contratante. No modo padrão
+ * (`CONTACT_REVEAL_MODE="masked"`) a plataforma NÃO divulga telefone/e-mail: a
+ * combinação é feita pelo chat do app ("Abrir conversa"). Quando o backend
+ * libera o contato (modo "full"), exibe o atalho `tel:`.
  */
 "use client";
 

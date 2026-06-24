@@ -137,10 +137,11 @@ class Settings(BaseSettings):
     NO_SHOW_GRACE_HOURS: int = 24
     # Acima deste nº de não-comparecimentos, o profissional some do marketplace.
     MARKETPLACE_MAX_NO_SHOWS: int = 5
-    # Anti-desintermediação. "full" (default) revela telefone + e-mail do cliente
-    # ao profissional comprador; "masked" oculta ambos (ele combina pelo chat do
-    # app). O dono do pedido sempre vê os próprios dados. Trocar sem deploy.
-    CONTACT_REVEAL_MODE: str = "full"
+    # Anti-desintermediação. "masked" (padrão): a plataforma NÃO divulga
+    # telefone/e-mail do cliente ao profissional comprador — eles combinam pelo
+    # chat do app. "full" revela o contato. O dono do pedido sempre vê os
+    # próprios dados. Trocar via env var, sem deploy.
+    CONTACT_REVEAL_MODE: str = "masked"
     # Worker que devolve ao mercado os leads comprados e não contatados a tempo.
     CONTACT_RECYCLE_ENABLED: bool = True
     CONTACT_RECYCLE_INTERVAL_SECONDS: int = 120
