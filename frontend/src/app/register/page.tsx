@@ -41,6 +41,17 @@ import {
   useRedirectAuthenticated,
 } from "@/modules/auth";
 
+/** Idade em anos a partir de uma data ISO 'YYYY-MM-DD' (null se inválida). */
+function ageFromISO(iso: string): number | null {
+  const parsed = new Date(`${iso}T00:00:00`);
+  if (Number.isNaN(parsed.getTime())) return null;
+  const today = new Date();
+  let age = today.getFullYear() - parsed.getFullYear();
+  const m = today.getMonth() - parsed.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < parsed.getDate())) age -= 1;
+  return age;
+}
+
 const registerSchema = z
   .object({
     name: z
@@ -62,10 +73,38 @@ const registerSchema = z
     role: z.enum(["customer", "professional"], {
       errorMap: () => ({ message: "Selecione o tipo de conta." }),
     }),
+    // String ISO 'YYYY-MM-DD' do input date (vazia p/ contratante). Exigida e
+    // validada (maioridade) apenas quando o papel é profissional (superRefine).
+    birthDate: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "As senhas não conferem.",
     path: ["confirmPassword"],
+  })
+  .superRefine((data, ctx) => {
+    if (data.role !== "professional") return;
+    if (!data.birthDate) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["birthDate"],
+        message: "Informe sua data de nascimento.",
+      });
+      return;
+    }
+    const age = ageFromISO(data.birthDate);
+    if (age === null || age > 110) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["birthDate"],
+        message: "Data de nascimento inválida.",
+      });
+    } else if (age < 18) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["birthDate"],
+        message: "É necessário ter pelo menos 18 anos.",
+      });
+    }
   });
 
 type RegisterValues = z.infer<typeof registerSchema>;
@@ -117,6 +156,7 @@ function RegisterForm() {
       password: "",
       confirmPassword: "",
       role: initialRole,
+      birthDate: "",
     },
   });
 
@@ -134,6 +174,7 @@ function RegisterForm() {
         phone: values.phone,
         password: values.password,
         role: values.role as UserRole,
+        birth_date: values.birthDate || undefined,
       });
       const session = toSession(resp);
       setAuth(session);
@@ -270,6 +311,30 @@ function RegisterForm() {
           />
           <FieldError id="role-error" message={errors.role?.message} />
         </div>
+
+        {selectedRole === "professional" ? (
+          <div className="space-y-2">
+            <Label htmlFor="birthDate">Data de nascimento</Label>
+            <Input
+              id="birthDate"
+              type="date"
+              autoComplete="bday"
+              max={new Date().toISOString().slice(0, 10)}
+              aria-invalid={Boolean(errors.birthDate)}
+              aria-describedby={
+                errors.birthDate ? "birthDate-error" : undefined
+              }
+              {...register("birthDate")}
+            />
+            <FieldError
+              id="birthDate-error"
+              message={errors.birthDate?.message}
+            />
+            <p className="text-xs text-muted-foreground">
+              Usamos para confirmar que você é maior de 18 anos.
+            </p>
+          </div>
+        ) : null}
 
         <Button
           type="submit"

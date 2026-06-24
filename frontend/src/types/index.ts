@@ -53,6 +53,10 @@ export interface User {
   has_professional_profile?: boolean;
   /** True se o usuário aceitou a versão VIGENTE dos Termos de Uso. */
   terms_accepted?: boolean;
+  /** Data de nascimento ISO 'YYYY-MM-DD' (null = não informada ainda). */
+  birth_date?: string | null;
+  /** Idade em anos derivada de `birth_date` (null se não informada). */
+  age?: number | null;
 }
 
 /** `CategoryRead`. */
