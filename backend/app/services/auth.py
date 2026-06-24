@@ -33,7 +33,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.exceptions import AuthError, ConflictError
-from app.core.mailer import send_email
+from app.core.mailer import render_action_email, send_email
 from app.core.security import (
     create_access_token,
     create_password_reset_token,
@@ -470,7 +470,23 @@ class AuthService:
             "Se você não fez esse pedido, ignore este e-mail — sua senha "
             "continua a mesma.\n"
         )
-        send_email(user.email, "[FazTudo] Redefinição de senha", body)
+        html = render_action_email(
+            title="Redefinição de senha",
+            greeting=f"Olá, {user.name}.",
+            lines=[
+                "Recebemos um pedido para redefinir a senha da sua conta no "
+                "FazTudo.",
+                "Clique no botão abaixo para criar uma nova senha (válido por "
+                "30 minutos):",
+            ],
+            button_label="Redefinir senha",
+            button_url=link,
+            footer="Se você não fez esse pedido, ignore este e-mail — sua "
+            "senha continua a mesma.",
+        )
+        send_email(
+            user.email, "[FazTudo] Redefinição de senha", body, html=html
+        )
 
     async def password_reset_confirm(self, data: PasswordResetConfirmIn) -> None:
         """Valida o token de reset, troca a senha e revoga todos os refresh."""
