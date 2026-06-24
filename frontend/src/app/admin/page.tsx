@@ -21,6 +21,7 @@ import {
   Map,
   Rocket,
   ScrollText,
+  ShieldCheck,
   Tags,
   Users,
 } from "lucide-react";
@@ -103,6 +104,12 @@ const SHORTCUTS: Shortcut[] = [
     label: "Analytics",
     description: "Páginas mais acessadas, por aparelho, região e tipo de conta.",
     icon: BarChart3,
+  },
+  {
+    href: "/admin/kyc",
+    label: "Verificações",
+    description: "Analise documentos + selfie dos profissionais (KYC).",
+    icon: ShieldCheck,
   },
 ];
 

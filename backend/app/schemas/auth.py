@@ -275,6 +275,8 @@ class UserOut(BaseModel):
     active_role: UserRole | None = None
     gender: str | None = None
     document: str | None = None
+    # Status da verificação (KYC): none | pending | approved | rejected.
+    kyc_status: str | None = None
 
     @computed_field  # type: ignore[prop-decorator]
     @property

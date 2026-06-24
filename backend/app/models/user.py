@@ -119,6 +119,26 @@ class User(UUIDPKMixin, TimestampMixin, SoftDeleteMixin, Base):
     referral_credited: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=False, server_default=text("false")
     )
+    # KYC (validação do profissional): status + chaves das imagens (no bucket
+    # PRIVADO) + datas + motivo de recusa. Revisão manual no painel admin.
+    kyc_status: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="none", server_default="none"
+    )
+    kyc_document_key: Mapped[str | None] = mapped_column(
+        String(512), nullable=True
+    )
+    kyc_selfie_key: Mapped[str | None] = mapped_column(
+        String(512), nullable=True
+    )
+    kyc_submitted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    kyc_reviewed_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    kyc_reject_reason: Mapped[str | None] = mapped_column(
+        String(300), nullable=True
+    )
 
     # Relacionamentos (§2.1).
     customer_profile: Mapped[CustomerProfile | None] = relationship(

@@ -64,6 +64,8 @@ export interface User {
   /** Gênero (opcional) e documento (CPF/CNPJ, só dígitos) informados no cadastro. */
   gender?: string | null;
   document?: string | null;
+  /** Status da verificação (KYC): none | pending | approved | rejected. */
+  kyc_status?: string | null;
 }
 
 /** `CategoryRead`. */

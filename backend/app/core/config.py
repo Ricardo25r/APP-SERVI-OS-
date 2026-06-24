@@ -55,6 +55,9 @@ class Settings(BaseSettings):
     # URL pública do storage (acessível pelo navegador) p/ montar URLs de mídia.
     # O backend faz upload via S3_ENDPOINT (rede interna) e presigna GET aqui.
     S3_PUBLIC_URL: str = "http://localhost:9000"
+    # Bucket PRIVADO (sem leitura anônima) para documentos sensíveis de KYC.
+    # O admin vê as imagens por streaming autenticado (nunca por URL pública).
+    S3_KYC_BUCKET: str = "faztudo-kyc"
 
     # Segurança / JWT
     JWT_SECRET: str = "troque-este-segredo-em-producao"

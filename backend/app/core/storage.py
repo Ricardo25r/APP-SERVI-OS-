@@ -45,6 +45,32 @@ def delete_object(key: str) -> None:
     )
 
 
+def upload_private_bytes(
+    data: bytes, key: str, content_type: str | None, *, bucket: str
+) -> None:
+    """Grava ``data`` em um bucket **privado** (cria o bucket se faltar).
+
+    Para documentos sensíveis (KYC): o bucket não tem leitura anônima; o acesso
+    é só pelo backend (streaming autenticado). Nunca por URL pública.
+    """
+    client = _client(settings.S3_ENDPOINT)
+    try:
+        client.head_bucket(Bucket=bucket)
+    except Exception:  # noqa: BLE001 — bucket inexistente: cria
+        try:
+            client.create_bucket(Bucket=bucket)
+        except Exception:  # noqa: BLE001 — corrida/ja existe
+            pass
+    extra = {"ContentType": content_type} if content_type else {}
+    client.put_object(Bucket=bucket, Key=key, Body=data, **extra)
+
+
+def get_private_object(key: str, *, bucket: str) -> tuple[bytes, str | None]:
+    """Lê um objeto privado (KYC) pelo endpoint interno. (bytes, content_type)."""
+    obj = _client(settings.S3_ENDPOINT).get_object(Bucket=bucket, Key=key)
+    return obj["Body"].read(), obj.get("ContentType")
+
+
 def presigned_get_url(key: str, *, expires_seconds: int = 7 * 24 * 3600) -> str:
     """URL **pública** de GET para ``key``.
 

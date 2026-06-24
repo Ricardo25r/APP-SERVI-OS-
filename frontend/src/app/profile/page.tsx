@@ -28,6 +28,7 @@ import type { ProfessionalProfile } from "@/types";
 
 import { AccountModeCard } from "@/modules/profile/account-mode-card";
 import { CustomerProfileSection } from "@/modules/profile/customer-profile-section";
+import { KycSection } from "@/modules/profile/kyc-section";
 import { ProfessionalProfileSection } from "@/modules/profile/professional-profile-section";
 import { ProfessionalCategoriesSection } from "@/modules/profile/professional-categories-section";
 import { ProfileHeaderCard } from "@/modules/profile/profile-header-card";
@@ -127,6 +128,7 @@ export default function ProfilePage() {
         <div className="space-y-6">
           <ProfessionalProfileSection />
           <ProfessionalCategoriesSection />
+          <KycSection />
         </div>
       )}
 

@@ -9,7 +9,7 @@
 "use client";
 
 import { useRef, useState, type ChangeEvent } from "react";
-import { Camera, Loader2, Mail, Phone } from "lucide-react";
+import { BadgeCheck, Camera, Loader2, Mail, Phone } from "lucide-react";
 
 import { Avatar } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
@@ -100,6 +100,12 @@ export function ProfileHeaderCard({ user, reputation }: ProfileHeaderCardProps) 
                 tone="info"
                 className="shrink-0"
               />
+              {user.kyc_status === "approved" ? (
+                <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-xs font-semibold text-success">
+                  <BadgeCheck className="h-3.5 w-3.5" aria-hidden />
+                  Verificado
+                </span>
+              ) : null}
             </div>
             <p className="flex items-center gap-1.5 truncate text-sm text-muted-foreground">
               <Mail className="h-3.5 w-3.5 shrink-0" aria-hidden />
