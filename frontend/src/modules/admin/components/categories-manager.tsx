@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectOption } from "@/components/ui/select";
+import { categoryImage } from "@/modules/leads/category-icon";
 import { apiUpload } from "@/services/api";
 import type { Category, CategoryTier } from "@/types";
 
@@ -158,6 +159,12 @@ export function CategoriesManager() {
   }
 
   const categories = data ?? [];
+  // Imagem mostrada no preview do modal: a foto enviada (image_url) ou, na sua
+  // ausência, a imagem padrão fixa por slug (ex.: Babá já tem uma) — nunca vazio.
+  const editingPreview =
+    form.editing != null
+      ? form.editing.image_url ?? categoryImage(form.editing.slug)
+      : null;
   const groupOptions = Array.from(
     new Set([
       ...SUGGESTED_GROUPS,
@@ -349,10 +356,10 @@ export function CategoriesManager() {
                 <div className="space-y-2">
                   <Label>Foto da categoria</Label>
                   <div className="flex items-center gap-3">
-                    {form.editing.image_url ? (
+                    {editingPreview ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
-                        src={form.editing.image_url}
+                        src={editingPreview}
                         alt=""
                         className="h-14 w-14 shrink-0 rounded-lg border object-cover"
                       />
@@ -372,7 +379,11 @@ export function CategoriesManager() {
                       <p className="mt-1 text-xs text-muted-foreground">
                         {uploadingImage
                           ? "Enviando..."
-                          : "JPG/PNG/WEBP até 5 MB. Substitui o ícone padrão."}
+                          : form.editing.image_url
+                            ? "Foto enviada. Escolha outra para substituir (JPG/PNG/WEBP até 5 MB)."
+                            : editingPreview
+                              ? "Mostrando a imagem padrão. Envie uma foto para personalizar (JPG/PNG/WEBP até 5 MB)."
+                              : "Sem imagem. Envie uma foto (JPG/PNG/WEBP até 5 MB)."}
                       </p>
                     </div>
                   </div>
