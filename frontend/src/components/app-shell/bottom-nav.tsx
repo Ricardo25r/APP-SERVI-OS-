@@ -37,8 +37,8 @@ interface NavItem {
   icon: LucideIcon;
   /** Item central elevado (FAB laranja). */
   fab?: boolean;
-  /** Mostra badge de não lidas (Mensagens). */
-  badge?: boolean;
+  /** Badge de contagem: "messages" (não lidas) | "opportunities" (leads). */
+  badge?: "messages" | "opportunities";
 }
 
 const NAV_BY_ROLE: Record<UserRole, NavItem[]> = {
@@ -46,14 +46,19 @@ const NAV_BY_ROLE: Record<UserRole, NavItem[]> = {
     { href: "/", label: "Início", icon: Home },
     { href: "/leads", label: "Solicitações", icon: ClipboardList },
     { href: "/leads/new", label: "Solicitar", icon: Plus, fab: true },
-    { href: "/conversas", label: "Mensagens", icon: MessageCircle, badge: true },
+    { href: "/conversas", label: "Mensagens", icon: MessageCircle, badge: "messages" },
     { href: "/profile", label: "Perfil", icon: User },
   ],
   professional: [
     { href: "/", label: "Início", icon: Home },
-    { href: "/marketplace", label: "Oportunidades", icon: Briefcase },
+    {
+      href: "/marketplace",
+      label: "Oportunidades",
+      icon: Briefcase,
+      badge: "opportunities",
+    },
     { href: "/credits", label: "Créditos", icon: Plus, fab: true },
-    { href: "/conversas", label: "Mensagens", icon: MessageCircle, badge: true },
+    { href: "/conversas", label: "Mensagens", icon: MessageCircle, badge: "messages" },
     { href: "/profile", label: "Perfil", icon: User },
   ],
   admin: [
@@ -75,10 +80,16 @@ function isActive(pathname: string, href: string): boolean {
 export interface BottomNavProps {
   /** Total de mensagens não lidas (badge em "Mensagens"). */
   unreadCount?: number;
+  /** Nº de oportunidades disponíveis (badge em "Oportunidades"). */
+  oppCount?: number;
   className?: string;
 }
 
-export function BottomNav({ unreadCount = 0, className }: BottomNavProps) {
+export function BottomNav({
+  unreadCount = 0,
+  oppCount = 0,
+  className,
+}: BottomNavProps) {
   const pathname = usePathname() ?? "";
   const { role, isAuthenticated, hasHydrated } = useAuth();
 
@@ -98,6 +109,12 @@ export function BottomNav({ unreadCount = 0, className }: BottomNavProps) {
         {items.map((item) => {
           const active = isActive(pathname, item.href);
           const Icon = item.icon;
+          const badgeCount =
+            item.badge === "messages"
+              ? unreadCount
+              : item.badge === "opportunities"
+                ? oppCount
+                : 0;
 
           if (item.fab) {
             return (
@@ -127,9 +144,9 @@ export function BottomNav({ unreadCount = 0, className }: BottomNavProps) {
               >
                 <span className="relative">
                   <Icon className="h-5 w-5" aria-hidden />
-                  {item.badge && unreadCount > 0 ? (
+                  {badgeCount > 0 ? (
                     <span className="absolute -right-2 -top-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-bold leading-none text-brand-foreground">
-                      {unreadCount > 9 ? "9+" : unreadCount}
+                      {badgeCount > 99 ? "99+" : badgeCount}
                     </span>
                   ) : null}
                 </span>

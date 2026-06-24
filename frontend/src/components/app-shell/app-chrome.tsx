@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { BottomNav } from "@/components/app-shell/bottom-nav";
 import { TermsGate } from "@/components/terms-gate";
 import { useUnreadMessagesCount } from "@/modules/chat";
+import { useOpportunitiesCount } from "@/modules/leads/marketplace/use-opportunities-count";
 
 /**
  * `AppChrome` — wrapper client que envolve o conteúdo das páginas e adiciona
@@ -20,16 +21,19 @@ import { useUnreadMessagesCount } from "@/modules/chat";
  * O `SiteHeader` (nav do topo no desktop) segue no `layout.tsx`, intacto.
  */
 export function AppChrome({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, hasHydrated } = useAuth();
+  const { isAuthenticated, hasHydrated, role } = useAuth();
   const showBottomNav = hasHydrated && isAuthenticated;
   const unreadMessages = useUnreadMessagesCount(showBottomNav);
+  const oppCount = useOpportunitiesCount(
+    showBottomNav && role === "professional"
+  );
 
   return (
     <>
       <div className={cn(showBottomNav ? "pb-20 lg:pb-0" : undefined)}>
         {children}
       </div>
-      <BottomNav unreadCount={unreadMessages} />
+      <BottomNav unreadCount={unreadMessages} oppCount={oppCount} />
       <TermsGate />
     </>
   );
