@@ -17,7 +17,7 @@ const REPEAT_INTERVAL_MS = 1000;
 function getAudio(): HTMLAudioElement | null {
   if (typeof window === "undefined" || typeof Audio === "undefined") return null;
   if (!audio) {
-    audio = new Audio("/sounds/notification.mp3");
+    audio = new Audio("/sounds/notification.mp3?v=1");
     audio.preload = "auto";
     audio.volume = 0.9;
   }
