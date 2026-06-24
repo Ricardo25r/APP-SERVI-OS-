@@ -121,7 +121,11 @@ def render_action_email(
         else ""
     )
     return (
-        '<!DOCTYPE html><html lang="pt-BR"><body style="margin:0;'
+        '<!DOCTYPE html><html lang="pt-BR"><head>'
+        '<meta charset="utf-8">'
+        '<meta name="color-scheme" content="light only">'
+        '<meta name="supported-color-schemes" content="light only">'
+        '</head><body style="margin:0;color-scheme:light;'
         'background:#f5f7fa;font-family:Arial,Helvetica,sans-serif">'
         '<div style="max-width:480px;margin:0 auto;padding:24px">'
         '<div style="background:#0D47A1;border-radius:12px 12px 0 0;'

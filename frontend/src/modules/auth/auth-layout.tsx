@@ -179,12 +179,12 @@ export function AuthLayout({
             className="mb-6 inline-flex lg:hidden"
           >
             <Image
-              src="/brand/logo-faztudo-full.png"
-              width={200}
-              height={64}
+              src="/brand/logo-faztudo-full.png?v=2"
+              width={320}
+              height={213}
               alt="FazTudo"
               priority
-              className="h-12 w-auto"
+              className="h-24 w-auto"
             />
           </Link>
         )}
