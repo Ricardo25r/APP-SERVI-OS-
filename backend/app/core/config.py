@@ -114,6 +114,12 @@ class Settings(BaseSettings):
     # Versão vigente dos Termos de Uso. Mudar isto faz o banner de aceite
     # reaparecer para TODOS (o aceite é registrado por versão).
     TERMS_VERSION: str = "2026-06-24"
+    # Web Push (VAPID) — notificação na tela com o app fechado. A chave PÚBLICA
+    # também vai no frontend (NEXT_PUBLIC_VAPID_PUBLIC_KEY); a PRIVADA é segredo
+    # (só no .env do servidor). Vazio = push desligado (no-op, não quebra nada).
+    VAPID_PUBLIC_KEY: str = ""
+    VAPID_PRIVATE_KEY: str = ""
+    VAPID_SUBJECT: str = "mailto:inovalaserariquemes@gmail.com"
     # Janela (min) p/ o profissional iniciar o contato após desbloquear o lead.
     CONTACT_WINDOW_MINUTES: int = 60
     # Prazo (dias) p/ confirmar a chegada (código). Esgotado sem chegada nem

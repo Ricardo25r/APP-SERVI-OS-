@@ -47,6 +47,7 @@ from app.models.payment_order import PaymentOrder
 from app.models.payment_settings import PaymentSettings
 from app.models.professional_category import ProfessionalCategory
 from app.models.professional_profile import ProfessionalProfile
+from app.models.push_subscription import PushSubscription
 from app.models.refresh_token import RefreshToken
 from app.models.review import Review
 from app.models.sprint import (
@@ -88,6 +89,7 @@ __all__ = [
     "Conversation",
     "Message",
     "Notification",
+    "PushSubscription",
     "XpTransaction",
     "Achievement",
     "UserAchievement",
