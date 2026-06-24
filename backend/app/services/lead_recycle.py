@@ -15,11 +15,12 @@ contato, o lead permanece com o comprador. Idempotente e best-effort.
 from __future__ import annotations
 
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.models import (
     Conversation,
     CreditTransactionType,
@@ -52,6 +53,7 @@ async def recycle_expired_purchases(db: AsyncSession, *, now: datetime) -> int:
 
     credits = CreditService(db)
     recycled = 0
+    stale_before = now - timedelta(hours=settings.STALE_PURCHASE_HOURS)
 
     for purchase, lead in rows:
         conversation = (
@@ -60,17 +62,6 @@ async def recycle_expired_purchases(db: AsyncSession, *, now: datetime) -> int:
             )
         ).scalar_one_or_none()
 
-        if conversation is not None:
-            message_count = (
-                await db.execute(
-                    select(func.count())
-                    .select_from(Message)
-                    .where(Message.conversation_id == conversation.id)
-                )
-            ).scalar_one()
-            if message_count > 0:
-                continue  # já houve contato — não recicla
-
         profile = (
             await db.execute(
                 select(ProfessionalProfile).where(
@@ -78,6 +69,34 @@ async def recycle_expired_purchases(db: AsyncSession, *, now: datetime) -> int:
                 )
             )
         ).scalar_one_or_none()
+        pro_user_id = profile.user_id if profile is not None else None
+
+        if conversation is not None:
+            total = (
+                await db.execute(
+                    select(func.count())
+                    .select_from(Message)
+                    .where(Message.conversation_id == conversation.id)
+                )
+            ).scalar_one()
+            if total > 0:
+                # Houve mensagem. Só "trava" o lead com o comprador se o CLIENTE
+                # respondeu (contato bilateral real). Se só o profissional falou
+                # (um "oi" e sumiu), recicla quando ficar travado tempo demais.
+                customer_count = (
+                    await db.execute(
+                        select(func.count())
+                        .select_from(Message)
+                        .where(
+                            Message.conversation_id == conversation.id,
+                            Message.sender_id != pro_user_id,
+                        )
+                    )
+                ).scalar_one()
+                if customer_count > 0 or pro_user_id is None:
+                    continue  # o cliente engajou — mantém com o comprador
+                if purchase.created_at > stale_before:
+                    continue  # só o pro falou, mas ainda dentro do prazo
 
         # 1) Reembolsa os créditos ao profissional.
         wallet = await credits.get_or_create_wallet(purchase.professional_id)
@@ -89,8 +108,13 @@ async def recycle_expired_purchases(db: AsyncSession, *, now: datetime) -> int:
             reference_id=purchase.id,
         )
 
-        # 2) Remove conversa vazia + compra (libera os UNIQUE de lead_id).
+        # 2) Remove conversa (+ mensagens) e a compra (libera os UNIQUE).
         if conversation is not None:
+            await db.execute(
+                delete(Message).where(
+                    Message.conversation_id == conversation.id
+                )
+            )
             await db.delete(conversation)
         await db.delete(purchase)
 
@@ -103,8 +127,8 @@ async def recycle_expired_purchases(db: AsyncSession, *, now: datetime) -> int:
                 type="lead",
                 title="Lead devolvido ao mercado",
                 body=(
-                    f'Você não iniciou o contato a tempo em "{lead.title}". '
-                    "Os créditos foram devolvidos."
+                    f'O lead "{lead.title}" voltou ao mercado. '
+                    "Os créditos foram devolvidos à sua carteira."
                 ),
                 href="/marketplace",
             )

@@ -145,6 +145,9 @@ class Settings(BaseSettings):
     # Worker que devolve ao mercado os leads comprados e não contatados a tempo.
     CONTACT_RECYCLE_ENABLED: bool = True
     CONTACT_RECYCLE_INTERVAL_SECONDS: int = 120
+    # Lead "travado": só o profissional falou (ex.: um "oi") e o cliente nunca
+    # respondeu. Após este prazo o lead volta ao mercado e o crédito é devolvido.
+    STALE_PURCHASE_HOURS: int = 48
 
     @property
     def cors_origins_list(self) -> list[str]:
