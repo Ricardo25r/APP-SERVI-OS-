@@ -267,7 +267,7 @@ export function ProfessionalHome({ user }: { user: User }) {
             alt=""
             aria-hidden
             priority
-            className="-ml-3 h-28 w-auto object-contain object-bottom drop-shadow-xl sm:h-44"
+            className="-ml-3 h-36 w-auto object-contain object-bottom drop-shadow-xl sm:h-44"
           />
         </div>
       </Link>
@@ -396,11 +396,11 @@ function StatTile({
   label: string;
 }) {
   return (
-    <div className="flex flex-col items-start gap-2 rounded-xl border bg-card p-3 shadow-sm">
+    <div className="flex items-center gap-2.5 rounded-xl border bg-card p-2.5 shadow-sm">
       <IconChip icon={icon} color={color} size="sm" aria-hidden />
       <div className="min-w-0">
-        <p className="text-xl font-bold tabular-nums leading-none">{value}</p>
-        <p className="mt-1 truncate text-xs text-muted-foreground">{label}</p>
+        <p className="text-base font-bold tabular-nums leading-none">{value}</p>
+        <p className="truncate text-[11px] text-muted-foreground">{label}</p>
       </div>
     </div>
   );
@@ -484,17 +484,12 @@ function LeadRow({
               onClick={() => setConfirming(true)}
               disabled={buying || !canAfford}
               title={!canAfford ? "Saldo insuficiente" : undefined}
-              className="mt-1 inline-flex flex-col items-center justify-center rounded-lg bg-brand px-3 py-1.5 leading-tight text-brand-foreground transition-colors hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-50"
+              className="mt-2.5 inline-flex w-[7.5rem] items-center justify-center rounded-lg bg-brand px-3 py-2 text-center text-xs font-bold leading-tight text-brand-foreground transition-colors hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {buying ? (
                 <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
               ) : (
-                <>
-                  <span className="text-xs font-bold">Desbloquear</span>
-                  <span className="text-[10px] font-medium opacity-90">
-                    ver contato
-                  </span>
-                </>
+                "Desbloquear contato"
               )}
             </button>
           )}

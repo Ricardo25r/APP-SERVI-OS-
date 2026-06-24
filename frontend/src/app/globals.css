@@ -39,6 +39,11 @@
     --ring: 217 85% 34%;
 
     --radius: 0.75rem;
+
+    /* FazTudo é tema CLARO. Força os controles nativos (inputs/selects/date)
+       a renderizar em claro mesmo com o celular em modo escuro — senão o texto
+       dos campos fica desbotado e a UI parece "tema escuro". */
+    color-scheme: light;
   }
 
   .dark {
