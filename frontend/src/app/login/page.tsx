@@ -17,7 +17,7 @@
  * `ApiError` via `messageFromError`. Apenas a camada visual mudou.
  */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm, type FieldErrors, type Resolver } from "react-hook-form";
@@ -124,6 +124,14 @@ export default function LoginPage() {
   const setAuth = useAuthStore((s) => s.setAuth);
 
   const [formError, setFormError] = useState<string | null>(null);
+  const [inAppBrowser, setInAppBrowser] = useState(false);
+
+  // Navegadores embutidos (Instagram/Facebook/etc.) bloqueiam o login Google —
+  // detectamos para orientar o usuário a abrir no navegador do sistema.
+  useEffect(() => {
+    const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
+    setInAppBrowser(/FBAN|FBAV|Instagram|Line\/|MicroMessenger|Twitter/i.test(ua));
+  }, []);
 
   const {
     register,
@@ -196,8 +204,17 @@ export default function LoginPage() {
               </p>
             </div>
 
-            {/* Botões sociais — placeholders "Em breve" (sem OAuth no backend) */}
+            {/* Botões sociais (Google ativo; Apple "Em breve" até o Services ID) */}
             <div className="mt-6 space-y-3">
+              {inAppBrowser ? (
+                <p className="rounded-md border border-brand/30 bg-brand/10 px-3 py-2 text-xs text-foreground">
+                  Você abriu por dentro de um app (Instagram/Facebook). O login
+                  com Google pode não funcionar aqui — toque no menu{" "}
+                  <strong>(⋯)</strong> e escolha{" "}
+                  <strong>&quot;Abrir no navegador&quot;</strong>, ou entre com
+                  e-mail e senha abaixo.
+                </p>
+              ) : null}
               {SOCIAL_PROVIDERS.map((provider) => {
                 if (provider.id === "google" && googleClientId) {
                   return (

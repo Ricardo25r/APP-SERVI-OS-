@@ -226,7 +226,9 @@ export function ProfessionalProfileSection() {
         setGeoLoading(false);
         setGeoMsg("Não foi possível obter sua localização (permissão negada).");
       },
-      { timeout: 10000, enableHighAccuracy: false }
+      // maximumAge: reaproveita um fix recente (até 2 min) → resposta quase
+      // instantânea quando o aparelho já tem a posição; sem alta precisão (rápido).
+      { timeout: 10000, enableHighAccuracy: false, maximumAge: 120000 }
     );
   }
 

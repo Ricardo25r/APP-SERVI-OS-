@@ -5,6 +5,7 @@ import { Providers } from "./providers";
 import { SiteHeader } from "@/components/site-header";
 import { AppChrome } from "@/components/app-shell/app-chrome";
 import { CapacitorInit } from "@/components/capacitor-init";
+import { DomSafety } from "@/components/dom-safety";
 import { RegisterSW } from "@/components/register-sw";
 
 const montserrat = Montserrat({
@@ -50,6 +51,7 @@ export default function RootLayout({
     >
       <body className="font-sans">
         <Providers>
+          <DomSafety />
           <CapacitorInit />
           <RegisterSW />
           <SiteHeader />
