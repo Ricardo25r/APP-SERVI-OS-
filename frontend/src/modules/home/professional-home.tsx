@@ -238,7 +238,7 @@ export function ProfessionalHome({ user }: { user: User }) {
       {/* Banner de nível (promo) — topo da home */}
       <Link
         href="/gamificacao"
-        className="relative block overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-[#0A357D] p-5 pr-28 text-primary-foreground shadow-sm transition-opacity hover:opacity-95 sm:pr-44"
+        className="relative block min-h-[152px] overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-[#0A357D] p-5 pr-32 text-primary-foreground shadow-sm transition-opacity hover:opacity-95 sm:min-h-[176px] sm:pr-52"
       >
         <p className="text-base font-bold tracking-tight sm:text-lg">
           Suba de nível e ganhe mais visibilidade
@@ -258,7 +258,7 @@ export function ProfessionalHome({ user }: { user: User }) {
             alt=""
             aria-hidden
             priority
-            className="h-28 w-auto object-contain object-bottom drop-shadow-xl sm:h-36"
+            className="h-36 w-auto object-contain object-bottom drop-shadow-xl sm:h-44"
           />
           <Image
             src="/brand/mascote-profissional.webp"
@@ -267,7 +267,7 @@ export function ProfessionalHome({ user }: { user: User }) {
             alt=""
             aria-hidden
             priority
-            className="-ml-3 h-28 w-auto object-contain object-bottom drop-shadow-xl sm:h-36"
+            className="-ml-3 h-28 w-auto object-contain object-bottom drop-shadow-xl sm:h-44"
           />
         </div>
       </Link>
