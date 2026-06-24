@@ -124,6 +124,12 @@ class LeadPurchaseService:
                 raise NotFoundError("Lead não encontrado.")
             if lead.status != LeadStatus.open:
                 raise ConflictError("Lead indisponível para compra.")
+            # Anti-fraude (papel duplo): ninguém compra/atende o PRÓPRIO pedido
+            # (senão a pessoa se autoavaliaria 5★ e ganharia reputação/XP).
+            if lead.customer_id == current_user.id:
+                raise PermissionDeniedError(
+                    "Você não pode atender o seu próprio pedido."
+                )
 
             # (2) Elegibilidade (matching MVP §5.3 itens 1–5) — reutiliza a
             # query existente em repositories/leads.py.

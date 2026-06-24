@@ -166,6 +166,14 @@ class ReviewService:
         )
         customer_user_id = lead.customer_id
 
+        # Anti-fraude (papel duplo): se os dois lados são a MESMA pessoa, ninguém
+        # avalia (não deveria existir — comprar o próprio pedido é bloqueado).
+        if (
+            professional_user_id is not None
+            and professional_user_id == customer_user_id
+        ):
+            raise PermissionDeniedError("Auto-avaliação não é permitida.")
+
         if current_user.id == customer_user_id:
             # Contratante avalia o profissional comprador.
             if professional_user_id is None:

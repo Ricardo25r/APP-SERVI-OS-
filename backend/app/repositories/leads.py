@@ -172,6 +172,10 @@ class LeadRepository:
                 Lead.category_id.in_(prof_categories),
                 func.lower(Lead.city) == (profile.city or "").lower(),
                 func.lower(Lead.state) == (profile.state or "").lower(),
+                # Anti-fraude (papel duplo): nunca os próprios pedidos do usuário
+                # (cobre a lista do marketplace E a revalidação na compra, que
+                # reusa este filtro via ``is_professional_eligible``).
+                Lead.customer_id != profile.user_id,
             )
         )
 
