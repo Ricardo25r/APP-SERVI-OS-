@@ -216,5 +216,27 @@ O FazTudo é um marketplace de leads pagos por créditos (FastAPI + Next.js, emp
 4. **Cliente:** sem token em JS, CSP, Secure Storage no app, App Attestation.
 
 ---
+
+## 16. Status de implementação (2026-06-24)
+
+**✅ Corrigidos e commitados** (commit `c530d9d` — verificados: `ruff` limpo, 152/155 testes, review adversarial sem blockers):
+- **V2** (headers no `infra/Caddyfile`) — HSTS, `nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy` + **CSP em `Report-Only`** (inclui Google/Mercado Pago/OpenStreetMap). ⚠️ Só passa a valer **após redeploy do Caddy**. Revisar os relatórios da CSP e então trocar a chave para `Content-Security-Policy` (enforce).
+- **V8** — `allowBackup="false"` (APK já rebuildado em `C:\FazTudo\dist\FazTudo-debug.apk`; reinstalar no celular).
+- **V11** — push *unsubscribe* escopado ao dono.
+- **V12** — `/docs` e `/openapi.json` fechados em qualquer ambiente não-dev/test.
+- **V16** — `bcrypt__rounds=12` (confirmado: não invalida hashes existentes).
+
+**⏸️ Adiados (com motivo):**
+- **V1 (token storage)** — exige design dedicado: cookie `HttpOnly` **quebra o app Capacitor** (WebView é cross-site `https://localhost` → `faztudoapp.com.br`; `SameSite` não envia o cookie). Caminho certo: Secure Storage/Keystore no app + cookie/BFF na web. Mitigação imediata já aplicada = CSP (V2). **Fazer como tarefa própria, com teste no app.**
+- **V3 (token_version) + V5 (reset uso único)** — exigem coluna nova + **migration Alembic**. Adiados porque o **Docker estava desligado** (não dá pra aplicar/testar a migration no container, conforme CLAUDE.md) e há uma migration de referral (fase 29) ainda não commitada (resolver a cadeia antes). Fazer com o Docker no ar.
+- **V14 (MP webhook secret obrigatório)** — **não automatizado de propósito**: tornar obrigatório no fail-fast pode **impedir o boot em produção** se o secret não estiver setado. Decisão do dono: confirmar `MERCADOPAGO_WEBHOOK_SECRET` no `.env` de produção e então ligar.
+- **V6** (upgrade `next`) — precisa de build + regressão; mitigado pelo export estático. **V7** (política de senha) — decisão de produto. **V9, V10, V13, V15, V17, V19** — backlog P3.
+
+**⚠️ Achados colaterais (pré-existentes, fora do laudo):**
+- **3 testes quebrados** na branch (`test_categories::test_list_public_returns_only_active`, `test_users::test_professional_cannot_create_customer_profile_403`, `test_users::test_customer_cannot_create_professional_profile_403`) — falham **sem** minhas mudanças (provado via `git stash`).
+- **Migration `fase_29_referral` não-commitada** enquanto as fases 30–32 (commitadas) dependem dela → `alembic upgrade` quebraria num checkout limpo.
+- venv local com `bcrypt 5.0.0` (fora do pin `<4.1`; produção usa 4.0.x via Docker).
+
+---
 ### Postura ética desta auditoria
 **Não** foram feitos: brute-force/DoS, enumeração de IDs reais, exfiltração de PII, alteração de dados, contorno de guardrails. Testes live limitados a `GET/HEAD/OPTIONS` (read-only); nenhuma requisição mutável (POST/PUT/DELETE) foi disparada contra produção. **Deixados para verificação manual** (por exigirem segredos/ambiente que não devem ser tocados): força real do `JWT_SECRET`/`PAYMENT_WEBHOOK_SECRET` (não inspecionados — só verificado o fail-fast contra defaults), topologia de proxy para o `X-Forwarded-For` (V4), versões reais na imagem Docker (`pip freeze` no container), e confirmação das CVEs Python via `pip-audit`/`osv-scanner`.
