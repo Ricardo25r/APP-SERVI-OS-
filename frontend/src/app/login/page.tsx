@@ -169,6 +169,16 @@ export default function LoginPage() {
     router.replace(homePathForRole(session.user.role));
   }
 
+  // Login social (Google/Apple): o Google Identity Services injeta nós no DOM e
+  // a tradução automática do Chrome pode corromper a árvore do React — o
+  // `router.replace` pós-login dispara um crash de reconciliação (tela branca).
+  // Um reload "duro" carrega a home do zero, sem reconciliação → sem crash.
+  function handleOAuthSuccess(resp: AuthResponse) {
+    const session = toSession(resp);
+    setAuth(session);
+    window.location.assign(homePathForRole(session.user.role));
+  }
+
   // Evita flicker: enquanto não hidratou, não renderiza o formulário.
   if (!hasHydrated) {
     return (
@@ -260,7 +270,7 @@ export default function LoginPage() {
                     <GoogleSignInButton
                       key="google"
                       role={signupRole}
-                      onSuccess={handleSocialSuccess}
+                      onSuccess={handleOAuthSuccess}
                       onError={setFormError}
                     />
                   );
@@ -270,7 +280,7 @@ export default function LoginPage() {
                     <AppleSignInButton
                       key="apple"
                       role={signupRole}
-                      onSuccess={handleSocialSuccess}
+                      onSuccess={handleOAuthSuccess}
                       onError={setFormError}
                     />
                   );
