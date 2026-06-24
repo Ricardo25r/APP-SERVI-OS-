@@ -90,6 +90,10 @@ class User(UUIDPKMixin, TimestampMixin, SoftDeleteMixin, Base):
     # base para validar maioridade. Coletada no cadastro e, para quem já tinha
     # conta (ou entrou por login social), via gate no próximo acesso. Nullable.
     birth_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    # Gênero (opcional) e documento (CPF/CNPJ — apenas dígitos), coletados no
+    # cadastro. Documento valida dígitos verificadores no schema. Ambos nullable.
+    gender: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    document: Mapped[str | None] = mapped_column(String(20), nullable=True)
 
     # Relacionamentos (§2.1).
     customer_profile: Mapped[CustomerProfile | None] = relationship(

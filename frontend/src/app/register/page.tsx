@@ -52,6 +52,42 @@ function ageFromISO(iso: string): number | null {
   return age;
 }
 
+/* CPF/CNPJ — valida dígitos verificadores (espelha o backend). */
+function onlyDigits(s: string): string {
+  return s.replace(/\D/g, "");
+}
+function isValidCPF(cpf: string): boolean {
+  if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+  for (const size of [9, 10]) {
+    let total = 0;
+    for (let i = 0; i < size; i += 1) total += Number(cpf[i]) * (size + 1 - i);
+    const check = ((total * 10) % 11) % 10;
+    if (check !== Number(cpf[size])) return false;
+  }
+  return true;
+}
+function isValidCNPJ(cnpj: string): boolean {
+  if (cnpj.length !== 14 || /^(\d)\1{13}$/.test(cnpj)) return false;
+  const weights: [number[], number][] = [
+    [[5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2], 12],
+    [[6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2], 13],
+  ];
+  for (const [w, size] of weights) {
+    let total = 0;
+    for (let i = 0; i < size; i += 1) total += Number(cnpj[i]) * w[i];
+    let check = 11 - (total % 11);
+    if (check >= 10) check = 0;
+    if (check !== Number(cnpj[size])) return false;
+  }
+  return true;
+}
+function isValidDocument(value: string): boolean {
+  const d = onlyDigits(value);
+  if (d.length === 11) return isValidCPF(d);
+  if (d.length === 14) return isValidCNPJ(d);
+  return false;
+}
+
 const registerSchema = z
   .object({
     name: z
@@ -76,12 +112,38 @@ const registerSchema = z
     // String ISO 'YYYY-MM-DD' do input date (vazia p/ contratante). Exigida e
     // validada (maioridade) apenas quando o papel é profissional (superRefine).
     birthDate: z.string(),
+    document: z.string(),
+    gender: z.string(),
+    consent: z.boolean(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "As senhas não conferem.",
     path: ["confirmPassword"],
   })
   .superRefine((data, ctx) => {
+    // Documento (CPF/CNPJ) obrigatório para todos.
+    if (!data.document) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["document"],
+        message: "Informe seu CPF ou CNPJ.",
+      });
+    } else if (!isValidDocument(data.document)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["document"],
+        message: "CPF ou CNPJ inválido.",
+      });
+    }
+    // Aceite obrigatório dos Termos e da Política.
+    if (!data.consent) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["consent"],
+        message: "É necessário aceitar os Termos e a Política.",
+      });
+    }
+    // Data de nascimento: só exigida para profissional.
     if (data.role !== "professional") return;
     if (!data.birthDate) {
       ctx.addIssue({
@@ -157,6 +219,9 @@ function RegisterForm() {
       confirmPassword: "",
       role: initialRole,
       birthDate: "",
+      document: "",
+      gender: "",
+      consent: false,
     },
   });
 
@@ -175,6 +240,8 @@ function RegisterForm() {
         password: values.password,
         role: values.role as UserRole,
         birth_date: values.birthDate || undefined,
+        document: values.document || undefined,
+        gender: values.gender || undefined,
       });
       const session = toSession(resp);
       setAuth(session);
@@ -260,6 +327,21 @@ function RegisterForm() {
         </div>
 
         <div className="space-y-2">
+          <Label htmlFor="document">CPF ou CNPJ</Label>
+          <Input
+            id="document"
+            type="text"
+            inputMode="numeric"
+            autoComplete="off"
+            placeholder="Somente números"
+            aria-invalid={Boolean(errors.document)}
+            aria-describedby={errors.document ? "document-error" : undefined}
+            {...register("document")}
+          />
+          <FieldError id="document-error" message={errors.document?.message} />
+        </div>
+
+        <div className="space-y-2">
           <Label htmlFor="password">Senha</Label>
           <PasswordInput
             id="password"
@@ -312,6 +394,20 @@ function RegisterForm() {
           <FieldError id="role-error" message={errors.role?.message} />
         </div>
 
+        <div className="space-y-2">
+          <Label htmlFor="gender">Gênero (opcional)</Label>
+          <select
+            id="gender"
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            {...register("gender")}
+          >
+            <option value="">Prefiro não informar</option>
+            <option value="masculino">Masculino</option>
+            <option value="feminino">Feminino</option>
+            <option value="outro">Outro</option>
+          </select>
+        </div>
+
         {selectedRole === "professional" ? (
           <div className="space-y-2">
             <Label htmlFor="birthDate">Data de nascimento</Label>
@@ -335,6 +431,37 @@ function RegisterForm() {
             </p>
           </div>
         ) : null}
+
+        <div className="space-y-1">
+          <label className="flex items-start gap-2 text-sm text-muted-foreground">
+            <input
+              type="checkbox"
+              className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
+              aria-invalid={Boolean(errors.consent)}
+              {...register("consent")}
+            />
+            <span>
+              Li e concordo com a{" "}
+              <Link
+                href="/privacidade"
+                target="_blank"
+                className="font-medium text-primary hover:underline"
+              >
+                Política de Privacidade
+              </Link>{" "}
+              e os{" "}
+              <Link
+                href="/termos"
+                target="_blank"
+                className="font-medium text-primary hover:underline"
+              >
+                Termos de Uso
+              </Link>
+              .
+            </span>
+          </label>
+          <FieldError id="consent-error" message={errors.consent?.message} />
+        </div>
 
         <Button
           type="submit"

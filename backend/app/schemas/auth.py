@@ -7,6 +7,7 @@ sempre no backend — o cliente nunca é confiável (§5.2).
 
 from __future__ import annotations
 
+import re
 import uuid
 from datetime import date, datetime
 
@@ -48,6 +49,62 @@ def _validate_birth_date(value: date) -> date:
     return value
 
 
+# Gênero: conjunto fechado (opcional). Documento: CPF (11) ou CNPJ (14).
+_ALLOWED_GENDERS = {"masculino", "feminino", "outro", "nao_informado"}
+
+
+def _digits(value: str) -> str:
+    return re.sub(r"\D", "", value)
+
+
+def _valid_cpf(cpf: str) -> bool:
+    if len(cpf) != 11 or cpf == cpf[0] * 11:
+        return False
+    for size in (9, 10):
+        total = sum(int(cpf[i]) * (size + 1 - i) for i in range(size))
+        check = (total * 10) % 11 % 10
+        if check != int(cpf[size]):
+            return False
+    return True
+
+
+def _valid_cnpj(cnpj: str) -> bool:
+    if len(cnpj) != 14 or cnpj == cnpj[0] * 14:
+        return False
+    w1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+    w2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+    for weights, size in ((w1, 12), (w2, 13)):
+        total = sum(int(cnpj[i]) * weights[i] for i in range(size))
+        check = 11 - (total % 11)
+        check = 0 if check >= 10 else check
+        if check != int(cnpj[size]):
+            return False
+    return True
+
+
+def _validate_document(value: str | None) -> str | None:
+    """Limpa e valida CPF (11 dígitos) ou CNPJ (14) por dígito verificador."""
+    if not value:
+        return None
+    digits = _digits(value)
+    if not digits:
+        return None
+    if len(digits) == 11 and _valid_cpf(digits):
+        return digits
+    if len(digits) == 14 and _valid_cnpj(digits):
+        return digits
+    raise ValueError("CPF ou CNPJ inválido.")
+
+
+def _validate_gender(value: str | None) -> str | None:
+    if not value:
+        return None
+    v = value.strip().lower()
+    if v not in _ALLOWED_GENDERS:
+        raise ValueError("Gênero inválido.")
+    return v
+
+
 class RegisterIn(BaseModel):
     """Corpo de ``POST /auth/register``."""
 
@@ -59,6 +116,8 @@ class RegisterIn(BaseModel):
     # Opcional no schema (login social não informa); o frontend exige para
     # profissional. Validada (maioridade) quando presente.
     birth_date: date | None = None
+    gender: str | None = None
+    document: str | None = None
 
     @field_validator("name")
     @classmethod
@@ -87,6 +146,16 @@ class RegisterIn(BaseModel):
     @classmethod
     def _check_birth_date(cls, value: date | None) -> date | None:
         return _validate_birth_date(value) if value is not None else value
+
+    @field_validator("gender")
+    @classmethod
+    def _check_gender(cls, value: str | None) -> str | None:
+        return _validate_gender(value)
+
+    @field_validator("document")
+    @classmethod
+    def _check_document(cls, value: str | None) -> str | None:
+        return _validate_document(value)
 
 
 class LoginIn(BaseModel):
@@ -194,6 +263,8 @@ class UserOut(BaseModel):
     # Papel ATIVO da sessão (papel duplo). Espelha o claim do token; pode diferir
     # de `role` (papel-base do banco). None quando não há sessão.
     active_role: UserRole | None = None
+    gender: str | None = None
+    document: str | None = None
 
     @computed_field  # type: ignore[prop-decorator]
     @property

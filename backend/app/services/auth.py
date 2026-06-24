@@ -139,6 +139,8 @@ class AuthService:
             password_hash=hash_password(data.password),
             role=data.role,
             birth_date=data.birth_date,
+            gender=data.gender,
+            document=data.document,
             status=UserStatus.active,
         )
 

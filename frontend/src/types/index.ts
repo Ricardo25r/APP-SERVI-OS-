@@ -61,6 +61,9 @@ export interface User {
   active_role?: UserRole | null;
   /** Papéis que o usuário pode assumir (de `GET /auth/me`). >1 → seletor/troca. */
   available_roles?: UserRole[];
+  /** Gênero (opcional) e documento (CPF/CNPJ, só dígitos) informados no cadastro. */
+  gender?: string | null;
+  document?: string | null;
 }
 
 /** `CategoryRead`. */
