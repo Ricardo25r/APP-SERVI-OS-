@@ -26,6 +26,7 @@ export interface Idea {
   anexos_count: number;
   comentarios_count: number;
   sprint_nome: string | null;
+  origem: "admin" | "usuario";
 }
 
 export interface Anexo {
@@ -102,4 +103,5 @@ export interface IdeaFilters {
   autor?: string;
   sprint_id?: string;
   busca?: string;
+  origem?: "admin" | "usuario" | "";
 }

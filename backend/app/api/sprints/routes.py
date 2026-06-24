@@ -62,6 +62,7 @@ async def list_ideas(
     autor: str | None = Query(default=None),
     sprint_id: uuid.UUID | None = Query(default=None),
     busca: str | None = Query(default=None),
+    origem: str | None = Query(default=None),
 ) -> IdeaListResponse:
     items = await SprintService(db).list_ideas(
         aba=aba,
@@ -70,6 +71,7 @@ async def list_ideas(
         autor=autor,
         sprint_id=sprint_id,
         busca=busca,
+        origem=origem,
     )
     return IdeaListResponse(items=items)
 

@@ -93,6 +93,11 @@ class SprintIdea(UUIDPKMixin, TimestampMixin, Base):
     feito_por_username: Mapped[str | None] = mapped_column(
         String(100), nullable=True
     )
+    # "admin" (criada no painel) | "usuario" (bug reportado por contratante/
+    # prestador pelo app).
+    origem: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="admin", server_default="admin"
+    )
 
     sprint: Mapped[Sprint | None] = relationship(
         "Sprint", back_populates="ideias"
@@ -126,6 +131,7 @@ class SprintIdea(UUIDPKMixin, TimestampMixin, Base):
         Index("ix_sprint_ideas_status", "status"),
         Index("ix_sprint_ideas_sprint_id", "sprint_id"),
         Index("ix_sprint_ideas_urgencia", "urgencia"),
+        Index("ix_sprint_ideas_origem", "origem"),
     )
 
 

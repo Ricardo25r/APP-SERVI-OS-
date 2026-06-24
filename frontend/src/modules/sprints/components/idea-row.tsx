@@ -32,6 +32,11 @@ export function IdeaRow({ idea, onClick }: { idea: Idea; onClick: () => void }) 
           >
             {urg.label}
           </span>
+          {idea.origem === "usuario" ? (
+            <span className="shrink-0 rounded-full border border-brand/30 bg-brand/10 px-2 py-0.5 text-[11px] font-semibold text-brand">
+              Usuário
+            </span>
+          ) : null}
           {idea.fixado_topo ? (
             <Pin className="h-3.5 w-3.5 shrink-0 text-brand" aria-label="Fixado" />
           ) : null}

@@ -25,6 +25,7 @@ export function fetchIdeas(filters: IdeaFilters): Promise<{ items: Idea[] }> {
   if (filters.autor) p.set("autor", filters.autor);
   if (filters.sprint_id) p.set("sprint_id", filters.sprint_id);
   if (filters.busca) p.set("busca", filters.busca);
+  if (filters.origem) p.set("origem", filters.origem);
   return apiGet<{ items: Idea[] }>(`${BASE}/ideas?${p.toString()}`);
 }
 

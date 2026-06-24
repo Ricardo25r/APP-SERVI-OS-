@@ -45,6 +45,7 @@ export default function AdminSprintsPage() {
   const [urgencia, setUrgencia] = useState<Urgencia | "">("");
   const [autor, setAutor] = useState("");
   const [busca, setBusca] = useState("");
+  const [origem, setOrigem] = useState<"" | "admin" | "usuario">("");
 
   const [novaIdeia, setNovaIdeia] = useState(false);
   const [detailId, setDetailId] = useState<string | null>(null);
@@ -57,7 +58,7 @@ export default function AdminSprintsPage() {
 
   const kpis = useQuery({ queryKey: ["sprint-kpis"], queryFn: fetchKpis });
   const ideas = useQuery({
-    queryKey: ["sprint-ideas", abaApi, tipo, urgencia, autor, busca],
+    queryKey: ["sprint-ideas", abaApi, tipo, urgencia, autor, busca, origem],
     queryFn: () =>
       fetchIdeas({
         aba: abaApi,
@@ -65,6 +66,7 @@ export default function AdminSprintsPage() {
         urgencia: urgencia || undefined,
         autor: autor || undefined,
         busca: busca || undefined,
+        origem: origem || undefined,
       }),
     enabled: aba !== "quadro",
   });
@@ -196,6 +198,16 @@ export default function AdminSprintsPage() {
                   {nome}
                 </SelectOption>
               ))}
+            </Select>
+            <Select
+              value={origem}
+              onChange={(e) =>
+                setOrigem(e.target.value as "" | "admin" | "usuario")
+              }
+            >
+              <SelectOption value="">Todas as origens</SelectOption>
+              <SelectOption value="usuario">Reportado por usuário</SelectOption>
+              <SelectOption value="admin">Criado no painel</SelectOption>
             </Select>
           </div>
 

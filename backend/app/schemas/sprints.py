@@ -13,6 +13,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 TipoIdeia = Literal["bug", "melhoria", "conserto", "ideia"]
+Origem = Literal["admin", "usuario"]
 Urgencia = Literal["critica", "alta", "media", "baixa"]
 StatusIdea = Literal["aberta", "em_andamento", "feita", "arquivada"]
 StatusSprint = Literal["planejado", "ativo", "encerrado"]
@@ -101,6 +102,7 @@ class IdeaRead(BaseModel):
     anexos_count: int = 0
     comentarios_count: int = 0
     sprint_nome: str | None = None
+    origem: Origem = "admin"
 
 
 class AnexoRead(BaseModel):
@@ -152,6 +154,13 @@ class VotoResult(BaseModel):
     votos_count: int
 
 
+class BugReportIn(BaseModel):
+    """Corpo de ``POST /sprints/report-bug`` — bug reportado por um usuário do app."""
+
+    titulo: str = Field(min_length=3, max_length=200)
+    descricao: str | None = Field(default=None, max_length=4000)
+
+
 class Kpis(BaseModel):
     abertas: int
     criticas: int
@@ -190,4 +199,6 @@ __all__ = [
     "Kpis",
     "SmartDeleteResult",
     "IdeaListResponse",
+    "Origem",
+    "BugReportIn",
 ]

@@ -32,6 +32,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { IconChip } from "@/components/ui/icon-chip";
 import { Input } from "@/components/ui/input";
 import { SettingsRow, SettingsRowList } from "@/components/ui/settings-row";
+import { ReportBugSection } from "@/modules/feedback/report-bug-section";
 import { LoadingState } from "@/modules/profile/feedback";
 import { SupportTicketSection } from "@/modules/support/ticket-section";
 
@@ -301,6 +302,9 @@ export default function SuportePage() {
           />
         </SettingsRowList>
       </Card>
+
+      {/* Reportar um bug (vai pra esteira de Sprints do admin) */}
+      <ReportBugSection />
 
       {/* Abrir um chamado (form real) — por último */}
       <SupportTicketSection />

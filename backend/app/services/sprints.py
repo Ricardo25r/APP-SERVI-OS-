@@ -107,6 +107,7 @@ class SprintService:
             anexos_count=anexos_count,
             comentarios_count=comentarios_count,
             sprint_nome=sprint_nome,
+            origem=idea.origem,
         )
 
     def _anexo_read(self, anexo: SprintIdeaAnexo) -> AnexoRead:
@@ -161,6 +162,7 @@ class SprintService:
         autor: str | None = None,
         sprint_id: uuid.UUID | None = None,
         busca: str | None = None,
+        origem: str | None = None,
     ) -> list[IdeaRead]:
         statuses = _HISTORICO if aba == "historico" else _ATIVA
         stmt = select(SprintIdea).where(SprintIdea.status.in_(statuses))
@@ -172,6 +174,8 @@ class SprintService:
             stmt = stmt.where(SprintIdea.autor_username == autor)
         if sprint_id:
             stmt = stmt.where(SprintIdea.sprint_id == sprint_id)
+        if origem:
+            stmt = stmt.where(SprintIdea.origem == origem)
         if busca:
             like = f"%{busca}%"
             stmt = stmt.where(
@@ -309,12 +313,36 @@ class SprintService:
             autor_nome=current_user.name,
             responsavel_username=data.responsavel_username,
             fixado_topo=data.fixado_topo,
+            origem="admin",
         )
         self.db.add(idea)
         await self.db.flush()
         self._evento(idea.id, "criada", None, current_user.email)
         await self.db.commit()
         return await self.get_detail(current_user, idea.id)
+
+    async def report_bug(
+        self, current_user: User, titulo: str, descricao: str | None
+    ) -> uuid.UUID:
+        """Cria uma ideia tipo **bug** reportada por um usuário do app
+        (contratante/prestador) — ``origem='usuario'``. Visível na esteira admin."""
+        idea = SprintIdea(
+            titulo=titulo.strip()[:200],
+            descricao=(descricao or "").strip() or None,
+            tipo="bug",
+            urgencia="media",
+            status="aberta",
+            autor_username=current_user.email,
+            autor_nome=current_user.name,
+            origem="usuario",
+        )
+        self.db.add(idea)
+        await self.db.flush()
+        self._evento(
+            idea.id, "criada", "reportado pelo usuário", current_user.email
+        )
+        await self.db.commit()
+        return idea.id
 
     async def update_idea(
         self, current_user: User, idea_id: uuid.UUID, data: IdeaUpdate

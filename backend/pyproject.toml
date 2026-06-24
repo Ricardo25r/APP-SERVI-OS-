@@ -55,7 +55,7 @@ ignore = []
 # B008: Depends()/Header() em defaults é o padrão idiomático do FastAPI.
 # UP042: enums (str, Enum) são exigidos pelo contrato (§3.8) — não usar StrEnum.
 "app/core/deps.py" = ["B008"]
-"app/api/**/routes.py" = ["B008"]
+"app/api/**/*routes.py" = ["B008"]
 "app/models/enums.py" = ["UP042"]
 "app/models/*.py" = ["UP042"]
 
