@@ -238,7 +238,7 @@ export function ProfessionalHome({ user }: { user: User }) {
       {/* Banner de nível (promo) — topo da home */}
       <Link
         href="/gamificacao"
-        className="relative block overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-[#0A357D] p-5 pr-32 text-primary-foreground shadow-sm transition-opacity hover:opacity-95 sm:pr-44"
+        className="relative block overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-[#0A357D] p-5 pr-36 text-primary-foreground shadow-sm transition-opacity hover:opacity-95 sm:pr-52"
       >
         <p className="text-base font-bold tracking-tight sm:text-lg">
           Suba de nível e ganhe mais visibilidade
@@ -251,13 +251,13 @@ export function ProfessionalHome({ user }: { user: User }) {
           <ChevronRight className="h-4 w-4" aria-hidden />
         </span>
         <Image
-          src="/brand/mascote-profissional.webp"
-          width={220}
-          height={300}
+          src="/brand/logo-faztudo-full.png?v=2"
+          width={320}
+          height={213}
           alt=""
           aria-hidden
           priority
-          className="pointer-events-none absolute bottom-0 right-1 h-32 w-auto select-none object-contain object-bottom drop-shadow-xl sm:right-3 sm:h-44"
+          className="pointer-events-none absolute bottom-1 right-1 h-20 w-auto select-none object-contain object-bottom drop-shadow-xl sm:right-3 sm:h-32"
         />
       </Link>
 
