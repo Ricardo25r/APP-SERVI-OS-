@@ -19,6 +19,7 @@ from fastapi import (
     APIRouter,
     Depends,
     File,
+    Form,
     HTTPException,
     Query,
     Response,
@@ -39,6 +40,7 @@ from app.schemas.users import (
     CustomerProfileOut,
     CustomerProfileUpdate,
     FavoriteIn,
+    PortfolioItemOut,
     ProfessionalProfileIn,
     ProfessionalProfileOut,
     ProfessionalProfilePublicOut,
@@ -54,6 +56,9 @@ router = APIRouter()
 _MAX_AVATAR_BYTES = 5 * 1024 * 1024
 _ALLOWED_AVATAR_TYPES = {"image/jpeg", "image/png", "image/webp"}
 _AVATAR_EXT = {"image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp"}
+
+_MAX_PORTFOLIO_BYTES = 5 * 1024 * 1024
+_MAX_PORTFOLIO_ITEMS = 12
 
 
 @router.post(
@@ -89,6 +94,79 @@ async def upload_avatar(
     await db.commit()
     await db.refresh(current_user)
     return current_user
+
+
+# --------------------------------------------------------------------------- #
+# Portfólio / galeria de trabalhos (#58)
+# --------------------------------------------------------------------------- #
+@router.get(
+    "/me/portfolio",
+    response_model=list[PortfolioItemOut],
+    summary="Minha galeria de trabalhos",
+)
+async def list_my_portfolio(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> list[PortfolioItemOut]:
+    return await UserProfileService(db).list_my_portfolio(current_user)
+
+
+@router.post(
+    "/me/portfolio",
+    response_model=PortfolioItemOut,
+    status_code=status.HTTP_201_CREATED,
+    summary="Adicionar foto à galeria de trabalhos",
+)
+async def add_portfolio_item(
+    file: UploadFile = File(...),
+    caption: str | None = Form(default=None),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> PortfolioItemOut:
+    """Foto de trabalho do profissional (JPG/PNG/WEBP, até 5 MB, máx 12)."""
+    service = UserProfileService(db)
+    existing = await service.list_my_portfolio(current_user)
+    if len(existing) >= _MAX_PORTFOLIO_ITEMS:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Limite de {_MAX_PORTFOLIO_ITEMS} fotos na galeria.",
+        )
+    if file.content_type not in _ALLOWED_AVATAR_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail="Formato inválido. Use JPG, PNG ou WEBP.",
+        )
+    data = await file.read()
+    if not data:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Arquivo vazio."
+        )
+    if len(data) > _MAX_PORTFOLIO_BYTES:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail="Imagem muito grande (máximo 5 MB).",
+        )
+    ext = _AVATAR_EXT.get(file.content_type, "")
+    key = f"portfolio/{current_user.id}/{uuid.uuid4().hex}{ext}"
+    upload_bytes(data, key, content_type=file.content_type)
+    return await service.add_portfolio_item(
+        current_user, image_key=key, caption=caption
+    )
+
+
+@router.delete(
+    "/me/portfolio/{item_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+    summary="Remover foto da galeria",
+)
+async def delete_portfolio_item(
+    item_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> Response:
+    await UserProfileService(db).delete_portfolio_item(current_user, item_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.get(

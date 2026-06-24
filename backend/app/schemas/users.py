@@ -199,6 +199,16 @@ class ProfessionalProfileOut(BaseModel):
     balance: int = 0
 
 
+class PortfolioItemOut(BaseModel):
+    """Uma foto da galeria de trabalhos do profissional (#58)."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    image_url: str | None = None
+    caption: str | None = None
+
+
 class ProfessionalProfilePublicOut(BaseModel):
     """Perfil público do profissional (``GET /users/{user_id}/professional-profile``).
 
@@ -229,6 +239,7 @@ class ProfessionalProfilePublicOut(BaseModel):
     is_favorited: bool = False
 
     categories: list[CategoryRefOut] = Field(default_factory=list)
+    portfolio: list[PortfolioItemOut] = Field(default_factory=list)
 
 
 class FavoriteIn(BaseModel):

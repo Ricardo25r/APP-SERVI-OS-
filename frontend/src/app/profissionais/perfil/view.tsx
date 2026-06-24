@@ -38,6 +38,7 @@ interface PublicProfile {
   verified: boolean;
   is_favorited: boolean;
   categories?: { id: string; name: string }[];
+  portfolio?: { id: string; image_url: string | null; caption: string | null }[];
 }
 
 export default function ProfessionalPublicView() {
@@ -152,6 +153,35 @@ export default function ProfessionalPublicView() {
               </div>
             </CardContent>
           </Card>
+
+          {data.portfolio && data.portfolio.length > 0 ? (
+            <section className="space-y-3">
+              <h2 className="text-base font-bold tracking-tight">Trabalhos</h2>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                {data.portfolio.map((p) =>
+                  p.image_url ? (
+                    <figure
+                      key={p.id}
+                      className="overflow-hidden rounded-xl border bg-card"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={p.image_url}
+                        alt={p.caption ?? "Trabalho do profissional"}
+                        className="aspect-square w-full object-cover"
+                        loading="lazy"
+                      />
+                      {p.caption ? (
+                        <figcaption className="line-clamp-1 px-2 py-1 text-xs text-muted-foreground">
+                          {p.caption}
+                        </figcaption>
+                      ) : null}
+                    </figure>
+                  ) : null
+                )}
+              </div>
+            </section>
+          ) : null}
 
           <section className="space-y-3">
             <h2 className="text-base font-bold tracking-tight">Avaliações</h2>

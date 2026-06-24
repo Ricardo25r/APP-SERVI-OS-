@@ -48,6 +48,7 @@ from app.models.mixins import (
 from app.models.notification import Notification
 from app.models.payment_order import PaymentOrder
 from app.models.payment_settings import PaymentSettings
+from app.models.portfolio_item import PortfolioItem
 from app.models.professional_category import ProfessionalCategory
 from app.models.professional_profile import ProfessionalProfile
 from app.models.push_subscription import PushSubscription
@@ -83,6 +84,7 @@ __all__ = [
     "CustomerProfile",
     "ProfessionalProfile",
     "ProfessionalCategory",
+    "PortfolioItem",
     "Category",
     "ErrorLog",
     "Favorite",

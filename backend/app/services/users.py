@@ -21,7 +21,7 @@ import contextlib
 import uuid
 from datetime import UTC, datetime
 
-from sqlalchemy import delete, update
+from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -35,6 +35,7 @@ from app.models import (
     Category,
     CustomerProfile,
     Lead,
+    PortfolioItem,
     ProfessionalProfile,
     User,
     UserRole,
@@ -47,6 +48,7 @@ from app.schemas.users import (
     CustomerProfileIn,
     CustomerProfileOut,
     CustomerProfileUpdate,
+    PortfolioItemOut,
     ProfessionalProfileIn,
     ProfessionalProfileOut,
     ProfessionalProfilePublicOut,
@@ -392,7 +394,89 @@ class UserProfileService:
             verified=bool(user is not None and user.kyc_status == "approved"),
             is_favorited=is_fav,
             categories=self._categories_out(profile.categories),
+            portfolio=await self._portfolio_out(profile.id),
         )
+
+    # ================================================================== #
+    # Portfólio / galeria de trabalhos (#58)
+    # ================================================================== #
+    async def _portfolio_out(
+        self, profile_id: uuid.UUID
+    ) -> list[PortfolioItemOut]:
+        items = (
+            (
+                await self.db.execute(
+                    select(PortfolioItem)
+                    .where(PortfolioItem.professional_id == profile_id)
+                    .order_by(
+                        PortfolioItem.sort_order, PortfolioItem.created_at
+                    )
+                )
+            )
+            .scalars()
+            .all()
+        )
+        out: list[PortfolioItemOut] = []
+        for item in items:
+            url = None
+            with contextlib.suppress(Exception):
+                url = presigned_get_url(item.image_key)
+            out.append(
+                PortfolioItemOut(
+                    id=item.id, image_url=url, caption=item.caption
+                )
+            )
+        return out
+
+    async def list_my_portfolio(
+        self, current_user: User
+    ) -> list[PortfolioItemOut]:
+        profile = await self.repo.get_professional_profile(
+            current_user.id, with_relations=False
+        )
+        if profile is None:
+            raise NotFoundError("Perfil profissional não encontrado.")
+        return await self._portfolio_out(profile.id)
+
+    async def add_portfolio_item(
+        self, current_user: User, *, image_key: str, caption: str | None
+    ) -> PortfolioItemOut:
+        profile = await self.repo.get_professional_profile(
+            current_user.id, with_relations=False
+        )
+        if profile is None:
+            raise NotFoundError("Perfil profissional não encontrado.")
+        item = PortfolioItem(
+            professional_id=profile.id,
+            image_key=image_key,
+            caption=(caption or "").strip() or None,
+        )
+        self.db.add(item)
+        await self.db.commit()
+        await self.db.refresh(item)
+        url = None
+        with contextlib.suppress(Exception):
+            url = presigned_get_url(item.image_key)
+        return PortfolioItemOut(
+            id=item.id, image_url=url, caption=item.caption
+        )
+
+    async def delete_portfolio_item(
+        self, current_user: User, item_id: uuid.UUID
+    ) -> None:
+        profile = await self.repo.get_professional_profile(
+            current_user.id, with_relations=False
+        )
+        if profile is None:
+            raise NotFoundError("Perfil profissional não encontrado.")
+        item = await self.db.get(PortfolioItem, item_id)
+        if item is None or item.professional_id != profile.id:
+            return
+        key = item.image_key
+        await self.db.delete(item)
+        await self.db.commit()
+        with contextlib.suppress(Exception):
+            delete_object(key)
 
     # ================================================================== #
     # Categorias do profissional (N:N)

@@ -39,6 +39,7 @@ import type { AvailabilityStatus, ProfessionalProfile } from "@/types";
 
 import { StarRating } from "@/modules/reviews/star-rating";
 import { ReviewList } from "@/modules/reviews/review-list";
+import { PortfolioManager } from "./portfolio-manager";
 import { LevelBadge } from "@/modules/gamification/level-badge";
 import { formatXp } from "@/modules/gamification/utils";
 
@@ -541,6 +542,21 @@ export function ProfessionalProfileSection() {
           </form>
         </CardContent>
       </Card>
+
+      {/* Galeria de trabalhos (#58) */}
+      {exists && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Galeria de trabalhos</CardTitle>
+            <CardDescription>
+              Fotos dos seus serviços. Aparecem no seu perfil público.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <PortfolioManager />
+          </CardContent>
+        </Card>
+      )}
 
       {/* Avaliações recebidas pelo profissional */}
       {exists && profile?.user_id && (
