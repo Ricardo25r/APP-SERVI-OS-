@@ -20,6 +20,7 @@ from fastapi import (
     Depends,
     File,
     HTTPException,
+    Query,
     Response,
     UploadFile,
     status,
@@ -40,6 +41,7 @@ from app.schemas.users import (
     ProfessionalProfileOut,
     ProfessionalProfilePublicOut,
     ProfessionalProfileUpdate,
+    ProfessionalSearchList,
     SetCategoriesIn,
 )
 from app.services.referrals import ReferralService
@@ -250,6 +252,30 @@ async def get_professional_categories(
     service = UserProfileService(db)
     categories = await service.get_professional_categories(current_user)
     return CategoriesOut(categories=categories)
+
+
+# --------------------------------------------------------------------------- #
+# Catálogo / busca de profissionais (cliente)
+# --------------------------------------------------------------------------- #
+@router.get(
+    "/professionals",
+    response_model=ProfessionalSearchList,
+    summary="Buscar profissionais (catálogo do cliente)",
+)
+async def search_professionals(
+    category_id: uuid.UUID | None = Query(default=None),
+    city: str | None = Query(default=None),
+    state: str | None = Query(default=None),
+    q: str | None = Query(default=None),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> ProfessionalSearchList:
+    """Catálogo de profissionais por categoria/cidade/estado/texto, ordenado por
+    reputação. Exige autenticação (qualquer usuário)."""
+    service = UserProfileService(db)
+    return await service.search_professionals(
+        category_id=category_id, city=city, state=state, query=q
+    )
 
 
 # --------------------------------------------------------------------------- #

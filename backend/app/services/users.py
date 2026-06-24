@@ -30,7 +30,7 @@ from app.core.exceptions import (
     DomainValidationError,
     NotFoundError,
 )
-from app.core.storage import delete_object
+from app.core.storage import delete_object, presigned_get_url
 from app.models import (
     Category,
     CustomerProfile,
@@ -51,6 +51,8 @@ from app.schemas.users import (
     ProfessionalProfileOut,
     ProfessionalProfilePublicOut,
     ProfessionalProfileUpdate,
+    ProfessionalSearchItem,
+    ProfessionalSearchList,
 )
 
 __all__ = ["UserProfileService"]
@@ -140,6 +142,42 @@ class UserProfileService:
         user.status = UserStatus.blocked
         user.deleted_at = now
         await self.db.commit()
+
+    # ================================================================== #
+    # Busca de profissionais (catálogo do cliente)
+    # ================================================================== #
+    async def search_professionals(
+        self,
+        *,
+        category_id: uuid.UUID | None = None,
+        city: str | None = None,
+        state: str | None = None,
+        query: str | None = None,
+    ) -> ProfessionalSearchList:
+        """Catálogo de profissionais para o cliente (busca + reputação)."""
+        rows = await self.repo.search_professionals(
+            category_id=category_id, city=city, state=state, query=query
+        )
+        items: list[ProfessionalSearchItem] = []
+        for profile, user in rows:
+            avatar = None
+            if user.avatar_key:
+                with contextlib.suppress(Exception):
+                    avatar = presigned_get_url(user.avatar_key)
+            items.append(
+                ProfessionalSearchItem(
+                    user_id=user.id,
+                    name=user.name,
+                    avatar_url=avatar,
+                    headline=profile.headline,
+                    city=profile.city,
+                    state=profile.state,
+                    rating=profile.rating,
+                    total_reviews=profile.total_reviews,
+                    verified=(user.kyc_status == "approved"),
+                )
+            )
+        return ProfessionalSearchList(items=items, total=len(items))
 
     # ================================================================== #
     # Customer profile
@@ -296,6 +334,11 @@ class UserProfileService:
         profile = await self.repo.get_professional_profile(user_id)
         if profile is None:
             raise NotFoundError("Perfil profissional não encontrado.")
+        user = await self.db.get(User, user_id)
+        avatar = None
+        if user is not None and user.avatar_key:
+            with contextlib.suppress(Exception):
+                avatar = presigned_get_url(user.avatar_key)
         return ProfessionalProfilePublicOut(
             id=profile.id,
             user_id=profile.user_id,
@@ -307,6 +350,9 @@ class UserProfileService:
             availability_status=profile.availability_status,
             rating=float(profile.rating),
             total_reviews=profile.total_reviews,
+            name=user.name if user is not None else None,
+            avatar_url=avatar,
+            verified=bool(user is not None and user.kyc_status == "approved"),
             categories=self._categories_out(profile.categories),
         )
 

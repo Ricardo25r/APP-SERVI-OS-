@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import uuid
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -25,6 +25,8 @@ from app.models import (
     CustomerProfile,
     ProfessionalCategory,
     ProfessionalProfile,
+    User,
+    UserStatus,
 )
 
 __all__ = ["UserProfileRepository"]
@@ -104,6 +106,56 @@ class UserProfileRepository:
         """Adiciona o perfil profissional à sessão (sem commit)."""
         self.db.add(profile)
         return profile
+
+    async def search_professionals(
+        self,
+        *,
+        category_id: uuid.UUID | None = None,
+        city: str | None = None,
+        state: str | None = None,
+        query: str | None = None,
+        limit: int = 60,
+    ) -> list[tuple[ProfessionalProfile, User]]:
+        """Catálogo de profissionais (busca do cliente).
+
+        Filtra por categoria (N:N), cidade/estado e texto (nome/headline). Só
+        contas ativas e perfis não excluídos. Ordena por reputação.
+        """
+        stmt = (
+            select(ProfessionalProfile, User)
+            .join(User, ProfessionalProfile.user_id == User.id)
+            .where(
+                ProfessionalProfile.deleted_at.is_(None),
+                User.deleted_at.is_(None),
+                User.status == UserStatus.active,
+            )
+        )
+        if category_id is not None:
+            stmt = stmt.join(
+                ProfessionalCategory,
+                ProfessionalCategory.professional_id == ProfessionalProfile.id,
+            ).where(ProfessionalCategory.category_id == category_id)
+        if city:
+            stmt = stmt.where(
+                func.lower(ProfessionalProfile.city) == city.strip().lower()
+            )
+        if state:
+            stmt = stmt.where(
+                func.lower(ProfessionalProfile.state) == state.strip().lower()
+            )
+        if query and query.strip():
+            like = f"%{query.strip()}%"
+            stmt = stmt.where(
+                or_(
+                    User.name.ilike(like),
+                    ProfessionalProfile.headline.ilike(like),
+                )
+            )
+        stmt = stmt.order_by(
+            ProfessionalProfile.rating.desc(),
+            ProfessionalProfile.total_reviews.desc(),
+        ).limit(limit)
+        return list((await self.db.execute(stmt)).all())
 
     # ------------------------------------------------------------------ #
     # Carteira de créditos (criada junto do perfil profissional — §2.8)

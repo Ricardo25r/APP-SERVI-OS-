@@ -222,4 +222,28 @@ class ProfessionalProfilePublicOut(BaseModel):
     rating: float = Field(default=0.0, ge=0, le=5)
     total_reviews: int = Field(default=0, ge=0)
 
+    # Dados do usuário (montados no service) para a tela de perfil público.
+    name: str | None = None
+    avatar_url: str | None = None
+    verified: bool = False
+
     categories: list[CategoryRefOut] = Field(default_factory=list)
+
+
+class ProfessionalSearchItem(BaseModel):
+    """Item do catálogo de profissionais (busca pelo cliente)."""
+
+    user_id: uuid.UUID
+    name: str
+    avatar_url: str | None = None
+    headline: str | None = None
+    city: str | None = None
+    state: str | None = None
+    rating: float = Field(default=0.0, ge=0, le=5)
+    total_reviews: int = Field(default=0, ge=0)
+    verified: bool = False
+
+
+class ProfessionalSearchList(BaseModel):
+    items: list[ProfessionalSearchItem]
+    total: int
