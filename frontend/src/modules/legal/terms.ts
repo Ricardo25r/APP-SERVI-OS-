@@ -11,7 +11,7 @@
  * do Trabalho (princípio da primazia da realidade).
  */
 
-export const TERMS_VERSION = "2026-06-24";
+export const TERMS_VERSION = "2026-06-24-v2";
 export const TERMS_UPDATED_LABEL = "24 de junho de 2026";
 
 /** Resumo curto exibido no banner de aceite (antes de "Li e concordo"). */
@@ -21,7 +21,9 @@ export const TERMS_SUMMARY =
   "prazo, segurança ou resultado do trabalho — isso é responsabilidade EXCLUSIVA do prestador. " +
   "O prestador é AUTÔNOMO, sem vínculo empregatício com o FazTudo, e responde por seus próprios " +
   "tributos, INSS e ferramentas. Você contrata e avalia o profissional por sua conta e risco. " +
-  "Créditos comprados para desbloquear contatos NÃO são reembolsáveis, salvo nos casos previstos em lei.";
+  "Créditos comprados para desbloquear contatos NÃO são reembolsáveis, salvo nos casos previstos em lei. " +
+  "Você também CONSENTE com o uso da sua LOCALIZAÇÃO (cidade/estado e, se você autorizar no aparelho, a posição por GPS) " +
+  "para conectar você a oportunidades e profissionais próximos e calcular distâncias, conforme a LGPD.";
 
 export const TERMS_MARKDOWN = `# Termos de Uso do FazTudo
 
@@ -32,6 +34,8 @@ Bem-vindo(a) ao **FazTudo**. Estes Termos de Uso ("Termos") regem o acesso e a u
 **LEIA ESTES TERMOS COM ATENÇÃO ANTES DE USAR A PLATAFORMA.** Ao se cadastrar, acessar ou utilizar o FazTudo de qualquer forma, você declara ter lido, compreendido e aceito integralmente estes Termos. Caso não concorde, não utilize a plataforma.
 
 **RESUMO IMPORTANTE (não substitui a leitura integral):** O FazTudo é apenas uma plataforma de tecnologia que conecta Contratantes e Prestadores. O FazTudo **não presta** os serviços anunciados, **não é parte** do contrato firmado entre Contratante e Prestador, e **não se responsabiliza** pela qualidade, execução, prazo, segurança ou resultado do serviço. O Prestador é **profissional autônomo** e **não possui vínculo empregatício** com o FazTudo. A contratação é feita **diretamente entre Contratante e Prestador**, por conta e risco de ambos.
+
+**CONSENTIMENTO DE LOCALIZAÇÃO:** Para conectar você a oportunidades e profissionais próximos e calcular distâncias, o FazTudo coleta e utiliza a sua **localização** — a cidade/estado informados no perfil e, quando você autoriza no aparelho, a **posição do dispositivo (GPS)**. O uso da geolocalização é **opcional** e depende da sua permissão no sistema, que você pode conceder ou revogar a qualquer momento nas configurações do aparelho. Ao aceitar estes Termos, você **consente livremente** com o tratamento dos seus dados de localização para essas finalidades, nos termos da **LGPD (Lei nº 13.709/2018)**. Você pode usar a Plataforma sem a localização por GPS, informando manualmente sua cidade/estado.
 
 ---
 

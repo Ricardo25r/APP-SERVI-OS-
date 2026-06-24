@@ -113,7 +113,7 @@ class Settings(BaseSettings):
     APPLE_CLIENT_ID: str = ""
     # Versão vigente dos Termos de Uso. Mudar isto faz o banner de aceite
     # reaparecer para TODOS (o aceite é registrado por versão).
-    TERMS_VERSION: str = "2026-06-24"
+    TERMS_VERSION: str = "2026-06-24-v2"
     # Web Push (VAPID) — notificação na tela com o app fechado. A chave PÚBLICA
     # também vai no frontend (NEXT_PUBLIC_VAPID_PUBLIC_KEY); a PRIVADA é segredo
     # (só no .env do servidor). Vazio = push desligado (no-op, não quebra nada).
