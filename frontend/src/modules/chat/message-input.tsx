@@ -12,7 +12,7 @@
 
 import { useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ImagePlus, Loader2, SendHorizontal } from "lucide-react";
+import { ImagePlus, Loader2, SendHorizontal, ShieldAlert } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,6 +23,15 @@ import { conversationsKey } from "./conversation-list";
 import { messagesKey } from "./message-thread";
 import type { ChatMessage } from "./types";
 import { chatErrorMessage } from "./utils";
+
+// Nudge anti-desintermediação: detecta tentativa de levar o contato/pagamento
+// para fora (telefone com 8+ dígitos, "whats"/"zap", e-mail). Não bloqueia.
+const EXTERNAL_CONTACT_RE =
+  /(?:\d[\s().-]?){8,}|\b(?:whats|whatsapp|zap+|wpp|telegram|insta|gmail|hotmail|outlook)\b|@\w+\.\w/i;
+
+function mentionsExternalContact(text: string): boolean {
+  return EXTERNAL_CONTACT_RE.test(text);
+}
 
 interface MessageInputProps {
   conversationId: string;
@@ -42,6 +51,7 @@ export function MessageInput({
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const showContactWarning = mentionsExternalContact(value);
 
   const key = messagesKey(conversationId);
 
@@ -131,6 +141,18 @@ export function MessageInput({
           {error}
         </p>
       )}
+      {showContactWarning && !error ? (
+        <p className="mb-2 flex items-start gap-1.5 rounded-lg border border-primary/30 bg-primary/5 px-3 py-1.5 text-xs text-foreground">
+          <ShieldAlert
+            className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary"
+            aria-hidden
+          />
+          <span>
+            Combine o serviço e o pagamento aqui no FazTudo. Negociar por fora
+            não tem a proteção da plataforma.
+          </span>
+        </p>
+      ) : null}
       <form
         className="flex items-end gap-2"
         onSubmit={(e) => {
