@@ -8,7 +8,7 @@ sempre no backend — o cliente nunca é confiável (§5.2).
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 
 from pydantic import (
     BaseModel,
@@ -26,6 +26,27 @@ from app.models import UserRole, UserStatus
 # Papéis permitidos no auto-cadastro (admin NUNCA via /register — §4).
 _REGISTERABLE_ROLES = {UserRole.customer, UserRole.professional}
 
+# Limites de idade plausíveis (maioridade obrigatória; teto sanidade).
+_MIN_AGE = 18
+_MAX_AGE = 110
+
+
+def _validate_birth_date(value: date) -> date:
+    """Valida data de nascimento: não-futura, idade entre 18 e 110 anos."""
+    today = date.today()
+    if value > today:
+        raise ValueError("Data de nascimento não pode ser no futuro.")
+    age = (
+        today.year
+        - value.year
+        - ((today.month, today.day) < (value.month, value.day))
+    )
+    if age < _MIN_AGE:
+        raise ValueError("É necessário ter pelo menos 18 anos.")
+    if age > _MAX_AGE:
+        raise ValueError("Data de nascimento inválida.")
+    return value
+
 
 class RegisterIn(BaseModel):
     """Corpo de ``POST /auth/register``."""
@@ -35,6 +56,9 @@ class RegisterIn(BaseModel):
     phone: str = Field(min_length=8, max_length=20)
     password: str = Field(min_length=8, max_length=128)
     role: UserRole = UserRole.customer
+    # Opcional no schema (login social não informa); o frontend exige para
+    # profissional. Validada (maioridade) quando presente.
+    birth_date: date | None = None
 
     @field_validator("name")
     @classmethod
@@ -58,6 +82,11 @@ class RegisterIn(BaseModel):
         if value not in _REGISTERABLE_ROLES:
             raise ValueError("Papel inválido para cadastro (use customer ou professional).")
         return value
+
+    @field_validator("birth_date")
+    @classmethod
+    def _check_birth_date(cls, value: date | None) -> date | None:
+        return _validate_birth_date(value) if value is not None else value
 
 
 class LoginIn(BaseModel):
@@ -117,6 +146,17 @@ class PasswordResetConfirmIn(BaseModel):
     new_password: str = Field(min_length=8, max_length=128)
 
 
+class BirthDateIn(BaseModel):
+    """Corpo de ``POST /auth/birth-date`` — data de nascimento do usuário."""
+
+    birth_date: date
+
+    @field_validator("birth_date")
+    @classmethod
+    def _check(cls, value: date) -> date:
+        return _validate_birth_date(value)
+
+
 class TokenPair(BaseModel):
     """Par de tokens emitido no register/login/refresh."""
 
@@ -143,6 +183,8 @@ class UserOut(BaseModel):
     avatar_key: str | None = Field(default=None, exclude=True)
     # Versão dos termos que o usuário aceitou (+ flag `terms_accepted` derivada).
     terms_version: str | None = None
+    # Data de nascimento (+ `age` derivada). None até o usuário preencher.
+    birth_date: date | None = None
 
     @computed_field  # type: ignore[prop-decorator]
     @property
@@ -159,6 +201,22 @@ class UserOut(BaseModel):
     def terms_accepted(self) -> bool:
         """True se o usuário já aceitou a versão VIGENTE dos Termos de Uso."""
         return self.terms_version == settings.TERMS_VERSION
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def age(self) -> int | None:
+        """Idade em anos derivada de ``birth_date`` (None se não informada)."""
+        if self.birth_date is None:
+            return None
+        today = date.today()
+        return (
+            today.year
+            - self.birth_date.year
+            - (
+                (today.month, today.day)
+                < (self.birth_date.month, self.birth_date.day)
+            )
+        )
 
 
 class MeOut(UserOut):

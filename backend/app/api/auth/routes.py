@@ -32,6 +32,7 @@ from app.models import User
 from app.schemas.auth import (
     AppleAuthIn,
     AuthResponse,
+    BirthDateIn,
     GoogleAuthIn,
     LoginIn,
     LogoutIn,
@@ -176,6 +177,22 @@ async def accept_terms(
     retorna o usuário atualizado (``terms_accepted=true``)."""
     service = AuthService(db)
     return await service.accept_terms(current_user)
+
+
+@router.post(
+    "/birth-date",
+    response_model=MeOut,
+    summary="Registrar data de nascimento do usuário",
+)
+async def set_birth_date(
+    payload: BirthDateIn,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> MeOut:
+    """Grava a data de nascimento do usuário autenticado (usado no cadastro
+    tardio / gate de quem ainda não informou) e retorna o usuário atualizado."""
+    service = AuthService(db)
+    return await service.set_birth_date(current_user, payload.birth_date)
 
 
 @router.post(

@@ -23,7 +23,7 @@ from __future__ import annotations
 
 import json
 import uuid
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 
 import httpx
 import jwt
@@ -127,6 +127,7 @@ class AuthService:
             phone=data.phone,
             password_hash=hash_password(data.password),
             role=data.role,
+            birth_date=data.birth_date,
             status=UserStatus.active,
         )
 
@@ -417,6 +418,13 @@ class AuthService:
         """Registra o aceite dos Termos de Uso **vigentes** (por versão)."""
         user.terms_accepted_at = datetime.now(UTC)
         user.terms_version = settings.TERMS_VERSION
+        await self.db.commit()
+        await self.db.refresh(user)
+        return await self.get_me(user)
+
+    async def set_birth_date(self, user: User, birth_date: date) -> MeOut:
+        """Grava a data de nascimento (cadastro tardio / gate de quem não tem)."""
+        user.birth_date = birth_date
         await self.db.commit()
         await self.db.refresh(user)
         return await self.get_me(user)

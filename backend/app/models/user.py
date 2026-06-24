@@ -5,10 +5,10 @@ Autenticação e identidade. Entidade crítica (soft delete). Ver §2.1 do contr
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, Enum, Index, Integer, String, text
+from sqlalchemy import Date, DateTime, Enum, Index, Integer, String, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.base import Base
@@ -86,6 +86,10 @@ class User(UUIDPKMixin, TimestampMixin, SoftDeleteMixin, Base):
         DateTime(timezone=True), nullable=True
     )
     terms_version: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    # Data de nascimento — idade do prestador para métricas (média de idade) e
+    # base para validar maioridade. Coletada no cadastro e, para quem já tinha
+    # conta (ou entrou por login social), via gate no próximo acesso. Nullable.
+    birth_date: Mapped[date | None] = mapped_column(Date, nullable=True)
 
     # Relacionamentos (§2.1).
     customer_profile: Mapped[CustomerProfile | None] = relationship(
