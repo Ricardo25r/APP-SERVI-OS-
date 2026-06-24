@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from app.database.base import Base
 from app.models.achievement import Achievement, UserAchievement
+from app.models.analytics_event import AnalyticsEvent
 from app.models.audit_log import AuditLog
 from app.models.category import Category
 from app.models.conversation import Conversation
@@ -94,6 +95,7 @@ __all__ = [
     "Achievement",
     "UserAchievement",
     "AuditLog",
+    "AnalyticsEvent",
     "SupportTicket",
     "Sprint",
     "SprintIdea",

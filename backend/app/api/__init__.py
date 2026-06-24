@@ -51,6 +51,7 @@ _FEATURE_ROUTERS: tuple[tuple[str, str, str], ...] = (
     ("app.api.monitoring.routes", "/monitoring", "monitoring"),
     ("app.api.notifications.routes", "/notifications", "notifications"),
     ("app.api.push.routes", "/push", "push"),
+    ("app.api.analytics.routes", "/analytics", "analytics"),
     ("app.api.support.routes", "/support", "support"),
     ("app.api.sprints.routes", "/admin/sprints", "sprints"),
     ("app.api.sprints.user_routes", "/feedback", "feedback"),

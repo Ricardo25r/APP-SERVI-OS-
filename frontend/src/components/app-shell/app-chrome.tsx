@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { BottomNav } from "@/components/app-shell/bottom-nav";
 import { AlertWatcher } from "@/components/alert-watcher";
 import { BirthDateGate } from "@/components/birth-date-gate";
+import { PageTracker } from "@/components/page-tracker";
 import { PushSetup } from "@/components/push-setup";
 import { RoleChooserGate } from "@/components/role-chooser-gate";
 import { TermsGate } from "@/components/terms-gate";
@@ -41,6 +42,7 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
       <TermsGate />
       <BirthDateGate />
       <RoleChooserGate />
+      <PageTracker />
       <PushSetup />
       <AlertWatcher />
     </>

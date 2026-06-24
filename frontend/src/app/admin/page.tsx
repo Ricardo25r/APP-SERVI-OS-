@@ -12,6 +12,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import {
   Activity,
+  BarChart3,
   ChevronRight,
   ClipboardList,
   CreditCard,
@@ -96,6 +97,12 @@ const SHORTCUTS: Shortcut[] = [
     label: "Cobertura",
     description: "Prestadores por categoria (quais têm e quais faltam) + média de idade.",
     icon: Map,
+  },
+  {
+    href: "/admin/analytics",
+    label: "Analytics",
+    description: "Páginas mais acessadas, por aparelho, região e tipo de conta.",
+    icon: BarChart3,
   },
 ];
 
