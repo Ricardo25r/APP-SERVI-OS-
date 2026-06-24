@@ -86,8 +86,16 @@ const CATEGORY_IMAGES: Record<string, string> = {
   outras: "/brand/categorias/outras.png",
 };
 
+/**
+ * Versão das fotos de categoria — entra como `?v=` na URL para **furar o cache
+ * do Cloudflare** quando trocamos as imagens (o edge guarda por nome de arquivo).
+ * Bump este número sempre que reotimizar/alterar as fotos.
+ */
+const CATEGORY_IMAGES_VERSION = 2;
+
 /** Caminho da foto real da categoria (ou null para usar o ícone). */
 export function categoryImage(slug?: string | null): string | null {
   if (!slug) return null;
-  return CATEGORY_IMAGES[slug] ?? null;
+  const path = CATEGORY_IMAGES[slug];
+  return path ? `${path}?v=${CATEGORY_IMAGES_VERSION}` : null;
 }
