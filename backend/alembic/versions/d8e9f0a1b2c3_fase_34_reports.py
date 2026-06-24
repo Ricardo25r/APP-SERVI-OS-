@@ -1,9 +1,11 @@
-"""fase 33 — tabela reports (denúncias de abuso)
+"""fase 34 — tabela reports (denúncias de abuso)
 
-Revision ID: c7d8e9f0a1b2
-Revises: b6c7d8e9f0a1
+Revision ID: d8e9f0a1b2c3
+Revises: c7d8e9f0a1b2
 Create Date: 2026-06-24
 
+Encadeada após a fase 33 (token_version). A fase 33 e esta são ambas adições
+puras (coluna nova / tabela nova) — seguras em produção.
 """
 
 from __future__ import annotations
@@ -13,8 +15,8 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = "c7d8e9f0a1b2"
-down_revision: str | None = "b6c7d8e9f0a1"
+revision: str = "d8e9f0a1b2c3"
+down_revision: str | None = "c7d8e9f0a1b2"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
