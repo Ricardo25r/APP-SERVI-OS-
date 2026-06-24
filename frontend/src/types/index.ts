@@ -183,6 +183,12 @@ export interface Lead {
   customer?: LeadCustomerSummary;
   /** Verdadeiro se o lead já foi comprado por algum profissional. */
   is_purchased?: boolean;
+  /** Profissional que comprou o lead (visão do cliente dono). */
+  professional?: {
+    user_id: string;
+    name: string;
+    avatar_url: string | null;
+  } | null;
   /** Saldo do profissional cobre o custo (listagem do marketplace). */
   affordable?: boolean;
   /** Contato liberado (apenas comprador/dono). */

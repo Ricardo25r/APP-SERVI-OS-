@@ -37,6 +37,7 @@ __all__ = [
     "LeadUpdate",
     "LeadRead",
     "LeadContact",
+    "LeadProfessionalSummary",
     "CategorySummary",
     "CustomerSummary",
     "LeadMediaOut",
@@ -111,6 +112,20 @@ class CustomerSummary(BaseModel):
     name: str
 
 
+class LeadProfessionalSummary(BaseModel):
+    """Resumo do profissional que comprou o lead (visão do cliente dono).
+
+    Permite ao cliente ver quem o atendeu, abrir o perfil público, favoritar e
+    recontratar. Sem dados sensíveis.
+    """
+
+    model_config = ConfigDict(from_attributes=True)
+
+    user_id: uuid.UUID
+    name: str
+    avatar_url: str | None = None
+
+
 class LeadContact(BaseModel):
     """Dados de contato do customer — liberados **apenas** após a compra.
 
@@ -174,6 +189,7 @@ class LeadRead(BaseModel):
     # Campos compostos montados no service.
     category: CategorySummary | None = None
     customer: CustomerSummary | None = None
+    professional: LeadProfessionalSummary | None = None
     is_purchased: bool = False
     contact: LeadContact | None = None
     affordable: bool | None = None

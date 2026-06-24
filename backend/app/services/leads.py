@@ -38,6 +38,7 @@ from app.models import (
     LeadMedia,
     LeadStatus,
     LeadType,
+    ProfessionalProfile,
     User,
     UserRole,
 )
@@ -48,6 +49,7 @@ from app.schemas.leads import (
     LeadContact,
     LeadCreate,
     LeadMediaOut,
+    LeadProfessionalSummary,
     LeadRead,
     LeadUpdate,
 )
@@ -271,6 +273,32 @@ class LeadService:
     # ------------------------------------------------------------------ #
     # Detalhe
     # ------------------------------------------------------------------ #
+    async def _attach_professional(
+        self, lead: Lead, lead_read: LeadRead
+    ) -> None:
+        """Anexa o resumo do profissional que comprou o lead (visão do cliente).
+
+        Permite ao cliente ver quem o atendeu, abrir o perfil e recontratar.
+        """
+        purchase = lead.purchase
+        if purchase is None:
+            return
+        profile = await self.db.get(
+            ProfessionalProfile, purchase.professional_id
+        )
+        if profile is None:
+            return
+        user = await self.db.get(User, profile.user_id)
+        if user is None:
+            return
+        avatar = None
+        if user.avatar_key:
+            with contextlib.suppress(Exception):
+                avatar = presigned_get_url(user.avatar_key)
+        lead_read.professional = LeadProfessionalSummary(
+            user_id=user.id, name=user.name, avatar_url=avatar
+        )
+
     async def get(self, current_user: User, lead_id: uuid.UUID) -> LeadRead:
         """Detalhe do lead (§4).
 
@@ -286,7 +314,11 @@ class LeadService:
         if effective_role(current_user) == UserRole.customer:
             if lead.customer_id != current_user.id:
                 raise PermissionDeniedError("Você não é o dono deste lead.")
-            return self._to_read(lead, viewer=current_user, include_contact=True)
+            lead_read = self._to_read(
+                lead, viewer=current_user, include_contact=True
+            )
+            await self._attach_professional(lead, lead_read)
+            return lead_read
 
         if effective_role(current_user) == UserRole.professional:
             profile = await self.repo.get_professional_profile(current_user.id)

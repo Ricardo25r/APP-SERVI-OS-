@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 
 import { AppHeader } from "@/components/app-shell/app-header";
+import { Avatar } from "@/components/ui/avatar";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
@@ -52,6 +53,7 @@ import {
   updateLead,
   type LeadFormValues,
 } from "@/modules/leads";
+import { FavoriteButton } from "@/modules/profissionais/favorite-button";
 
 /** Mensagem de contexto conforme o status da solicitação. */
 const STATUS_HINT: Record<LeadStatus, { text: string; cls: string }> = {
@@ -300,6 +302,26 @@ export default function LeadDetailPage() {
                 </div>
               ) : null}
 
+              {lead.professional ? (
+                <div className="flex items-center gap-3 rounded-xl border bg-card p-3">
+                  <Avatar
+                    src={lead.professional.avatar_url}
+                    name={lead.professional.name}
+                    size="md"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs text-muted-foreground">Profissional</p>
+                    <Link
+                      href={`/profissionais/perfil?id=${lead.professional.user_id}`}
+                      className="block truncate font-bold text-foreground hover:text-primary hover:underline"
+                    >
+                      {lead.professional.name}
+                    </Link>
+                  </div>
+                  <FavoriteButton proUserId={lead.professional.user_id} />
+                </div>
+              ) : null}
+
               {lead.status === "purchased" && lead.arrived ? (
                 <div className="flex items-center gap-2 rounded-xl border border-success/30 bg-success/10 px-3.5 py-2.5 text-sm text-success">
                   <CheckCircle2 className="h-5 w-5 shrink-0" aria-hidden />
@@ -438,6 +460,17 @@ export default function LeadDetailPage() {
                   >
                     <Star className="h-4 w-4" aria-hidden />
                     Avaliar profissional
+                  </Link>
+                ) : null}
+                {lead.status === "closed" && lead.professional ? (
+                  <Link
+                    href={`/profissionais/perfil?id=${lead.professional.user_id}`}
+                    className={cn(
+                      buttonVariants({ variant: "outline" }),
+                      "gap-1.5"
+                    )}
+                  >
+                    Contratar de novo
                   </Link>
                 ) : null}
                 {lead.status === "purchased" || lead.status === "closed" ? (
