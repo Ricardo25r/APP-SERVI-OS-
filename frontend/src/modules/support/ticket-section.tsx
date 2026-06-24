@@ -23,6 +23,9 @@ import { ApiError } from "@/services/api";
 import {
   createSupportTicket,
   fetchMyTickets,
+  fetchTicketThread,
+  replyToTicket,
+  type SupportTicket,
   type SupportTicketListResponse,
 } from "./api";
 
@@ -36,6 +39,107 @@ function formatDate(iso: string): string {
     month: "2-digit",
     year: "numeric",
   });
+}
+
+function TicketItem({ ticket }: { ticket: SupportTicket }) {
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [reply, setReply] = useState("");
+
+  const thread = useQuery({
+    queryKey: ["support", "thread", ticket.id],
+    queryFn: () => fetchTicketThread(ticket.id),
+    enabled: open,
+  });
+
+  const replyM = useMutation({
+    mutationFn: (body: string) => replyToTicket(ticket.id, body),
+    onSuccess: (data) => {
+      qc.setQueryData(["support", "thread", ticket.id], data);
+      setReply("");
+      void qc.invalidateQueries({ queryKey: myTicketsKey });
+    },
+  });
+
+  const messages = thread.data?.messages ?? [];
+
+  return (
+    <li className="rounded-xl border bg-card p-3 shadow-sm">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-start justify-between gap-3 text-left"
+      >
+        <p className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">
+          {ticket.subject}
+        </p>
+        {ticket.status === "closed" ? (
+          <StatusBadge label="Resolvido" variant="success" />
+        ) : (
+          <StatusBadge label="Em aberto" tone="warning" />
+        )}
+      </button>
+      <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+        {ticket.message}
+      </p>
+      <p className="mt-1 text-xs text-muted-foreground">
+        {formatDate(ticket.created_at)}
+      </p>
+
+      {open && (
+        <div className="mt-3 space-y-2 border-t pt-3">
+          {thread.isLoading ? (
+            <p className="text-xs text-muted-foreground">
+              Carregando conversa...
+            </p>
+          ) : messages.length === 0 ? (
+            <p className="text-xs text-muted-foreground">
+              Sem respostas ainda. Escreva abaixo para continuar.
+            </p>
+          ) : (
+            <ul className="space-y-2">
+              {messages.map((m) => (
+                <li
+                  key={m.id}
+                  className={
+                    m.is_staff
+                      ? "rounded-lg bg-primary/5 p-2"
+                      : "rounded-lg bg-muted/40 p-2"
+                  }
+                >
+                  <p className="text-xs font-semibold text-foreground">
+                    {m.is_staff ? "Suporte FazTudo" : m.author_name ?? "Você"}
+                  </p>
+                  <p className="whitespace-pre-wrap text-sm text-foreground">
+                    {m.body}
+                  </p>
+                  <p className="mt-0.5 text-[10px] text-muted-foreground">
+                    {formatDate(m.created_at)}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="flex gap-2">
+            <Input
+              value={reply}
+              onChange={(e) => setReply(e.target.value)}
+              placeholder="Responder ao suporte..."
+              maxLength={4000}
+            />
+            <Button
+              type="button"
+              size="sm"
+              disabled={replyM.isPending || !reply.trim()}
+              onClick={() => replyM.mutate(reply.trim())}
+            >
+              Enviar
+            </Button>
+          </div>
+        </div>
+      )}
+    </li>
+  );
 }
 
 export function SupportTicketSection() {
@@ -174,27 +278,7 @@ export function SupportTicketSection() {
           ) : (
             <ul className="space-y-2">
               {tickets.map((t) => (
-                <li
-                  key={t.id}
-                  className="rounded-xl border bg-card p-3 shadow-sm"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <p className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">
-                      {t.subject}
-                    </p>
-                    {t.status === "closed" ? (
-                      <StatusBadge label="Resolvido" variant="success" />
-                    ) : (
-                      <StatusBadge label="Em aberto" tone="warning" />
-                    )}
-                  </div>
-                  <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
-                    {t.message}
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {formatDate(t.created_at)}
-                  </p>
-                </li>
+                <TicketItem key={t.id} ticket={t} />
               ))}
             </ul>
           )}

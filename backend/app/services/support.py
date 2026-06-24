@@ -13,12 +13,19 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.alerts import notify_support_ticket
-from app.core.exceptions import NotFoundError
-from app.models import SupportTicket, User, UserRole
+from app.core.exceptions import NotFoundError, PermissionDeniedError
+from app.models import (
+    SupportTicket,
+    SupportTicketMessage,
+    User,
+    UserRole,
+)
 from app.schemas.support import (
     SupportTicketAdminOut,
     SupportTicketCreate,
+    SupportTicketMessageOut,
     SupportTicketOut,
+    SupportTicketThreadOut,
 )
 from app.services.notifications import add_notification
 
@@ -148,3 +155,109 @@ class SupportService:
             user_name=user.name,
             user_email=user.email,
         )
+
+    # ------------------------------------------------------------------ #
+    # Thread de respostas (#50)
+    # ------------------------------------------------------------------ #
+    async def get_thread(
+        self, ticket_id: uuid.UUID, viewer: User
+    ) -> SupportTicketThreadOut:
+        """Chamado + conversa. O autor vê o seu; o admin vê qualquer um."""
+        row = (
+            await self.db.execute(
+                select(SupportTicket, User)
+                .join(User, SupportTicket.user_id == User.id)
+                .where(SupportTicket.id == ticket_id)
+            )
+        ).first()
+        if row is None:
+            raise NotFoundError("Chamado não encontrado.")
+        ticket, owner = row
+        if ticket.user_id != viewer.id and viewer.role != UserRole.admin:
+            raise PermissionDeniedError("Sem acesso a este chamado.")
+
+        msg_rows = (
+            await self.db.execute(
+                select(SupportTicketMessage, User)
+                .outerjoin(User, SupportTicketMessage.author_id == User.id)
+                .where(SupportTicketMessage.ticket_id == ticket_id)
+                .order_by(SupportTicketMessage.created_at)
+            )
+        ).all()
+        messages = [
+            SupportTicketMessageOut(
+                id=m.id,
+                author_name=(author.name if author else None),
+                is_staff=m.is_staff,
+                body=m.body,
+                created_at=m.created_at,
+            )
+            for m, author in msg_rows
+        ]
+        return SupportTicketThreadOut(
+            id=ticket.id,
+            subject=ticket.subject,
+            message=ticket.message,
+            status=ticket.status,
+            created_at=ticket.created_at,
+            user_id=ticket.user_id,
+            user_name=owner.name,
+            user_email=owner.email,
+            messages=messages,
+        )
+
+    async def add_message(
+        self, ticket_id: uuid.UUID, author: User, body: str
+    ) -> SupportTicketThreadOut:
+        """Responde a um chamado (autor do chamado ou admin)."""
+        ticket = await self.db.get(SupportTicket, ticket_id)
+        if ticket is None:
+            raise NotFoundError("Chamado não encontrado.")
+        is_admin = author.role == UserRole.admin
+        is_owner = ticket.user_id == author.id
+        if not is_owner and not is_admin:
+            raise PermissionDeniedError("Sem acesso a este chamado.")
+        is_staff = is_admin and not is_owner
+
+        self.db.add(
+            SupportTicketMessage(
+                ticket_id=ticket.id,
+                author_id=author.id,
+                body=body.strip(),
+                is_staff=is_staff,
+            )
+        )
+        # Resposta do usuário reabre um chamado fechado.
+        if is_owner and ticket.status == "closed":
+            ticket.status = "open"
+
+        if is_staff:
+            add_notification(
+                self.db,
+                user_id=ticket.user_id,
+                type="support",
+                title="Resposta no seu chamado",
+                body=ticket.subject,
+                href="/suporte",
+            )
+        else:
+            admins = (
+                await self.db.execute(
+                    select(User).where(
+                        User.role == UserRole.admin,
+                        User.deleted_at.is_(None),
+                    )
+                )
+            ).scalars().all()
+            for admin in admins:
+                add_notification(
+                    self.db,
+                    user_id=admin.id,
+                    type="support",
+                    title="Nova resposta em chamado",
+                    body=f"{author.name}: {ticket.subject}",
+                    href="/admin/chamados",
+                )
+
+        await self.db.commit()
+        return await self.get_thread(ticket_id, author)

@@ -15,6 +15,9 @@ __all__ = [
     "SupportTicketAdminOut",
     "SupportTicketAdminListResponse",
     "SupportTicketStatusUpdate",
+    "SupportTicketMessageIn",
+    "SupportTicketMessageOut",
+    "SupportTicketThreadOut",
 ]
 
 
@@ -59,3 +62,30 @@ class SupportTicketAdminOut(SupportTicketOut):
 class SupportTicketAdminListResponse(BaseModel):
     items: list[SupportTicketAdminOut]
     total: int
+
+
+# --------------------------------------------------------------------------- #
+# Thread de respostas (#50)
+# --------------------------------------------------------------------------- #
+class SupportTicketMessageIn(BaseModel):
+    """Resposta numa conversa de chamado (usuário ou suporte)."""
+
+    body: str = Field(min_length=1, max_length=4000)
+
+
+class SupportTicketMessageOut(BaseModel):
+    """Uma mensagem do thread."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    author_name: str | None = None
+    is_staff: bool
+    body: str
+    created_at: datetime
+
+
+class SupportTicketThreadOut(SupportTicketAdminOut):
+    """Chamado + conversa completa (usado pelo autor e pelo admin)."""
+
+    messages: list[SupportTicketMessageOut] = []

@@ -64,6 +64,7 @@ from app.models.sprint import (
     SprintIdeaVoto,
 )
 from app.models.support_ticket import SupportTicket
+from app.models.support_ticket_message import SupportTicketMessage
 from app.models.user import User
 from app.models.user_block import UserBlock
 from app.models.xp_transaction import XpTransaction
@@ -107,6 +108,7 @@ __all__ = [
     "AuditLog",
     "AnalyticsEvent",
     "SupportTicket",
+    "SupportTicketMessage",
     "Sprint",
     "SprintIdea",
     "SprintIdeaAnexo",

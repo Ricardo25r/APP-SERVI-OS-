@@ -23,8 +23,10 @@ from app.schemas.support import (
     SupportTicketAdminOut,
     SupportTicketCreate,
     SupportTicketListResponse,
+    SupportTicketMessageIn,
     SupportTicketOut,
     SupportTicketStatusUpdate,
+    SupportTicketThreadOut,
 )
 from app.services.support import SupportService
 
@@ -90,3 +92,36 @@ async def update_ticket_status(
 ) -> SupportTicketAdminOut:
     """Marca um chamado como resolvido (closed) ou reabre (open)."""
     return await SupportService(db).set_status(ticket_id, payload.status)
+
+
+@router.get(
+    "/tickets/{ticket_id}",
+    response_model=SupportTicketThreadOut,
+    summary="Ver chamado + conversa (autor ou admin)",
+)
+async def get_ticket_thread(
+    ticket_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> SupportTicketThreadOut:
+    """Detalhe do chamado com o thread. O autor vê o seu; admin vê qualquer."""
+    return await SupportService(db).get_thread(ticket_id, current_user)
+
+
+@router.post(
+    "/tickets/{ticket_id}/messages",
+    response_model=SupportTicketThreadOut,
+    status_code=status.HTTP_201_CREATED,
+    summary="Responder a um chamado (autor ou admin)",
+    dependencies=[Depends(rate_limit("support", limit=20, window_seconds=60))],
+)
+async def reply_ticket(
+    ticket_id: uuid.UUID,
+    payload: SupportTicketMessageIn,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> SupportTicketThreadOut:
+    """Adiciona uma resposta ao thread e devolve a conversa atualizada."""
+    return await SupportService(db).add_message(
+        ticket_id, current_user, payload.body
+    )

@@ -60,6 +60,35 @@ export function fetchAllTickets(
   );
 }
 
+/* ------------------------------------------------------------------ */
+/* Thread de respostas (#50)                                          */
+/* ------------------------------------------------------------------ */
+
+export interface SupportTicketMessage {
+  id: string;
+  author_name: string | null;
+  is_staff: boolean;
+  body: string;
+  created_at: string;
+}
+
+export interface SupportTicketThread extends SupportTicketAdmin {
+  messages: SupportTicketMessage[];
+}
+
+export function fetchTicketThread(id: string): Promise<SupportTicketThread> {
+  return apiGet<SupportTicketThread>(`/support/tickets/${id}`);
+}
+
+export function replyToTicket(
+  id: string,
+  body: string
+): Promise<SupportTicketThread> {
+  return apiPost<SupportTicketThread>(`/support/tickets/${id}/messages`, {
+    body,
+  });
+}
+
 export function updateTicketStatus(
   id: string,
   status: "open" | "closed"
