@@ -70,6 +70,7 @@ from app.services.lead_recycle import (
     reopen_lead_released,
 )
 from app.services.leads import LeadService, _haversine_km
+from app.services.notification_emails import send_lead_purchased_email
 from app.services.notifications import add_notification
 
 __all__ = ["LeadPurchaseService"]
@@ -201,6 +202,17 @@ class LeadPurchaseService:
                 href=f"/conversas/conversa?id={conversation.id}",
             )
 
+            # Dados para o e-mail best-effort ao contratante (enviado PÓS-commit;
+            # buscamos aqui, na transação, o e-mail/nome do dono do lead).
+            _customer = await self.db.get(User, lead.customer_id)
+            email_to = _customer.email if _customer is not None else None
+            email_to_name = _customer.name if _customer is not None else ""
+            email_lead_title = lead.title
+            email_professional_name = current_user.name
+            email_conversation_href = (
+                f"/conversas/conversa?id={conversation.id}"
+            )
+
             # (6.2) Gamificação (Fase 9 — gamification-engine doc 08 §Atividades).
             # A compra de lead concede +10 XP ao profissional comprador NA MESMA
             # transação da compra (sem commit próprio — quem commita é aqui). Falhas
@@ -238,6 +250,17 @@ class LeadPurchaseService:
         purchase_read = self._to_purchase_read(
             purchase, lead_read=lead_read, contact=contact
         )
+
+        # E-mail best-effort ao contratante (pós-commit; nunca bloqueia/levanta).
+        if email_to:
+            send_lead_purchased_email(
+                to_email=email_to,
+                to_name=email_to_name,
+                professional_name=email_professional_name,
+                lead_title=email_lead_title,
+                conversation_href=email_conversation_href,
+            )
+
         return LeadPurchaseResult(
             purchase=purchase_read,
             lead=lead_read,
