@@ -1,9 +1,12 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
 /**
- * Capacitor — empacota o export estático do Next (`out/`) como app nativo.
- * As chamadas de rede vão pra API HTTPS pública (NEXT_PUBLIC_API_URL), nunca
- * localhost/cleartext. `androidScheme:'https'` → origem da WebView = https://localhost.
+ * Capacitor — app nativo do FazTudo.
+ *
+ * O app **carrega o site ao vivo** (`server.url`): toda atualização de tela
+ * publicada em produção aparece no app na próxima abertura, **sem rebuildar
+ * nem reenviar à Play Store**. Só mudanças nativas (ícone, splash, plugins,
+ * permissões) exigem um novo APK/AAB. `webDir` fica como fallback do build.
  */
 const config: CapacitorConfig = {
   appId: "br.com.faztudo.app",
@@ -11,11 +14,12 @@ const config: CapacitorConfig = {
   webDir: "out",
   server: {
     androidScheme: "https",
+    url: "https://faztudoapp.com.br",
   },
   plugins: {
     SplashScreen: {
       launchShowDuration: 1500,
-      backgroundColor: "#0D47A1",
+      backgroundColor: "#FFFFFF",
       showSpinner: false,
       androidScaleType: "CENTER_CROP",
     },
