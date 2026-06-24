@@ -9,13 +9,18 @@ from __future__ import annotations
 import uuid
 from datetime import UTC, datetime
 
-from sqlalchemy import func, select, update
+from sqlalchemy import func, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.exceptions import NotFoundError, PermissionDeniedError
 from app.core.storage import get_private_object, upload_private_bytes
-from app.models import ProfessionalProfile, User
+from app.models import (
+    ProfessionalCategory,
+    ProfessionalProfile,
+    SavedCategoryAlert,
+    User,
+)
 from app.schemas.kyc import KycPendingItem, KycStatusOut
 from app.services.notifications import add_notification
 
@@ -116,6 +121,65 @@ class KycService:
             raise NotFoundError("Imagem de KYC não encontrada.")
         return get_private_object(key, bucket=settings.S3_KYC_BUCKET)
 
+    async def _notify_saved_alert_subscribers(self, pro_user: User) -> None:
+        """Notifica clientes com alerta salvo na categoria+cidade do novo
+        profissional verificado (#60). Mesma transação; tolera ausência de
+        perfil/categorias."""
+        profile = (
+            await self.db.execute(
+                select(ProfessionalProfile).where(
+                    ProfessionalProfile.user_id == pro_user.id
+                )
+            )
+        ).scalar_one_or_none()
+        if profile is None:
+            return
+        cat_ids = (
+            (
+                await self.db.execute(
+                    select(ProfessionalCategory.category_id).where(
+                        ProfessionalCategory.professional_id == profile.id
+                    )
+                )
+            )
+            .scalars()
+            .all()
+        )
+        if not cat_ids:
+            return
+        alerts = (
+            (
+                await self.db.execute(
+                    select(SavedCategoryAlert).where(
+                        SavedCategoryAlert.category_id.in_(cat_ids),
+                        SavedCategoryAlert.user_id != pro_user.id,
+                        or_(
+                            SavedCategoryAlert.city.is_(None),
+                            SavedCategoryAlert.city == profile.city,
+                        ),
+                    )
+                )
+            )
+            .scalars()
+            .all()
+        )
+        notified: set[uuid.UUID] = set()
+        for alert in alerts:
+            if alert.user_id in notified:
+                continue
+            notified.add(alert.user_id)
+            add_notification(
+                self.db,
+                user_id=alert.user_id,
+                type="alert",
+                title="Novo profissional na sua categoria",
+                body=(
+                    f"{pro_user.name} foi verificado e atende uma categoria "
+                    "que você está acompanhando."
+                ),
+                href="/profissionais",
+            )
+
     async def review(
         self, user_id: uuid.UUID, *, approve: bool, reason: str | None
     ) -> None:
@@ -147,4 +211,6 @@ class KycService:
             .where(ProfessionalProfile.user_id == user.id)
             .values(verified=approve)
         )
+        if approve:
+            await self._notify_saved_alert_subscribers(user)
         await self.db.commit()

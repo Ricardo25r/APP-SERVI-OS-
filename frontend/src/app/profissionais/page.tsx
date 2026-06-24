@@ -10,8 +10,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
-import { BadgeCheck, MapPin, Search } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { BadgeCheck, BellRing, MapPin, Search, X } from "lucide-react";
 
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectOption } from "@/components/ui/select";
 import { useRequireAuth } from "@/hooks/use-auth";
-import { apiGet } from "@/services/api";
+import { apiDelete, apiGet, apiPost } from "@/services/api";
 import { StarRating } from "@/modules/reviews/star-rating";
 import type { Category } from "@/types";
 
@@ -33,6 +33,15 @@ interface ProItem {
   rating: number;
   total_reviews: number;
   verified: boolean;
+}
+
+interface SavedAlert {
+  id: string;
+  category_id: string;
+  category_name: string;
+  category_slug: string | null;
+  city: string | null;
+  created_at: string;
 }
 
 function ProCard({ p }: { p: ProItem }) {
@@ -109,6 +118,35 @@ export default function ProfissionaisPage() {
     enabled: auth.isAuthenticated,
   });
 
+  const qc = useQueryClient();
+  const { data: alertsData } = useQuery({
+    queryKey: ["saved-alerts"],
+    queryFn: () => apiGet<{ items: SavedAlert[] }>("/saved-alerts/"),
+    enabled: auth.isAuthenticated,
+  });
+
+  async function saveAlert() {
+    if (!categoryId) return;
+    try {
+      await apiPost("/saved-alerts/", {
+        category_id: categoryId,
+        city: city.trim() || null,
+      });
+      await qc.invalidateQueries({ queryKey: ["saved-alerts"] });
+    } catch {
+      /* silencioso */
+    }
+  }
+
+  async function removeAlert(id: string) {
+    try {
+      await apiDelete(`/saved-alerts/${id}`);
+      await qc.invalidateQueries({ queryKey: ["saved-alerts"] });
+    } catch {
+      /* silencioso */
+    }
+  }
+
   if (!auth.hasHydrated || !auth.isAuthenticated) {
     return (
       <main className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
@@ -120,6 +158,7 @@ export default function ProfissionaisPage() {
   const items = data?.items ?? [];
   const categories = cats ?? [];
   const favItems = favs?.items ?? [];
+  const alerts = alertsData?.items ?? [];
   const noSearch =
     !applied.categoryId && !applied.city.trim() && !applied.q.trim();
 
@@ -180,7 +219,57 @@ export default function ProfissionaisPage() {
           <Search className="h-4 w-4" aria-hidden />
           Buscar
         </Button>
+        <button
+          type="button"
+          onClick={() => void saveAlert()}
+          disabled={!categoryId}
+          className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-input py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary disabled:opacity-50"
+        >
+          <BellRing className="h-4 w-4" aria-hidden />
+          Avise-me sobre novos profissionais
+        </button>
       </form>
+
+      {alerts.length > 0 ? (
+        <section className="space-y-2">
+          <h2 className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+            Alertas salvos
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            {alerts.map((a) => (
+              <span
+                key={a.id}
+                className="inline-flex items-center gap-1.5 rounded-full border bg-card px-3 py-1 text-xs shadow-sm"
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCategoryId(a.category_id);
+                    setCity(a.city ?? "");
+                    setApplied({
+                      categoryId: a.category_id,
+                      city: a.city ?? "",
+                      q: "",
+                    });
+                  }}
+                  className="font-medium text-foreground"
+                >
+                  {a.category_name}
+                  {a.city ? ` · ${a.city}` : ""}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void removeAlert(a.id)}
+                  aria-label="Remover alerta"
+                  className="text-muted-foreground hover:text-destructive"
+                >
+                  <X className="h-3 w-3" aria-hidden />
+                </button>
+              </span>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       {noSearch && favItems.length > 0 ? (
         <section className="space-y-3">

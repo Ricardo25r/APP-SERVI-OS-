@@ -54,6 +54,7 @@ from app.models.push_subscription import PushSubscription
 from app.models.refresh_token import RefreshToken
 from app.models.report import Report
 from app.models.review import Review
+from app.models.saved_category_alert import SavedCategoryAlert
 from app.models.sprint import (
     Sprint,
     SprintIdea,
@@ -94,6 +95,7 @@ __all__ = [
     "PaymentOrder",
     "PaymentSettings",
     "Review",
+    "SavedCategoryAlert",
     "Report",
     "Conversation",
     "Message",
