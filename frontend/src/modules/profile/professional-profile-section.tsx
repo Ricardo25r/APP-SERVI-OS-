@@ -375,7 +375,7 @@ export function ProfessionalProfileSection() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
+            <div className="space-y-2" data-tour="profile-description">
               <Label htmlFor="pro-headline">Título / chamada</Label>
               <Input
                 id="pro-headline"
@@ -434,7 +434,7 @@ export function ProfessionalProfileSection() {
               </p>
             )}
 
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-3" data-tour="profile-location">
               <div className="space-y-2">
                 <Label htmlFor="pro-state">Estado (UF)</Label>
                 <Select

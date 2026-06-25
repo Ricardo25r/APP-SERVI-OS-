@@ -183,7 +183,7 @@ export function ProfessionalCategoriesSection() {
     myCategories.error.status === 404;
 
   return (
-    <Card>
+    <Card data-tour="profile-categories">
       <CardHeader>
         <CardTitle>Categorias de atuação</CardTitle>
         <CardDescription>

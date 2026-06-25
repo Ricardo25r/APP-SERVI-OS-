@@ -11,7 +11,7 @@ import { PageTracker } from "@/components/page-tracker";
 import { PushSetup } from "@/components/push-setup";
 import { RoleChooserGate } from "@/components/role-chooser-gate";
 import { TermsGate } from "@/components/terms-gate";
-import { WelcomeOnboarding } from "@/components/welcome-onboarding";
+import { OnboardingFlow } from "@/modules/onboarding/onboarding-flow";
 import { useUnreadMessagesCount } from "@/modules/chat";
 import { useOpportunitiesCount } from "@/modules/leads/marketplace/use-opportunities-count";
 
@@ -43,7 +43,7 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
       <TermsGate />
       <BirthDateGate />
       <RoleChooserGate />
-      <WelcomeOnboarding />
+      <OnboardingFlow />
       <PageTracker />
       <PushSetup />
       <AlertWatcher />

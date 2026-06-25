@@ -67,7 +67,7 @@ export function ProfileHeaderCard({ user, reputation }: ProfileHeaderCardProps) 
     <Card className="overflow-hidden">
       <CardContent className="space-y-4 p-5 sm:p-6">
         <div className="flex items-center gap-4">
-          <div className="relative shrink-0">
+          <div className="relative shrink-0" data-tour="profile-avatar">
             <Avatar src={user.avatar_url} name={user.name} size="lg" />
             <button
               type="button"

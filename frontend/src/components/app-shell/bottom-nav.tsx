@@ -39,14 +39,33 @@ interface NavItem {
   fab?: boolean;
   /** Badge de contagem: "messages" (não lidas) | "opportunities" (leads). */
   badge?: "messages" | "opportunities";
+  /** Alvo do tour guiado (data-tour). */
+  tour?: string;
 }
 
 const NAV_BY_ROLE: Record<UserRole, NavItem[]> = {
   customer: [
     { href: "/", label: "Início", icon: Home },
-    { href: "/leads", label: "Solicitações", icon: ClipboardList },
-    { href: "/leads/new", label: "Solicitar", icon: Plus, fab: true },
-    { href: "/conversas", label: "Mensagens", icon: MessageCircle, badge: "messages" },
+    {
+      href: "/leads",
+      label: "Solicitações",
+      icon: ClipboardList,
+      tour: "nav-requests",
+    },
+    {
+      href: "/leads/new",
+      label: "Solicitar",
+      icon: Plus,
+      fab: true,
+      tour: "nav-new-lead",
+    },
+    {
+      href: "/conversas",
+      label: "Mensagens",
+      icon: MessageCircle,
+      badge: "messages",
+      tour: "nav-messages",
+    },
     { href: "/profile", label: "Perfil", icon: User },
   ],
   professional: [
@@ -56,9 +75,22 @@ const NAV_BY_ROLE: Record<UserRole, NavItem[]> = {
       label: "Oportunidades",
       icon: Briefcase,
       badge: "opportunities",
+      tour: "nav-opportunities",
     },
-    { href: "/credits", label: "Créditos", icon: Plus, fab: true },
-    { href: "/conversas", label: "Mensagens", icon: MessageCircle, badge: "messages" },
+    {
+      href: "/credits",
+      label: "Créditos",
+      icon: Plus,
+      fab: true,
+      tour: "nav-credits",
+    },
+    {
+      href: "/conversas",
+      label: "Mensagens",
+      icon: MessageCircle,
+      badge: "messages",
+      tour: "nav-messages",
+    },
     { href: "/profile", label: "Perfil", icon: User },
   ],
   admin: [
@@ -122,6 +154,7 @@ export function BottomNav({
                 <Link
                   href={item.href}
                   aria-label={item.label}
+                  data-tour={item.tour}
                   className="-mt-6 inline-flex h-14 w-14 flex-col items-center justify-center rounded-full bg-brand text-brand-foreground shadow-lg ring-4 ring-card transition-transform hover:scale-105 active:scale-95"
                 >
                   <Icon className="h-6 w-6" aria-hidden />
@@ -135,6 +168,7 @@ export function BottomNav({
               <Link
                 href={item.href}
                 aria-current={active ? "page" : undefined}
+                data-tour={item.tour}
                 className={cn(
                   "relative flex flex-1 flex-col items-center justify-center gap-0.5 text-xs font-medium transition-colors",
                   active
