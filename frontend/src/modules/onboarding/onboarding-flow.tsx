@@ -111,6 +111,8 @@ export function OnboardingFlow() {
   const { user, role, isAuthenticated, hasHydrated } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  // Normaliza barra final (export estático pode usar trailingSlash).
+  const path = (pathname ?? "/").replace(/\/+$/, "") || "/";
   const uid = user?.id ?? "";
   const isPro = role === "professional";
   const isCustomer = role === "customer";
@@ -158,7 +160,7 @@ export function OnboardingFlow() {
     }
 
     // Perfil incompleto.
-    if (got("onb-guide", uid) && pathname === "/profile") {
+    if (got("onb-guide", uid) && path === "/profile") {
       setPhase((p) => (p === "none" || p === "welcome" ? "guide" : p));
       return;
     }
@@ -166,15 +168,15 @@ export function OnboardingFlow() {
       welcomeShownRef.current = true;
       setPhase("welcome");
     }
-  }, [proEnabled, completion, pathname, uid, refetch]);
+  }, [proEnabled, completion, path, uid, refetch]);
 
   // CONTRATANTE — só o tour do app, uma vez, na home.
   useEffect(() => {
     if (!hasHydrated || !isAuthenticated || !isCustomer || !uid) return;
-    if (pathname === "/" && !got("onb-apptour", uid)) {
+    if (path === "/" && !got("onb-apptour", uid)) {
       setPhase((p) => (p === "none" ? "app-tour" : p));
     }
-  }, [hasHydrated, isAuthenticated, isCustomer, uid, pathname]);
+  }, [hasHydrated, isAuthenticated, isCustomer, uid, path]);
 
   if (!uid || role === "admin") return null;
 
