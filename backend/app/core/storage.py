@@ -10,6 +10,10 @@ e não falha mesmo se o MinIO estiver indisponível no momento.
 
 from __future__ import annotations
 
+import hashlib
+import hmac
+import time
+
 import boto3
 from botocore.client import Config
 
@@ -87,3 +91,35 @@ def presigned_get_url(key: str, *, expires_seconds: int = 7 * 24 * 3600) -> str:
     _ = expires_seconds  # compat — não usado na URL pública
     base = settings.S3_PUBLIC_URL.rstrip("/")
     return f"{base}/{settings.S3_BUCKET}/{key}"
+
+
+# --------------------------------------------------------------------------- #
+# Token de mídia privada (#8) — "presigned" próprio: assina (key, exp) com HMAC
+# para servir mídia de bucket PRIVADO a um <img> via endpoint, com expiração
+# curta. Sem expor o bucket nem o access token do usuário na URL.
+# --------------------------------------------------------------------------- #
+def _media_sig(key: str, exp: int) -> str:
+    msg = f"{key}:{exp}".encode()
+    return hmac.new(
+        settings.JWT_SECRET.encode(), msg, hashlib.sha256
+    ).hexdigest()[:40]
+
+
+def sign_media(key: str, *, ttl_seconds: int = 3600) -> str:
+    """Token curto (``exp.sig``) que autoriza ler ``key`` por ``ttl_seconds``."""
+    exp = int(time.time()) + ttl_seconds
+    return f"{exp}.{_media_sig(key, exp)}"
+
+
+def verify_media(key: str, token: str | None) -> bool:
+    """Valida o token de mídia para ``key`` (assinatura + expiração)."""
+    if not token or "." not in token:
+        return False
+    exp_str, _, sig = token.partition(".")
+    try:
+        exp = int(exp_str)
+    except ValueError:
+        return False
+    if exp < int(time.time()):
+        return False
+    return hmac.compare_digest(sig, _media_sig(key, exp))

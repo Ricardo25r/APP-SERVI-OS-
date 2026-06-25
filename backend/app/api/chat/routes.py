@@ -28,6 +28,7 @@ from fastapi import (
     Form,
     HTTPException,
     Query,
+    Response,
     UploadFile,
     WebSocket,
     WebSocketDisconnect,
@@ -36,9 +37,11 @@ from fastapi import (
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.core.deps import get_current_user
 from app.core.ratelimit import rate_limit
 from app.core.security import claim_version, decode_token
+from app.core.storage import get_private_object, verify_media
 from app.core.ws_manager import ws_manager
 from app.database.session import async_session_maker, get_db
 from app.models import User, UserStatus
@@ -178,6 +181,34 @@ async def send_message_image(
         content_type=file.content_type,
         data=data,
         caption=caption,
+    )
+
+
+@router.get(
+    "/media",
+    summary="Servir imagem privada de chat (token curto)",
+)
+async def chat_media(
+    key: str = Query(...),
+    t: str = Query(...),
+) -> Response:
+    """Streama a imagem de chat do bucket PRIVADO. Autorizada por token HMAC
+    curto (não por JWT — para o ``<img>`` funcionar) e restrita ao prefixo
+    ``chat-priv/`` (anti path-traversal). Não expõe o bucket (#8)."""
+    if not key.startswith("chat-priv/") or not verify_media(key, t):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+    try:
+        data, content_type = get_private_object(
+            key, bucket=settings.S3_KYC_BUCKET
+        )
+    except Exception as exc:  # noqa: BLE001 - objeto ausente
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND
+        ) from exc
+    return Response(
+        content=data,
+        media_type=content_type or "image/jpeg",
+        headers={"Cache-Control": "private, max-age=3600"},
     )
 
 

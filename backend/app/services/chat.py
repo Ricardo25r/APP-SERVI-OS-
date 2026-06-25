@@ -32,16 +32,22 @@ from __future__ import annotations
 
 import uuid
 from datetime import UTC, datetime
+from urllib.parse import quote
 
 from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.core.exceptions import (
     DomainValidationError,
     NotFoundError,
     PermissionDeniedError,
 )
-from app.core.storage import presigned_get_url, upload_bytes
+from app.core.storage import (
+    presigned_get_url,
+    sign_media,
+    upload_private_bytes,
+)
 from app.core.ws_manager import ws_manager
 from app.models import (
     Conversation,
@@ -313,8 +319,13 @@ class ChatService:
             "image/gif": ".gif",
         }
         ext = _ext_by_type.get(content_type or "", ".jpg")
-        key = f"chat/{conversation.id}/{uuid.uuid4().hex}{ext}"
-        upload_bytes(data, key, content_type)
+        # Mídia de chat vai para o bucket PRIVADO (conversa é privada — #8).
+        # Servida por endpoint com token curto (ver _media_url), não por URL
+        # pública permanente.
+        key = f"chat-priv/{conversation.id}/{uuid.uuid4().hex}{ext}"
+        upload_private_bytes(
+            data, key, content_type, bucket=settings.S3_KYC_BUCKET
+        )
         now = datetime.now(UTC)
         msg = Message(
             conversation_id=conversation.id,
@@ -339,11 +350,25 @@ class ChatService:
     # Helpers internos
     # ------------------------------------------------------------------ #
     def _message_out(self, m: Message) -> MessageOut:
-        """``MessageOut`` com a URL presignada da imagem (quando houver)."""
+        """``MessageOut`` com a URL da imagem (quando houver)."""
         out = MessageOut.model_validate(m)
         if m.media_key:
-            out.media_url = presigned_get_url(m.media_key)
+            out.media_url = self._media_url(m.media_key)
         return out
+
+    @staticmethod
+    def _media_url(key: str) -> str:
+        """URL da mídia: bucket PRIVADO com token curto para chat novo
+        (``chat-priv/``); pública para mídia legada/avatar. Mantém as imagens
+        antigas funcionando (#8)."""
+        if key.startswith("chat-priv/"):
+            base = settings.FRONTEND_URL.rstrip("/")
+            token = sign_media(key)
+            return (
+                f"{base}/api/v1/chat/media"
+                f"?key={quote(key, safe='')}&t={token}"
+            )
+        return presigned_get_url(key)
 
     def _notify_new_message(
         self, conversation: Conversation, sender: User, preview: str
