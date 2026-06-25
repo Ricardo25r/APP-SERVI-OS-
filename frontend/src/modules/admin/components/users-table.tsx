@@ -11,6 +11,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  Eye,
   Loader2,
   Search,
   ShieldBan,
@@ -45,6 +46,7 @@ import {
 } from "../utils";
 import { ConfirmDialog } from "./confirm-dialog";
 import { Pagination } from "./pagination";
+import { UserDetailsDialog } from "./user-details-dialog";
 
 export const usersKey = (filters: UsersFilters) =>
   ["admin", "users", filters] as const;
@@ -125,6 +127,7 @@ export function UsersTable() {
 
   // Exclusão de usuário (ex.: limpar contas de teste).
   const [pendingDelete, setPendingDelete] = useState<AdminUser | null>(null);
+  const [detailsId, setDetailsId] = useState<string | null>(null);
   const deleteMutation = useMutation({
     mutationFn: (u: AdminUser) => deleteUser(u.id),
     onSuccess: () => {
@@ -336,6 +339,14 @@ export function UsersTable() {
                 </div>
 
                 <div className="flex flex-wrap gap-2 pt-1">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setDetailsId(user.id)}
+                  >
+                    <Eye className="mr-1.5 h-3.5 w-3.5" aria-hidden />
+                    Detalhes
+                  </Button>
                   {actionsFor(user).map((status) => {
                     const Icon = actionIcon(status);
                     const copy = ACTION_COPY[status];
@@ -434,6 +445,14 @@ export function UsersTable() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-wrap justify-end gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setDetailsId(user.id)}
+                        >
+                          <Eye className="mr-1.5 h-3.5 w-3.5" aria-hidden />
+                          Detalhes
+                        </Button>
                         {actionsFor(user).map((status) => {
                           const Icon = actionIcon(status);
                           const copy = ACTION_COPY[status];
@@ -595,6 +614,11 @@ export function UsersTable() {
         onCancel={() => {
           if (!deleteMutation.isPending) setPendingDelete(null);
         }}
+      />
+
+      <UserDetailsDialog
+        userId={detailsId}
+        onClose={() => setDetailsId(null)}
       />
     </div>
   );

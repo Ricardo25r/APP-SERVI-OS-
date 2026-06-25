@@ -10,7 +10,7 @@
  */
 
 import { apiDelete, apiGet, apiPatch, apiPost, apiPut } from "@/services/api";
-import type { Category } from "@/types";
+import type { Category, UserRole, UserStatus } from "@/types";
 import type { PaymentSettings } from "@/modules/payments/types";
 
 import type {
@@ -113,6 +113,59 @@ export function updateUserRole(
 /** Exclui (anonimiza + desativa) um usuário — ex.: limpar contas de teste. */
 export function deleteUser(id: string): Promise<void> {
   return apiDelete<void>(`/admin/users/${id}`);
+}
+
+/** DNA do profissional (no "Ver detalhes" do admin). */
+export interface AdminUserProfessionalDetail {
+  headline: string | null;
+  bio: string | null;
+  city: string | null;
+  state: string | null;
+  service_radius_km: number | null;
+  availability_status: string | null;
+  rating: number;
+  total_reviews: number;
+  level: number;
+  xp: number;
+  no_show_count: number;
+  verified: boolean;
+  premium: boolean;
+  welcome_credits_granted: boolean;
+  credits_balance: number;
+  leads_attended: number;
+  categories: string[];
+}
+
+export interface AdminUserCustomerDetail {
+  city: string | null;
+  state: string | null;
+  leads_posted: number;
+}
+
+/** Ficha completa do usuário (base + perfil por papel). */
+export interface AdminUserDetail {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  role: UserRole;
+  status: UserStatus;
+  created_at: string;
+  last_login_at: string | null;
+  deleted_at: string | null;
+  birth_date: string | null;
+  age: number | null;
+  gender: string | null;
+  document: string | null;
+  avatar_url: string | null;
+  kyc_status: string | null;
+  professional: AdminUserProfessionalDetail | null;
+  customer: AdminUserCustomerDetail | null;
+}
+
+/** Ficha completa de um usuário (`GET /admin/users/{id}/details`). */
+export function fetchUserDetails(id: string): Promise<AdminUserDetail> {
+  return apiGet<AdminUserDetail>(`/admin/users/${id}/details`);
 }
 
 /* ------------------------------------------------------------------ */

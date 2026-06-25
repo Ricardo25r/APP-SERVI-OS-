@@ -21,18 +21,23 @@ import uuid
 from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.core.exceptions import (
     DomainValidationError,
     NotFoundError,
 )
+from app.core.storage import presigned_get_url
 from app.models import (
     AuditLog,
+    CustomerProfile,
+    Lead,
     LeadPurchase,
     LeadStatus,
     PaymentOrderStatus,
+    ProfessionalProfile,
     User,
     UserRole,
     UserStatus,
@@ -44,6 +49,9 @@ from app.schemas.admin import (
     AdminLeadRead,
     AdminMetrics,
     AdminPaymentRead,
+    AdminUserCustomerDetail,
+    AdminUserDetail,
+    AdminUserProfessionalDetail,
     AdminUserRead,
     AuditLogRead,
     CategoryCoverage,
@@ -188,6 +196,117 @@ class AdminService:
         if user is None:
             raise NotFoundError("Usuário não encontrado.")
         return AdminUserRead.model_validate(user)
+
+    async def get_user_details(self, user_id: uuid.UUID) -> AdminUserDetail:
+        """Ficha completa do usuário (o 'Ver detalhes' do painel): base + DNA
+        do profissional (categorias, idade, localização, atendidos, reputação,
+        KYC, créditos) ou do contratante (localização, pedidos publicados)."""
+        import contextlib
+
+        user = await self.repo.get_user(user_id)
+        if user is None:
+            raise NotFoundError("Usuário não encontrado.")
+
+        avatar_url = None
+        if user.avatar_key:
+            with contextlib.suppress(Exception):
+                avatar_url = presigned_get_url(user.avatar_key)
+
+        age: int | None = None
+        if user.birth_date:
+            today = datetime.now(UTC).date()
+            bd = user.birth_date
+            age = (
+                today.year
+                - bd.year
+                - ((today.month, today.day) < (bd.month, bd.day))
+            )
+
+        professional: AdminUserProfessionalDetail | None = None
+        pro = (
+            await self.db.execute(
+                select(ProfessionalProfile)
+                .where(ProfessionalProfile.user_id == user_id)
+                .options(
+                    selectinload(ProfessionalProfile.categories),
+                    selectinload(ProfessionalProfile.wallet),
+                )
+            )
+        ).scalar_one_or_none()
+        if pro is not None:
+            attended = (
+                await self.db.execute(
+                    select(func.count())
+                    .select_from(LeadPurchase)
+                    .where(LeadPurchase.professional_id == pro.id)
+                )
+            ).scalar_one()
+            professional = AdminUserProfessionalDetail(
+                headline=pro.headline,
+                bio=pro.bio,
+                city=pro.city,
+                state=pro.state,
+                service_radius_km=pro.service_radius_km,
+                availability_status=(
+                    pro.availability_status.value
+                    if pro.availability_status
+                    else None
+                ),
+                rating=float(pro.rating or 0),
+                total_reviews=pro.total_reviews,
+                level=pro.level,
+                xp=pro.xp,
+                no_show_count=pro.no_show_count,
+                verified=bool(pro.verified),
+                premium=bool(pro.premium),
+                welcome_credits_granted=bool(pro.welcome_credits_granted),
+                credits_balance=pro.wallet.balance if pro.wallet else 0,
+                leads_attended=int(attended),
+                categories=sorted(c.name for c in pro.categories),
+            )
+
+        customer: AdminUserCustomerDetail | None = None
+        cust = (
+            await self.db.execute(
+                select(CustomerProfile).where(
+                    CustomerProfile.user_id == user_id
+                )
+            )
+        ).scalar_one_or_none()
+        if cust is not None:
+            posted = (
+                await self.db.execute(
+                    select(func.count())
+                    .select_from(Lead)
+                    .where(
+                        Lead.customer_id == user_id,
+                        Lead.deleted_at.is_(None),
+                    )
+                )
+            ).scalar_one()
+            customer = AdminUserCustomerDetail(
+                city=cust.city, state=cust.state, leads_posted=int(posted)
+            )
+
+        return AdminUserDetail(
+            id=user.id,
+            name=user.name,
+            email=user.email,
+            phone=user.phone,
+            role=user.role,
+            status=user.status,
+            created_at=user.created_at,
+            last_login_at=user.last_login_at,
+            deleted_at=user.deleted_at,
+            birth_date=user.birth_date,
+            age=age,
+            gender=user.gender,
+            document=user.document,
+            avatar_url=avatar_url,
+            kyc_status=user.kyc_status,
+            professional=professional,
+            customer=customer,
+        )
 
     async def update_user_status(
         self,

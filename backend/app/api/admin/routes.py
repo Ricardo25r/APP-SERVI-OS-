@@ -41,6 +41,7 @@ from app.schemas.admin import (
     AdminLeadRead,
     AdminMetrics,
     AdminPaymentListResponse,
+    AdminUserDetail,
     AdminUserListResponse,
     AdminUserRead,
     AuditLogListResponse,
@@ -180,6 +181,20 @@ async def get_user(
 ) -> AdminUserRead:
     """Detalhe de um usuário (``404`` inexistente)."""
     return await AdminService(db).get_user(user_id)
+
+
+@router.get(
+    "/users/{user_id}/details",
+    response_model=AdminUserDetail,
+    summary="Ficha completa do usuário (DNA do profissional/contratante)",
+)
+async def get_user_details(
+    user_id: uuid.UUID,
+    _admin: User = Depends(require_roles(UserRole.admin)),
+    db: AsyncSession = Depends(get_db),
+) -> AdminUserDetail:
+    """Categorias, idade, localização, atendidos, reputação, KYC, créditos."""
+    return await AdminService(db).get_user_details(user_id)
 
 
 # --------------------------------------------------------------------------- #

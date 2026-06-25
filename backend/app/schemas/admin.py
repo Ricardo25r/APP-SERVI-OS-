@@ -11,7 +11,7 @@ listam **apenas** os campos editáveis pela ação. ``PATCH .../status`` só ace
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -131,6 +131,58 @@ class AdminUserRead(BaseModel):
     last_login_at: datetime | None = None
     created_at: datetime
     deleted_at: datetime | None = None
+
+
+class AdminUserProfessionalDetail(BaseModel):
+    """DNA do profissional (para o 'Ver detalhes' do admin)."""
+
+    headline: str | None = None
+    bio: str | None = None
+    city: str | None = None
+    state: str | None = None
+    service_radius_km: int | None = None
+    availability_status: str | None = None
+    rating: float = 0.0
+    total_reviews: int = 0
+    level: int = 1
+    xp: int = 0
+    no_show_count: int = 0
+    verified: bool = False
+    premium: bool = False
+    welcome_credits_granted: bool = False
+    credits_balance: int = 0
+    leads_attended: int = 0
+    categories: list[str] = Field(default_factory=list)
+
+
+class AdminUserCustomerDetail(BaseModel):
+    """DNA do contratante."""
+
+    city: str | None = None
+    state: str | None = None
+    leads_posted: int = 0
+
+
+class AdminUserDetail(BaseModel):
+    """Ficha completa do usuário (admin) — base + perfil por papel."""
+
+    id: uuid.UUID
+    name: str
+    email: str
+    phone: str | None = None
+    role: UserRole
+    status: UserStatus
+    created_at: datetime
+    last_login_at: datetime | None = None
+    deleted_at: datetime | None = None
+    birth_date: date | None = None
+    age: int | None = None
+    gender: str | None = None
+    document: str | None = None
+    avatar_url: str | None = None
+    kyc_status: str | None = None
+    professional: AdminUserProfessionalDetail | None = None
+    customer: AdminUserCustomerDetail | None = None
 
 
 class AdminUserListResponse(BaseModel):
