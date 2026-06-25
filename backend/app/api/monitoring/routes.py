@@ -18,7 +18,7 @@ from datetime import UTC, datetime, timedelta
 
 from fastapi import APIRouter, Depends, Query, status
 from pydantic import BaseModel, Field
-from sqlalchemy import func, select, text
+from sqlalchemy import delete, func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import Response
 
@@ -148,6 +148,18 @@ async def recent_errors(
         for e in rows
     ]
     return {"items": items, "count": len(items)}
+
+
+@router.delete("/errors", summary="Limpar os erros registrados (admin)")
+async def clear_errors(
+    _admin: User = Depends(require_roles(UserRole.admin)),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Apaga os registros de erro do painel (ex.: depois de resolver/revisar).
+    Não afeta o sistema — só limpa o histórico exibido no monitoramento."""
+    result = await db.execute(delete(ErrorLog))
+    await db.commit()
+    return {"deleted": int(result.rowcount or 0)}
 
 
 @router.post("/test-error", summary="Dispara um erro de teste (admin, só em debug)")

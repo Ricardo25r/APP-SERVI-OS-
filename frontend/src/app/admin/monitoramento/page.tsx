@@ -32,7 +32,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useRequireAuth } from "@/hooks/use-auth";
-import { apiGet, apiPost } from "@/services/api";
+import { apiDelete, apiGet, apiPost } from "@/services/api";
 
 interface SlowEndpoint {
   method: string;
@@ -234,7 +234,26 @@ export default function MonitoringPage() {
   const [testing, setTesting] = useState(false);
   const [alerting, setAlerting] = useState(false);
   const [alertResult, setAlertResult] = useState<string | null>(null);
+  const [clearing, setClearing] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  async function clearErrors() {
+    if (
+      !window.confirm(
+        "Limpar todos os erros registrados? Não afeta o sistema — só o histórico exibido aqui."
+      )
+    )
+      return;
+    setClearing(true);
+    try {
+      await apiDelete("/monitoring/errors");
+      setErrors([]);
+    } catch {
+      /* ignore */
+    } finally {
+      setClearing(false);
+    }
+  }
 
   const load = useCallback(async () => {
     try {
@@ -610,10 +629,22 @@ export default function MonitoringPage() {
             </div>
 
             <div className="rounded-2xl border bg-card p-4 shadow-sm">
-              <h2 className="mb-3 flex items-center gap-2 text-sm font-bold tracking-tight">
-                <Bug className="h-4 w-4 text-destructive" aria-hidden />
-                Erros recentes
-              </h2>
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <h2 className="flex items-center gap-2 text-sm font-bold tracking-tight">
+                  <Bug className="h-4 w-4 text-destructive" aria-hidden />
+                  Erros recentes
+                </h2>
+                {errors.length > 0 ? (
+                  <button
+                    type="button"
+                    onClick={() => void clearErrors()}
+                    disabled={clearing}
+                    className="text-xs font-medium text-muted-foreground hover:text-destructive disabled:opacity-50"
+                  >
+                    Limpar
+                  </button>
+                ) : null}
+              </div>
               {errors.length === 0 ? (
                 <p className="py-8 text-center text-sm text-muted-foreground">
                   Nenhum erro capturado. Tudo limpo.

@@ -111,6 +111,47 @@ def _fire(coro) -> None:
         coro.close()  # sem loop ativo (contexto sync) — descarta a corrotina
 
 
+async def _dispatch_push(
+    key: str, error_type: str, path: str, method: str
+) -> None:
+    """Push aos ADMINS quando dá erro 500 (throttle próprio; best-effort)."""
+    if not _should_send(key):
+        return
+    try:
+        from sqlalchemy import select
+
+        from app.database.session import async_session_maker
+        from app.models import User, UserRole
+        from app.services.push import PushService, push_enabled
+
+        if not push_enabled():
+            return
+        async with async_session_maker() as db:
+            admin_ids = list(
+                (
+                    await db.execute(
+                        select(User.id).where(
+                            User.role == UserRole.admin,
+                            User.deleted_at.is_(None),
+                        )
+                    )
+                )
+                .scalars()
+                .all()
+            )
+            if not admin_ids:
+                return
+            await PushService(db).send_to_users(
+                admin_ids,
+                title="Erro no FazTudo",
+                body=f"{error_type} em {method} {path}",
+                url="/admin/monitoramento",
+                tag="admin-error",
+            )
+    except Exception:  # noqa: BLE001 - best-effort, nunca propaga
+        logger.exception("Falha ao enviar push de erro ao admin")
+
+
 def alert_error(
     error_type: str,
     path: str,
@@ -118,7 +159,7 @@ def alert_error(
     request_id: str | None,
     message: str,
 ) -> None:
-    """Agenda um alerta de erro 500 (throttle por tipo+rota normalizada)."""
+    """Agenda alerta de erro 500: e-mail + push aos admins (throttle por rota)."""
     key = f"err:{error_type}:{normalize_path(path)}"
     subject = f"[FazTudo] Erro 500: {method} {path}"
     body = (
@@ -130,6 +171,7 @@ def alert_error(
         f"Traceback completo no painel: {settings.MONITORING_URL}\n"
     )
     _fire(_dispatch(key, subject, body))
+    _fire(_dispatch_push(f"push:{key}", error_type, path, method))
 
 
 def alert_slow(path: str, method: str, duration_ms: float) -> None:
