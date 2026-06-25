@@ -85,6 +85,12 @@ class UserProfileService:
             )
         now = datetime.now(UTC)
 
+        # Cancela a assinatura recorrente no provedor — não cobra cartão de quem
+        # saiu (#56). Best-effort; import local evita ciclo de import.
+        from app.services.subscriptions import SubscriptionService
+
+        await SubscriptionService(self.db).cancel_on_account_deletion(user.id)
+
         # Revoga sessões (refresh) + invalida access tokens vivos.
         await self.db.execute(
             delete(RefreshToken).where(RefreshToken.user_id == user.id)
@@ -180,6 +186,7 @@ class UserProfileService:
             rating=profile.rating,
             total_reviews=profile.total_reviews,
             verified=(user.kyc_status == "approved"),
+            is_pro=bool(profile.premium),
         )
 
     # ================================================================== #
@@ -392,6 +399,7 @@ class UserProfileService:
             name=user.name if user is not None else None,
             avatar_url=avatar,
             verified=bool(user is not None and user.kyc_status == "approved"),
+            is_pro=bool(profile.premium),
             is_favorited=is_fav,
             categories=self._categories_out(profile.categories),
             portfolio=await self._portfolio_out(profile.id),

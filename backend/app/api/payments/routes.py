@@ -16,9 +16,18 @@ Endpoints (§4):
 
 from __future__ import annotations
 
+import json
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    Query,
+    Request,
+    Response,
+    status,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -36,8 +45,22 @@ from app.schemas.payments import (
     RefundRequest,
     WebhookReceived,
 )
+from app.schemas.subscriptions import (
+    SubscriptionInfo,
+    SubscriptionSettingsRead,
+    SubscriptionSettingsUpdate,
+    SubscriptionStartOut,
+)
 from app.services.payments.factory import get_payment_provider
 from app.services.payments.service import PaymentService
+from app.services.subscriptions import SubscriptionService
+
+_SUBSCRIPTION_TOPICS = {
+    "subscription_preapproval",
+    "preapproval",
+    "subscription_authorized_payment",
+    "authorized_payment",
+}
 
 router = APIRouter()
 
@@ -107,6 +130,80 @@ async def update_settings(
     return PaymentSettingsRead.model_validate(
         await service.update_payment_settings(payload)
     )
+
+
+# --------------------------------------------------------------------------- #
+# Assinatura / plano PRO (#56) — config no admin (liga/desliga + valores) e
+# fluxo do profissional. Entregue DESLIGADO (enabled=false).
+# --------------------------------------------------------------------------- #
+@router.get(
+    "/subscription-settings",
+    response_model=SubscriptionSettingsRead,
+    summary="Configuração da assinatura (admin)",
+)
+async def get_subscription_settings(
+    _admin: User = Depends(require_roles(UserRole.admin)),
+    db: AsyncSession = Depends(get_db),
+) -> SubscriptionSettingsRead:
+    return SubscriptionSettingsRead.model_validate(
+        await SubscriptionService(db).get_settings()
+    )
+
+
+@router.put(
+    "/subscription-settings",
+    response_model=SubscriptionSettingsRead,
+    summary="Editar a assinatura: liga/desliga e valores (admin)",
+)
+async def update_subscription_settings(
+    payload: SubscriptionSettingsUpdate,
+    _admin: User = Depends(require_roles(UserRole.admin)),
+    db: AsyncSession = Depends(get_db),
+) -> SubscriptionSettingsRead:
+    return SubscriptionSettingsRead.model_validate(
+        await SubscriptionService(db).update_settings(payload)
+    )
+
+
+@router.get(
+    "/subscription",
+    response_model=SubscriptionInfo,
+    summary="Meu plano / status da assinatura",
+)
+async def my_subscription(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> SubscriptionInfo:
+    """O plano (quando habilitado) + o status da assinatura do usuário."""
+    return await SubscriptionService(db).get_info(current_user)
+
+
+@router.post(
+    "/subscription/subscribe",
+    response_model=SubscriptionStartOut,
+    summary="Assinar o plano PRO (gera link de checkout)",
+)
+async def subscribe(
+    current_user: User = Depends(require_roles(UserRole.professional)),
+    db: AsyncSession = Depends(get_db),
+) -> SubscriptionStartOut:
+    """Cria a assinatura no Mercado Pago. Recusa (422) se o plano está desligado."""
+    url = await SubscriptionService(db).subscribe(current_user)
+    return SubscriptionStartOut(checkout_url=url)
+
+
+@router.post(
+    "/subscription/cancel",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+    summary="Cancelar minha assinatura",
+)
+async def cancel_subscription(
+    current_user: User = Depends(require_roles(UserRole.professional)),
+    db: AsyncSession = Depends(get_db),
+) -> Response:
+    await SubscriptionService(db).cancel(current_user)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 # --------------------------------------------------------------------------- #
@@ -182,10 +279,31 @@ async def webhook(
     body = await request.body()
     headers = dict(request.headers)
 
-    provider = get_payment_provider()
-    payload = provider.verify_webhook(headers, body)  # 401 se inválido
-    event = provider.parse_event(payload)  # 422 se não mapeável
+    # Tópico de assinatura (#56)? A validação forte é a reconsulta AUTENTICADA à
+    # API do MP (fetch_*) no SubscriptionService — não há o que forjar, a consulta
+    # é autoritativa (mesma filosofia do fluxo avulso). O HMAC do MP não cobre bem
+    # esses tópicos (o manifesto usa o data.id da URL), então não o exigimos aqui.
+    try:
+        peek = json.loads(body.decode("utf-8")) if body else {}
+    except (ValueError, UnicodeDecodeError):
+        peek = {}
+    topic = (
+        (peek.get("type") or peek.get("topic"))
+        if isinstance(peek, dict)
+        else None
+    )
+    if topic in _SUBSCRIPTION_TOPICS:
+        await SubscriptionService(db).handle_webhook(peek)
+        return WebhookReceived(received=True)
 
+    provider = get_payment_provider()
+    payload = provider.verify_webhook(headers, body)  # 401 se inválido (avulso)
+    event = provider.parse_event(payload)  # 422 se não mapeável
+    # Cobrança de ciclo de assinatura que chegou no tópico 'payment': o crédito é
+    # feito pelo tópico authorized_payment — aqui só reconhecemos (evita 404 +
+    # retentativa do MP) em vez de procurar em payment_orders.
+    if event.external_reference.startswith("sub_"):
+        return WebhookReceived(received=True)
     service = PaymentService(db)
     await service.handle_event(event)  # 404 se external_reference desconhecida
     return WebhookReceived(received=True)

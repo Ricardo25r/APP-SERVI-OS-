@@ -26,6 +26,7 @@ import type { CreditTransaction, CreditWallet, Paginated } from "@/types";
 import { TransactionList } from "@/modules/credits/transaction-list";
 import { messageFromError } from "@/modules/credits/utils";
 import { BuyCreditsSection } from "@/modules/payments";
+import { ProPlanCard } from "@/modules/payments/pro-plan-card";
 import { Testimonials } from "@/modules/reviews/testimonials";
 
 // Beta: quando NEXT_PUBLIC_PAYMENTS_ENABLED=false, a compra fica oculta
@@ -120,6 +121,10 @@ export default function CreditsPage() {
           />
         </CardContent>
       </Card>
+
+      {/* Plano PRO (assinatura). Só aparece quando o admin liga e fora do app
+          Android (política da loja). #56 */}
+      <ProPlanCard />
 
       {/* Comprar créditos (catálogo + pagamento). Oculto no beta e no app
           nativo (Android) — compra fica no site, por política da loja. */}

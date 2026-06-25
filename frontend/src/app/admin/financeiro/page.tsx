@@ -13,6 +13,7 @@ import { ChevronLeft } from "lucide-react";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { PaymentsTable } from "@/modules/admin";
 import { PaymentSettingsForm } from "@/modules/admin/components/payment-settings-form";
+import { SubscriptionSettingsForm } from "@/modules/admin/components/subscription-settings-form";
 
 export default function AdminFinancePage() {
   const auth = useRequireAuth("admin");
@@ -43,6 +44,7 @@ export default function AdminFinancePage() {
       </header>
 
       <div className="space-y-8">
+        <SubscriptionSettingsForm />
         <PaymentSettingsForm />
         <PaymentsTable />
       </div>

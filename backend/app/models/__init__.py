@@ -65,6 +65,8 @@ from app.models.sprint import (
     SprintIdeaEvento,
     SprintIdeaVoto,
 )
+from app.models.subscription import Subscription
+from app.models.subscription_settings import SubscriptionSettings
 from app.models.support_ticket import SupportTicket
 from app.models.support_ticket_message import SupportTicketMessage
 from app.models.user import User
@@ -111,6 +113,8 @@ __all__ = [
     "UserAchievement",
     "AuditLog",
     "AnalyticsEvent",
+    "Subscription",
+    "SubscriptionSettings",
     "SupportTicket",
     "SupportTicketMessage",
     "Sprint",

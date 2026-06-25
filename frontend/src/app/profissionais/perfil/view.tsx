@@ -11,7 +11,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, BadgeCheck, MapPin } from "lucide-react";
+import { ArrowLeft, BadgeCheck, Crown, MapPin } from "lucide-react";
 
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -37,6 +37,7 @@ interface PublicProfile {
   total_reviews: number;
   verified: boolean;
   is_favorited: boolean;
+  is_pro?: boolean;
   categories?: { id: string; name: string }[];
   portfolio?: { id: string; image_url: string | null; caption: string | null }[];
 }
@@ -97,6 +98,12 @@ export default function ProfessionalPublicView() {
                       <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-xs font-semibold text-success">
                         <BadgeCheck className="h-3.5 w-3.5" aria-hidden />
                         Verificado
+                      </span>
+                    ) : null}
+                    {data.is_pro ? (
+                      <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-brand/10 px-2 py-0.5 text-xs font-semibold text-brand">
+                        <Crown className="h-3.5 w-3.5" aria-hidden />
+                        PRO
                       </span>
                     ) : null}
                   </div>

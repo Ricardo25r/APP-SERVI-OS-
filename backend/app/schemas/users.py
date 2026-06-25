@@ -236,6 +236,7 @@ class ProfessionalProfilePublicOut(BaseModel):
     name: str | None = None
     avatar_url: str | None = None
     verified: bool = False
+    is_pro: bool = False
     is_favorited: bool = False
 
     categories: list[CategoryRefOut] = Field(default_factory=list)
@@ -262,6 +263,7 @@ class ProfessionalSearchItem(BaseModel):
     rating: float = Field(default=0.0, ge=0, le=5)
     total_reviews: int = Field(default=0, ge=0)
     verified: bool = False
+    is_pro: bool = False
 
 
 class ProfessionalSearchList(BaseModel):

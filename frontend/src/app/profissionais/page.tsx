@@ -11,7 +11,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { BadgeCheck, BellRing, MapPin, Search, X } from "lucide-react";
+import { BadgeCheck, BellRing, Crown, MapPin, Search, X } from "lucide-react";
 
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,7 @@ interface ProItem {
   rating: number;
   total_reviews: number;
   verified: boolean;
+  is_pro?: boolean;
 }
 
 interface SavedAlert {
@@ -59,6 +60,9 @@ function ProCard({ p }: { p: ProItem }) {
               className="h-4 w-4 shrink-0 text-success"
               aria-label="Verificado"
             />
+          ) : null}
+          {p.is_pro ? (
+            <Crown className="h-4 w-4 shrink-0 text-brand" aria-label="PRO" />
           ) : null}
         </div>
         {p.headline ? (

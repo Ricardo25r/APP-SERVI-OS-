@@ -205,19 +205,105 @@ class MercadoPagoProvider(PaymentProvider):
 
     def _fetch_payment(self, payment_id: str) -> dict:
         """Consulta o pagamento no MP (autenticado) — fonte da verdade do status."""
+        return self._get(f"/v1/payments/{payment_id}")
+
+    def _get(self, path: str) -> dict:
+        """GET autenticado na API do MP (síncrono — usado nos webhooks)."""
         try:
             with httpx.Client(
                 base_url=settings.MERCADOPAGO_API_BASE, timeout=_TIMEOUT
             ) as client:
-                resp = client.get(
-                    f"/v1/payments/{payment_id}", headers=self._auth_headers()
-                )
+                resp = client.get(path, headers=self._auth_headers())
         except httpx.HTTPError as exc:
-            raise ProviderError(
-                "Falha ao consultar o pagamento no Mercado Pago."
-            ) from exc
+            raise ProviderError("Falha ao consultar o Mercado Pago.") from exc
         if resp.status_code == 404:
-            raise ProviderError("Pagamento não encontrado no Mercado Pago.")
+            raise ProviderError("Recurso não encontrado no Mercado Pago.")
         if resp.status_code >= 400:
-            raise ProviderError("Erro ao consultar o pagamento no Mercado Pago.")
+            raise ProviderError("Erro ao consultar o Mercado Pago.")
         return resp.json()
+
+    # ------------------------------------------------------------------ #
+    # Assinatura recorrente (preapproval) — #56
+    # ------------------------------------------------------------------ #
+    async def create_subscription(
+        self,
+        *,
+        external_reference: str,
+        reason: str,
+        amount_cents: int,
+        currency: str,
+        payer_email: str,
+        back_url: str,
+        free_trial_days: int = 0,
+    ) -> tuple[str, str]:
+        """Cria uma ``preapproval`` e devolve ``(preapproval_id, init_point)``."""
+        base = settings.FRONTEND_URL.rstrip("/")
+        auto_recurring: dict = {
+            "frequency": 1,
+            "frequency_type": "months",
+            "transaction_amount": round(amount_cents / 100, 2),
+            "currency_id": currency,
+        }
+        if free_trial_days > 0:
+            auto_recurring["free_trial"] = {
+                "frequency": free_trial_days,
+                "frequency_type": "days",
+            }
+        body = {
+            "reason": reason,
+            "external_reference": external_reference,
+            "payer_email": payer_email,
+            "auto_recurring": auto_recurring,
+            "back_url": back_url,
+            "notification_url": f"{base}/api/v1/payments/webhook",
+            "status": "pending",
+        }
+        async with httpx.AsyncClient(
+            base_url=settings.MERCADOPAGO_API_BASE, timeout=_TIMEOUT
+        ) as client:
+            resp = await client.post(
+                "/preapproval", json=body, headers=self._auth_headers()
+            )
+        if resp.status_code >= 400:
+            logger.error(
+                "MP preapproval falhou: %s %s",
+                resp.status_code,
+                resp.text[:500],
+            )
+            raise ProviderError("Falha ao criar a assinatura no Mercado Pago.")
+        data = resp.json()
+        init_point = data.get("init_point") or data.get("sandbox_init_point")
+        sub_id = data.get("id")
+        if not init_point or not sub_id:
+            raise ProviderError(
+                "Mercado Pago não devolveu o link da assinatura."
+            )
+        return str(sub_id), init_point
+
+    def fetch_preapproval(self, preapproval_id: str) -> dict:
+        """Estado de uma assinatura (``GET /preapproval/{id}``)."""
+        return self._get(f"/preapproval/{preapproval_id}")
+
+    def fetch_authorized_payment(self, payment_id: str) -> dict:
+        """Cobrança de um ciclo (``GET /authorized_payments/{id}``)."""
+        return self._get(f"/authorized_payments/{payment_id}")
+
+    async def cancel_subscription(self, preapproval_id: str) -> None:
+        """Cancela a assinatura no MP (``PUT /preapproval/{id}``)."""
+        async with httpx.AsyncClient(
+            base_url=settings.MERCADOPAGO_API_BASE, timeout=_TIMEOUT
+        ) as client:
+            resp = await client.put(
+                f"/preapproval/{preapproval_id}",
+                json={"status": "cancelled"},
+                headers=self._auth_headers(),
+            )
+        if resp.status_code >= 400:
+            logger.error(
+                "MP cancelar preapproval falhou: %s %s",
+                resp.status_code,
+                resp.text[:300],
+            )
+            raise ProviderError(
+                "Falha ao cancelar a assinatura no Mercado Pago."
+            )

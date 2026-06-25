@@ -158,6 +158,7 @@ class UserProfileRepository:
                 )
             )
         stmt = stmt.order_by(
+            ProfessionalProfile.premium.desc(),  # assinante PRO no topo (#56)
             ProfessionalProfile.verified.desc(),
             ProfessionalProfile.rating.desc(),
             ProfessionalProfile.total_reviews.desc(),
