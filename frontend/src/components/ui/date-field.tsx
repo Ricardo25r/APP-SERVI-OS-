@@ -9,7 +9,7 @@
  * distante (ideal para data de nascimento). Valor no formato ISO `YYYY-MM-DD`.
  */
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Select, SelectOption } from "@/components/ui/select";
 
@@ -63,7 +63,24 @@ export function DateField({
 }: DateFieldProps) {
   const yMax = maxYear ?? new Date().getFullYear();
   const yMin = minYear ?? yMax - 100;
-  const { y, m, d } = parse(value);
+
+  // Estado interno: acumula as seleções parciais. (Derivar tudo do `value`
+  // combinado deadlocava — cada escolha isolada era descartada.)
+  const initial = parse(value);
+  const [y, setY] = useState(initial.y);
+  const [m, setM] = useState(initial.m);
+  const [d, setD] = useState(initial.d);
+
+  // Sincroniza apenas quando o `value` externo for uma data COMPLETA (ex.:
+  // edição/preenchimento programático); um value vazio não apaga o parcial.
+  useEffect(() => {
+    const p = parse(value);
+    if (p.y && p.m && p.d) {
+      setY(p.y);
+      setM(p.m);
+      setD(p.d);
+    }
+  }, [value]);
 
   const years = useMemo(() => {
     const arr: number[] = [];
@@ -77,13 +94,16 @@ export function DateField({
   }, [y, m]);
 
   function emit(ny: string, nm: string, nd: string) {
-    if (!ny || !nm || !nd) {
-      onChange("");
-      return;
-    }
     // Garante dia válido para o mês (ex.: 31 → 30 em abril, 29/28 em fev).
-    const dd = Math.min(Number(nd), daysInMonth(ny, nm));
-    onChange(`${ny}-${nm}-${String(dd).padStart(2, "0")}`);
+    let fd = nd;
+    if (ny && nm && nd) {
+      const dd = Math.min(Number(nd), daysInMonth(ny, nm));
+      fd = String(dd).padStart(2, "0");
+    }
+    setY(ny);
+    setM(nm);
+    setD(fd);
+    onChange(ny && nm && fd ? `${ny}-${nm}-${fd}` : "");
   }
 
   return (

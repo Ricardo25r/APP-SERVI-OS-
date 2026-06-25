@@ -57,6 +57,38 @@ function ageFromISO(iso: string): number | null {
 function onlyDigits(s: string): string {
   return s.replace(/\D/g, "");
 }
+
+/* Máscaras de exibição (o submit envia só dígitos). */
+function maskPhone(value: string): string {
+  const d = onlyDigits(value).slice(0, 11);
+  if (d.length === 0) return "";
+  if (d.length <= 2) return `(${d}`;
+  let out = `(${d.slice(0, 2)}) `;
+  if (d.length <= 6) {
+    out += d.slice(2);
+  } else if (d.length <= 10) {
+    out += `${d.slice(2, 6)}-${d.slice(6, 10)}`; // fixo: (xx) xxxx-xxxx
+  } else {
+    out += `${d.slice(2, 7)}-${d.slice(7, 11)}`; // celular: (xx) xxxxx-xxxx
+  }
+  return out;
+}
+
+function maskDocument(value: string): string {
+  const d = onlyDigits(value).slice(0, 14);
+  if (d.length <= 11) {
+    // CPF: 000.000.000-00
+    let out = d.slice(0, 3);
+    if (d.length > 3) out += `.${d.slice(3, 6)}`;
+    if (d.length > 6) out += `.${d.slice(6, 9)}`;
+    if (d.length > 9) out += `-${d.slice(9, 11)}`;
+    return out;
+  }
+  // CNPJ: 00.000.000/0000-00
+  let out = `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8, 12)}`;
+  if (d.length > 12) out += `-${d.slice(12, 14)}`;
+  return out;
+}
 function isValidCPF(cpf: string): boolean {
   if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
   for (const size of [9, 10]) {
@@ -102,7 +134,10 @@ const registerSchema = z
     phone: z
       .string()
       .trim()
-      .min(10, "Informe um telefone válido (com DDD)."),
+      .refine((v) => {
+        const n = v.replace(/\D/g, "").length;
+        return n >= 10 && n <= 11;
+      }, "Informe um telefone válido com DDD."),
     password: z
       .string()
       .min(8, "A senha deve ter pelo menos 8 caracteres."),
@@ -231,6 +266,8 @@ function RegisterForm() {
   // Mantém o campo `role` registrado para validação/submit; o seletor visual
   // (RoleSelector) apenas atualiza esse valor.
   register("role");
+  const phoneReg = register("phone");
+  const documentReg = register("document");
   const selectedRole = watch("role");
 
   async function onSubmit(values: RegisterValues) {
@@ -239,11 +276,11 @@ function RegisterForm() {
       const resp = await apiPost<AuthResponse>("/auth/register", {
         name: values.name,
         email: values.email,
-        phone: values.phone,
+        phone: onlyDigits(values.phone),
         password: values.password,
         role: values.role as UserRole,
         birth_date: values.birthDate || undefined,
-        document: values.document || undefined,
+        document: onlyDigits(values.document) || undefined,
         gender: values.gender || undefined,
         referral_code: referralCode || undefined,
       });
@@ -320,12 +357,16 @@ function RegisterForm() {
           <Input
             id="phone"
             type="tel"
-            inputMode="tel"
+            inputMode="numeric"
             autoComplete="tel"
             placeholder="(11) 99999-9999"
             aria-invalid={Boolean(errors.phone)}
             aria-describedby={errors.phone ? "phone-error" : undefined}
-            {...register("phone")}
+            {...phoneReg}
+            onChange={(e) => {
+              e.target.value = maskPhone(e.target.value);
+              return phoneReg.onChange(e);
+            }}
           />
           <FieldError id="phone-error" message={errors.phone?.message} />
         </div>
@@ -337,10 +378,14 @@ function RegisterForm() {
             type="text"
             inputMode="numeric"
             autoComplete="off"
-            placeholder="Somente números"
+            placeholder="CPF ou CNPJ"
             aria-invalid={Boolean(errors.document)}
             aria-describedby={errors.document ? "document-error" : undefined}
-            {...register("document")}
+            {...documentReg}
+            onChange={(e) => {
+              e.target.value = maskDocument(e.target.value);
+              return documentReg.onChange(e);
+            }}
           />
           <FieldError id="document-error" message={errors.document?.message} />
         </div>
