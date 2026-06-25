@@ -23,7 +23,7 @@ from __future__ import annotations
 
 import uuid
 
-from fastapi import APIRouter, Body, Depends, Query
+from fastapi import APIRouter, Body, Depends, Query, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import require_roles
@@ -145,6 +145,24 @@ async def update_user_role(
     """Promove/altera o papel (customer|professional|admin); grava auditoria.
     Não permite o admin alterar o próprio papel (``422``); ``404`` inexistente."""
     return await AdminService(db).update_user_role(admin, user_id, payload)
+
+
+@router.delete(
+    "/users/{user_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+    summary="Excluir usuário (anonimiza + desativa; auditoria)",
+)
+async def delete_user(
+    user_id: uuid.UUID,
+    admin: User = Depends(require_roles(UserRole.admin)),
+    db: AsyncSession = Depends(get_db),
+) -> Response:
+    """Exclui um usuário (ex.: limpar contas de teste). Anonimiza + remove de
+    todas as listagens, revoga sessões e cancela a assinatura. Não exclui a si
+    mesmo nem outro admin (``422``); ``404`` se inexistente."""
+    await AdminService(db).delete_user(admin, user_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 # --------------------------------------------------------------------------- #

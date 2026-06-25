@@ -10,7 +10,15 @@
 
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Search, ShieldBan, ShieldCheck, ShieldX, X } from "lucide-react";
+import {
+  Loader2,
+  Search,
+  ShieldBan,
+  ShieldCheck,
+  ShieldX,
+  Trash2,
+  X,
+} from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,7 +29,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/use-auth";
 import type { UserRole, UserStatus } from "@/types";
 
-import { fetchUsers, updateUserRole, updateUserStatus } from "../api";
+import {
+  deleteUser,
+  fetchUsers,
+  updateUserRole,
+  updateUserStatus,
+} from "../api";
 import type { AdminUser, UsersFilters } from "../types";
 import {
   adminErrorMessage,
@@ -107,6 +120,17 @@ export function UsersTable() {
       queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
       queryClient.invalidateQueries({ queryKey: ["admin", "metrics"] });
       closeRoleDialog();
+    },
+  });
+
+  // Exclusão de usuário (ex.: limpar contas de teste).
+  const [pendingDelete, setPendingDelete] = useState<AdminUser | null>(null);
+  const deleteMutation = useMutation({
+    mutationFn: (u: AdminUser) => deleteUser(u.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "metrics"] });
+      setPendingDelete(null);
     },
   });
 
@@ -329,6 +353,23 @@ export function UsersTable() {
                             </Button>
                           );
                         })}
+                        {currentUser?.id !== user.id ? (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => {
+                              deleteMutation.reset();
+                              setPendingDelete(user);
+                            }}
+                          >
+                            <Trash2
+                              className="mr-1.5 h-3.5 w-3.5"
+                              aria-hidden
+                            />
+                            Excluir
+                          </Button>
+                        ) : null}
                       </div>
                     </td>
                   </tr>
@@ -424,6 +465,32 @@ export function UsersTable() {
           />
         </div>
       </ConfirmDialog>
+
+      {/* Confirmação de exclusão de usuário (limpar contas de teste etc.) */}
+      <ConfirmDialog
+        open={Boolean(pendingDelete)}
+        title="Excluir usuário?"
+        description={
+          pendingDelete
+            ? `"${pendingDelete.name}" (${pendingDelete.email}) será removido da plataforma (anonimizado e desativado). Não é possível desfazer.`
+            : undefined
+        }
+        confirmLabel="Excluir"
+        confirmVariant="destructive"
+        loading={deleteMutation.isPending}
+        error={
+          deleteMutation.isError
+            ? adminErrorMessage(
+                deleteMutation.error,
+                "Não foi possível excluir o usuário."
+              )
+            : null
+        }
+        onConfirm={() => pendingDelete && deleteMutation.mutate(pendingDelete)}
+        onCancel={() => {
+          if (!deleteMutation.isPending) setPendingDelete(null);
+        }}
+      />
     </div>
   );
 }

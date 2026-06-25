@@ -68,6 +68,7 @@ class AuditAction:
     user_status_change = "user_status_change"
     lead_cancel = "lead_cancel"
     user_role_change = "user_role_change"
+    user_delete = "user_delete"
 
 
 class AdminService:
@@ -297,6 +298,35 @@ class AdminService:
             await self.db.commit()
             await self.db.refresh(target)
         return AdminUserRead.model_validate(target)
+
+    async def delete_user(self, admin: User, user_id: uuid.UUID) -> None:
+        """Exclui (anonimiza + desativa) um usuário pelo admin — ex.: limpar
+        contas de teste. Reaproveita o fluxo de exclusão de conta (LGPD): some
+        de todas as listagens (``deleted_at``), revoga sessões e cancela a
+        assinatura. Não permite excluir a si mesmo nem outro admin."""
+        if user_id == admin.id:
+            raise DomainValidationError(
+                "Você não pode excluir a própria conta por aqui."
+            )
+        target = await self.repo.get_user(user_id)
+        if target is None:
+            raise NotFoundError("Usuário não encontrado.")
+        if target.role == UserRole.admin:
+            raise DomainValidationError(
+                "Não é possível excluir uma conta de administrador."
+            )
+        # Auditoria com os dados ANTES da anonimização.
+        self._record_audit(
+            admin,
+            action=AuditAction.user_delete,
+            entity="users",
+            entity_id=target.id,
+            meta={"email": target.email, "name": target.name},
+        )
+        # Reaproveita a exclusão de conta (anonimiza + soft-delete + commit).
+        from app.services.users import UserProfileService
+
+        await UserProfileService(self.db).delete_account(target)
 
     # ------------------------------------------------------------------ #
     # Moderação de leads

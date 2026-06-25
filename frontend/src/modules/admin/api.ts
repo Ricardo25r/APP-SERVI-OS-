@@ -110,6 +110,11 @@ export function updateUserRole(
   return apiPatch<AdminUser>(`/admin/users/${id}/role`, payload);
 }
 
+/** Exclui (anonimiza + desativa) um usuário — ex.: limpar contas de teste. */
+export function deleteUser(id: string): Promise<void> {
+  return apiDelete<void>(`/admin/users/${id}`);
+}
+
 /* ------------------------------------------------------------------ */
 /* Leads (moderação)                                                  */
 /* ------------------------------------------------------------------ */
