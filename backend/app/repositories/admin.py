@@ -196,7 +196,8 @@ class AdminRepository:
         status: object | None,
         search: str | None,
     ) -> Select:
-        stmt: Select = select(User)
+        # Esconde contas excluídas (soft-delete/anonimizadas) da listagem viva.
+        stmt: Select = select(User).where(User.deleted_at.is_(None))
         if role is not None:
             stmt = stmt.where(User.role == role)
         if status is not None:
