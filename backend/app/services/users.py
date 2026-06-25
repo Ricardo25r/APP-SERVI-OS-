@@ -45,6 +45,7 @@ from app.models.refresh_token import RefreshToken
 from app.repositories.users import UserProfileRepository
 from app.schemas.users import (
     CategoryRefOut,
+    ClaimWelcomeOut,
     CustomerProfileIn,
     CustomerProfileOut,
     CustomerProfileUpdate,
@@ -55,6 +56,8 @@ from app.schemas.users import (
     ProfessionalProfileUpdate,
     ProfessionalSearchItem,
     ProfessionalSearchList,
+    ProfileCompletionItem,
+    ProfileCompletionOut,
 )
 
 __all__ = ["UserProfileService"]
@@ -322,6 +325,117 @@ class UserProfileService:
         await self.db.commit()
 
         return await self._build_professional_out(current_user.id)
+
+    # ================================================================== #
+    # Completude do perfil + bônus de boas-vindas (WELCOME_CREDITS)
+    # ================================================================== #
+    @staticmethod
+    def _completion_items(
+        user: User,
+        profile: ProfessionalProfile | None,
+        categories_count: int,
+    ) -> list[ProfileCompletionItem]:
+        """Checklist do que falta para o perfil ficar 100% (regra do produto:
+        foto + cidade/estado + descrição + ao menos 1 categoria)."""
+        has_avatar = bool(getattr(user, "avatar_key", None))
+        city = (profile.city or "").strip() if profile else ""
+        state = (profile.state or "").strip() if profile else ""
+        headline = (profile.headline or "").strip() if profile else ""
+        bio = (profile.bio or "").strip() if profile else ""
+        return [
+            ProfileCompletionItem(
+                key="avatar", label="Foto de perfil", done=has_avatar
+            ),
+            ProfileCompletionItem(
+                key="location",
+                label="Cidade e estado",
+                done=bool(city and state),
+            ),
+            ProfileCompletionItem(
+                key="description",
+                label="Título e descrição",
+                done=bool(headline and bio),
+            ),
+            ProfileCompletionItem(
+                key="categories",
+                label="Pelo menos 1 categoria",
+                done=categories_count >= 1,
+            ),
+        ]
+
+    async def professional_completion(
+        self, current_user: User
+    ) -> ProfileCompletionOut:
+        """Estado de completude do perfil profissional (sem efeitos colaterais).
+
+        Se o perfil ainda não existe, retorna 0% (tudo pendente) — útil para
+        guiar o profissional recém-cadastrado.
+        """
+        profile = await self.repo.get_professional_profile(
+            current_user.id, with_relations=True
+        )
+        cats = len(profile.categories) if profile and profile.categories else 0
+        items = self._completion_items(current_user, profile, cats)
+        done = sum(1 for i in items if i.done)
+        percent = round(done * 100 / len(items)) if items else 0
+        return ProfileCompletionOut(
+            percent=percent,
+            complete=done == len(items),
+            items=items,
+            credits_granted=bool(profile and profile.welcome_credits_granted),
+            reward=settings.WELCOME_CREDITS,
+        )
+
+    async def claim_welcome_credits(self, current_user: User) -> ClaimWelcomeOut:
+        """Libera o bônus de boas-vindas (``WELCOME_CREDITS``) **1x**, se o
+        perfil estiver 100% completo. Idempotente: se já concedido ou incompleto,
+        não credita e explica em ``reason``."""
+        from app.models import CreditTransactionType
+        from app.services.credits import CreditService
+
+        profile = await self.repo.get_professional_profile(
+            current_user.id, with_relations=True
+        )
+        cats = len(profile.categories) if profile and profile.categories else 0
+        items = self._completion_items(current_user, profile, cats)
+        done = sum(1 for i in items if i.done)
+        percent = round(done * 100 / len(items)) if items else 0
+        complete = done == len(items)
+        credits = CreditService(self.db)
+
+        if profile is None:
+            return ClaimWelcomeOut(
+                granted=False, amount=0, balance=0, percent=percent,
+                complete=False, reason="no_profile",
+            )
+        if profile.welcome_credits_granted:
+            wallet = await credits.get_or_create_wallet(profile.id)
+            await self.db.commit()
+            return ClaimWelcomeOut(
+                granted=False, amount=0, balance=wallet.balance,
+                percent=percent, complete=complete, reason="already_granted",
+            )
+        if not complete:
+            wallet = await credits.get_or_create_wallet(profile.id)
+            await self.db.commit()
+            return ClaimWelcomeOut(
+                granted=False, amount=0, balance=wallet.balance,
+                percent=percent, complete=False, reason="incomplete",
+            )
+
+        wallet = await credits.get_or_create_wallet(profile.id, for_update=True)
+        await credits.apply_movement(
+            wallet,
+            amount=settings.WELCOME_CREDITS,
+            transaction_type=CreditTransactionType.bonus,
+            description="Bônus de boas-vindas (perfil 100% completo)",
+        )
+        profile.welcome_credits_granted = True
+        await self.db.commit()
+        return ClaimWelcomeOut(
+            granted=True, amount=settings.WELCOME_CREDITS,
+            balance=wallet.balance, percent=100, complete=True,
+        )
 
     async def get_professional_profile(
         self, current_user: User

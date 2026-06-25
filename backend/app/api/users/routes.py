@@ -38,6 +38,7 @@ from app.schemas.auth import ReferralInfoOut, UserOut
 from app.schemas.users import (
     BlockIn,
     CategoriesOut,
+    ClaimWelcomeOut,
     CustomerProfileIn,
     CustomerProfileOut,
     CustomerProfileUpdate,
@@ -48,6 +49,7 @@ from app.schemas.users import (
     ProfessionalProfilePublicOut,
     ProfessionalProfileUpdate,
     ProfessionalSearchList,
+    ProfileCompletionOut,
     SetCategoriesIn,
 )
 from app.services.referrals import ReferralService
@@ -346,6 +348,34 @@ async def get_professional_categories(
     service = UserProfileService(db)
     categories = await service.get_professional_categories(current_user)
     return CategoriesOut(categories=categories)
+
+
+# --------------------------------------------------------------------------- #
+# Completude do perfil + bônus de boas-vindas (10 créditos liberados a 100%)
+# --------------------------------------------------------------------------- #
+@router.get(
+    "/me/professional-profile/completion",
+    response_model=ProfileCompletionOut,
+    summary="Completude do perfil profissional (checklist + status do bônus)",
+)
+async def professional_profile_completion(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> ProfileCompletionOut:
+    return await UserProfileService(db).professional_completion(current_user)
+
+
+@router.post(
+    "/me/professional-profile/claim-welcome",
+    response_model=ClaimWelcomeOut,
+    summary="Liberar o bônus de boas-vindas (10 créditos) se o perfil 100%",
+)
+async def claim_welcome_credits(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> ClaimWelcomeOut:
+    """Idempotente: credita 1x quando o perfil fica 100% completo."""
+    return await UserProfileService(db).claim_welcome_credits(current_user)
 
 
 # --------------------------------------------------------------------------- #

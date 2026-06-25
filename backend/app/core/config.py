@@ -90,8 +90,13 @@ class Settings(BaseSettings):
     # em produção com PAYMENT_PROVIDER=dev (o fail-fast só exige gateway real
     # quando PAYMENTS_ENABLED=true). Defina false para lançar sem pagamento.
     PAYMENTS_ENABLED: bool = True
-    # Créditos de boas-vindas concedidos ao profissional no cadastro (0 = off).
-    FREE_SIGNUP_CREDITS: int = 3
+    # Saldo inicial da carteira ao cadastrar (0 = vazia). Os créditos de
+    # boas-vindas NÃO são mais dados no cadastro: são liberados só quando o
+    # perfil do profissional fica 100% completo (ver WELCOME_CREDITS).
+    FREE_SIGNUP_CREDITS: int = 0
+    # Bônus de boas-vindas liberado 1x quando o perfil do profissional fica 100%
+    # completo (foto + cidade/estado + descrição + ao menos 1 categoria).
+    WELCOME_CREDITS: int = 10
     # Indique e ganhe: créditos ao indicador quando o indicado faz a 1ª compra.
     REFERRAL_BONUS_CREDITS: int = 5
 

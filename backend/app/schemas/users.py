@@ -32,6 +32,10 @@ __all__ = [
     "CategoryRefOut",
     "SetCategoriesIn",
     "CategoriesOut",
+    # Completude / bônus de boas-vindas
+    "ProfileCompletionItem",
+    "ProfileCompletionOut",
+    "ClaimWelcomeOut",
 ]
 
 
@@ -197,6 +201,35 @@ class ProfessionalProfileOut(BaseModel):
     # Campos compostos montados no service.
     categories: list[CategoryRefOut] = Field(default_factory=list)
     balance: int = 0
+
+
+class ProfileCompletionItem(BaseModel):
+    """Um item do checklist de completude do perfil profissional."""
+
+    key: str
+    label: str
+    done: bool
+
+
+class ProfileCompletionOut(BaseModel):
+    """Estado de completude do perfil profissional + status do bônus."""
+
+    percent: int
+    complete: bool
+    items: list[ProfileCompletionItem]
+    credits_granted: bool
+    reward: int
+
+
+class ClaimWelcomeOut(BaseModel):
+    """Resultado de tentar liberar o bônus de boas-vindas (idempotente)."""
+
+    granted: bool
+    amount: int
+    balance: int
+    percent: int
+    complete: bool
+    reason: str | None = None
 
 
 class PortfolioItemOut(BaseModel):

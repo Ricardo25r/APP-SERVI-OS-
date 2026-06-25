@@ -93,6 +93,11 @@ class ProfessionalProfile(UUIDPKMixin, TimestampMixin, SoftDeleteMixin, Base):
         server_default=AvailabilityStatus.available.value,
         index=True,
     )
+    # Bônus de boas-vindas (WELCOME_CREDITS) já liberado? Concedido 1x quando o
+    # perfil fica 100% completo (ver UserProfileService.claim_welcome_credits).
+    welcome_credits_granted: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default=text("false")
+    )
 
     # Relacionamentos (§2.4).
     user: Mapped[User] = relationship("User", back_populates="professional_profile")
