@@ -303,9 +303,16 @@ class ChatService:
             raise DomainValidationError(
                 "Conversa arquivada não aceita novas mensagens."
             )
-        ext = ""
-        if "." in filename:
-            ext = "." + filename.rsplit(".", 1)[1].lower()[:8]
+        # Extensão derivada do CONTENT-TYPE (já validado na rota), nunca do
+        # filename do cliente — evita gravar objeto com extensão arbitrária
+        # (ex.: .html) no bucket servido no próprio domínio (#9 da esteira).
+        _ext_by_type = {
+            "image/jpeg": ".jpg",
+            "image/png": ".png",
+            "image/webp": ".webp",
+            "image/gif": ".gif",
+        }
+        ext = _ext_by_type.get(content_type or "", ".jpg")
         key = f"chat/{conversation.id}/{uuid.uuid4().hex}{ext}"
         upload_bytes(data, key, content_type)
         now = datetime.now(UTC)

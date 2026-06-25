@@ -29,6 +29,7 @@ from fastapi import (
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import get_current_user
+from app.core.ratelimit import rate_limit
 from app.core.storage import upload_bytes
 from app.database.session import get_db
 from app.models import User
@@ -65,6 +66,7 @@ _MAX_PORTFOLIO_ITEMS = 12
     "/me/avatar",
     response_model=UserOut,
     summary="Atualizar foto de perfil",
+    dependencies=[Depends(rate_limit("avatar", limit=12, window_seconds=60))],
 )
 async def upload_avatar(
     file: UploadFile = File(...),
@@ -116,6 +118,7 @@ async def list_my_portfolio(
     response_model=PortfolioItemOut,
     status_code=status.HTTP_201_CREATED,
     summary="Adicionar foto à galeria de trabalhos",
+    dependencies=[Depends(rate_limit("portfolio", limit=20, window_seconds=60))],
 )
 async def add_portfolio_item(
     file: UploadFile = File(...),

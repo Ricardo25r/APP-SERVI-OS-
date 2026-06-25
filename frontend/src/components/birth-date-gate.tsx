@@ -16,7 +16,7 @@ import { useEffect, useState } from "react";
 import { CalendarDays, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { DateField } from "@/components/ui/date-field";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/use-auth";
 import { apiGet, apiPost } from "@/services/api";
@@ -92,8 +92,6 @@ export function BirthDateGate() {
     }
   }
 
-  const todayISO = new Date().toISOString().slice(0, 10);
-
   return (
     <div
       className="fixed inset-0 z-[60] flex items-end justify-center bg-black/50 sm:items-center sm:p-4"
@@ -117,13 +115,11 @@ export function BirthDateGate() {
         </p>
 
         <div className="mt-4 space-y-2">
-          <Label htmlFor="gate-birth-date">Data de nascimento</Label>
-          <Input
+          <Label htmlFor="gate-birth-date-dia">Data de nascimento</Label>
+          <DateField
             id="gate-birth-date"
-            type="date"
-            max={todayISO}
             value={value}
-            onChange={(e) => setValue(e.target.value)}
+            onChange={setValue}
           />
         </div>
 

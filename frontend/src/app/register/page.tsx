@@ -24,6 +24,7 @@ import { useForm, type FieldErrors, type Resolver } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
+import { DateField } from "@/components/ui/date-field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/ui/password-input";
@@ -413,17 +414,13 @@ function RegisterForm() {
 
         {selectedRole === "professional" ? (
           <div className="space-y-2">
-            <Label htmlFor="birthDate">Data de nascimento</Label>
-            <Input
+            <Label htmlFor="birthDate-dia">Data de nascimento</Label>
+            <DateField
               id="birthDate"
-              type="date"
-              autoComplete="bday"
-              max={new Date().toISOString().slice(0, 10)}
-              aria-invalid={Boolean(errors.birthDate)}
-              aria-describedby={
-                errors.birthDate ? "birthDate-error" : undefined
+              value={watch("birthDate") || ""}
+              onChange={(iso) =>
+                setValue("birthDate", iso, { shouldValidate: true })
               }
-              {...register("birthDate")}
             />
             <FieldError
               id="birthDate-error"

@@ -32,6 +32,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.deps import get_current_user, require_roles
+from app.core.ratelimit import rate_limit
 from app.database.session import get_db
 from app.models import PaymentOrderStatus, User, UserRole
 from app.schemas.payments import (
@@ -266,6 +267,9 @@ async def list_orders(
     "/webhook",
     response_model=WebhookReceived,
     summary="Webhook do provedor (HMAC; idempotente)",
+    dependencies=[
+        Depends(rate_limit("payment_webhook", limit=120, window_seconds=60))
+    ],
 )
 async def webhook(
     request: Request,

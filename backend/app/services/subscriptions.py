@@ -14,6 +14,7 @@ endpoint de assinar recusa (422) e o front esconde a tela. O admin sempre edita.
 from __future__ import annotations
 
 import logging
+import re
 import uuid
 from datetime import UTC, datetime, timedelta
 
@@ -43,6 +44,10 @@ from app.services.payments.mercadopago import MercadoPagoProvider
 __all__ = ["SubscriptionService"]
 
 logger = logging.getLogger("faztudo.subscriptions")
+
+# ids do MP entram em path de API (GET /preapproval/{id}); só alfanum/_/-,
+# nunca '/' ou '..' (anti path-traversal a partir do webhook público — #9).
+_ID_RE = re.compile(r"[A-Za-z0-9_-]{1,64}")
 
 
 class SubscriptionService:
@@ -178,6 +183,9 @@ class SubscriptionService:
             data_id = payload.get("id")
         if not data_id:
             return
+        data_id = str(data_id)
+        if not _ID_RE.fullmatch(data_id):
+            return  # id malformado — não usar no path da API do MP
         mp = MercadoPagoProvider()
         if topic in ("subscription_preapproval", "preapproval"):
             await self._apply_preapproval(mp.fetch_preapproval(str(data_id)))

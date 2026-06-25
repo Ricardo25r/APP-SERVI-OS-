@@ -150,11 +150,19 @@ class UserProfileRepository:
                 func.lower(ProfessionalProfile.state) == state.strip().lower()
             )
         if query and query.strip():
-            like = f"%{query.strip()}%"
+            # Escapa os curingas de LIKE (% e _) para o termo do usuário não
+            # virar padrão custoso/curinga (perf — #9 da esteira).
+            term = (
+                query.strip()
+                .replace("\\", "\\\\")
+                .replace("%", "\\%")
+                .replace("_", "\\_")
+            )
+            like = f"%{term}%"
             stmt = stmt.where(
                 or_(
-                    User.name.ilike(like),
-                    ProfessionalProfile.headline.ilike(like),
+                    User.name.ilike(like, escape="\\"),
+                    ProfessionalProfile.headline.ilike(like, escape="\\"),
                 )
             )
         stmt = stmt.order_by(

@@ -37,6 +37,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import get_current_user
+from app.core.ratelimit import rate_limit
 from app.core.security import claim_version, decode_token
 from app.core.ws_manager import ws_manager
 from app.database.session import async_session_maker, get_db
@@ -141,6 +142,9 @@ _ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
     response_model=MessageOut,
     status_code=status.HTTP_201_CREATED,
     summary="Enviar imagem na conversa",
+    dependencies=[
+        Depends(rate_limit("chat_image", limit=30, window_seconds=60))
+    ],
 )
 async def send_message_image(
     conversation_id: uuid.UUID,

@@ -277,6 +277,11 @@ class AdminService:
         new_role = data.role
         if old_role != new_role:
             target.role = new_role
+            # Mudança de papel encerra as sessões antigas (consistência com
+            # block/suspend): revoga refresh tokens + bump token_version, para os
+            # access tokens já emitidos não carregarem o papel/claim antigo (#9).
+            await self.tokens.revoke_all_for_user(target.id, datetime.now(UTC))
+            target.token_version = (target.token_version or 0) + 1
             self._record_audit(
                 admin,
                 action=AuditAction.user_role_change,

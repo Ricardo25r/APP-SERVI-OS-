@@ -16,6 +16,9 @@ POSTGRES_DB="$(grep -E '^POSTGRES_DB=' .env | cut -d= -f2- || echo faztudo)"
 echo "==> Dump de ${POSTGRES_DB} -> ${OUT}"
 $COMPOSE exec -T db pg_dump -U "${POSTGRES_USER:-faztudo}" "${POSTGRES_DB:-faztudo}" | gzip > "$OUT"
 
-# Retém os 14 backups mais recentes.
-ls -1t backups/*.sql.gz 2>/dev/null | tail -n +15 | xargs -r rm -f
-echo "OK: $OUT"
+# Mantém apenas os 3 backups mais recentes (1/dia): ao ter o 4º, apaga o mais
+# antigo para sempre conservar 3 atualizados (esteira #13).
+KEEP=3
+ls -1t backups/*.sql.gz 2>/dev/null | tail -n +$((KEEP + 1)) | xargs -r rm -f
+echo "OK: $OUT (mantendo os ${KEEP} mais recentes)"
+ls -1t backups/*.sql.gz 2>/dev/null | sed 's/^/   - /'

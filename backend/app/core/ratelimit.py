@@ -29,10 +29,17 @@ def _redis() -> aioredis.Redis:
 
 
 def _client_ip(request: Request) -> str:
-    """IP do cliente, respeitando ``X-Forwarded-For`` atrás de proxy."""
-    fwd = request.headers.get("x-forwarded-for")
-    if fwd:
-        return fwd.split(",")[0].strip()
+    """IP REAL do cliente para a chave de rate limit.
+
+    Atrás do Cloudflare, o IP confiável é ``CF-Connecting-IP`` (setado pela CF; o
+    cliente não consegue forjar quando o ingress só aceita conexões da CF). NÃO
+    confiamos no ``X-Forwarded-For`` cru: o primeiro token é controlado pelo
+    cliente e permitiria burlar o rate limit (brute-force) só rotacionando o
+    valor a cada requisição.
+    """
+    cf = request.headers.get("cf-connecting-ip")
+    if cf:
+        return cf.strip()
     return request.client.host if request.client else "unknown"
 
 
