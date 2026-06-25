@@ -8,7 +8,7 @@
  * Cada card abre o perfil público. `GET /users/professionals` + `/users/favorites`.
  */
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { BadgeCheck, BellRing, Crown, MapPin, Search, X } from "lucide-react";
@@ -100,6 +100,27 @@ export default function ProfissionaisPage() {
     queryFn: () => apiGet<Category[]>("/categories/"),
     enabled: auth.isAuthenticated,
   });
+
+  // Semeia a busca a partir da URL — ex.: vindo da home (/profissionais?q=pintor)
+  // ou de um chip (?categoria=pintor). Lê window.location (client-only, sem
+  // exigir Suspense no export estático). Aplica uma vez, resolvendo o slug da
+  // categoria quando a lista de categorias carrega.
+  const seededRef = useRef(false);
+  useEffect(() => {
+    if (seededRef.current || !cats) return;
+    const sp = new URLSearchParams(window.location.search);
+    const uq = sp.get("q") ?? "";
+    const ucity = sp.get("cidade") ?? sp.get("city") ?? "";
+    const slug = sp.get("categoria");
+    const catId = slug ? cats.find((c) => c.slug === slug)?.id ?? "" : "";
+    if (uq || ucity || catId) {
+      setQ(uq);
+      setCity(ucity);
+      setCategoryId(catId);
+      setApplied({ q: uq, city: ucity, categoryId: catId });
+    }
+    seededRef.current = true;
+  }, [cats]);
 
   const { data, isLoading } = useQuery({
     queryKey: ["professionals", applied],

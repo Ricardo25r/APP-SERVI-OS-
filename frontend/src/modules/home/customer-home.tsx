@@ -182,14 +182,23 @@ export function CustomerHome({ user }: { user: User }) {
 
           {/* Busca + CTA (embaixo) */}
           <div className="mt-4 flex flex-col gap-3 sm:flex-row">
-            <form onSubmit={handleSearch} className="flex-1">
+            <form onSubmit={handleSearch} className="flex flex-1 gap-2">
               <SearchInput
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Buscar serviço (ex.: faxina, eletricista)"
+                placeholder="Buscar serviço (ex.: pintor, faxina)"
                 aria-label="Buscar serviço"
-                className="h-11 bg-card text-foreground"
+                className="h-11 flex-1 bg-card text-foreground"
               />
+              <Button
+                type="submit"
+                size="lg"
+                variant="secondary"
+                aria-label="Buscar"
+                className="h-11 shrink-0 px-4"
+              >
+                <Search className="h-5 w-5" aria-hidden />
+              </Button>
             </form>
             <Link href="/leads/new" className="shrink-0">
               <Button

@@ -17,7 +17,7 @@ import uuid
 
 from sqlalchemy import delete, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import aliased, selectinload
 
 from app.models import (
     AvailabilityStatus,
@@ -159,10 +159,23 @@ class UserProfileRepository:
                 .replace("_", "\\_")
             )
             like = f"%{term}%"
+            # Casa também pelo NOME DA CATEGORIA do profissional — "pintor" acha
+            # quem atua na categoria Pintor, não só quem tem isso no nome/headline.
+            pc = aliased(ProfessionalCategory)
+            cat_match = (
+                select(pc.id)
+                .join(Category, Category.id == pc.category_id)
+                .where(
+                    pc.professional_id == ProfessionalProfile.id,
+                    Category.name.ilike(like, escape="\\"),
+                )
+                .exists()
+            )
             stmt = stmt.where(
                 or_(
                     User.name.ilike(like, escape="\\"),
                     ProfessionalProfile.headline.ilike(like, escape="\\"),
+                    cat_match,
                 )
             )
         stmt = stmt.order_by(
