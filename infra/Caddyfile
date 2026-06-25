@@ -38,7 +38,9 @@
 	# Link curto de indicação: /i/CODIGO -> /register?ref=CODIGO (302).
 	@indica path_regexp indica ^/i/([A-Za-z0-9_-]+)/?$
 	handle @indica {
-		redir /register?ref={re.indica.1} 302
+		# matcher @indica explicito: senao o Caddy le "/register?..." como
+		# matcher de path (e o destino vira "302") e o redirect nunca dispara.
+		redir @indica /register?ref={re.indica.1} 302
 	}
 
 	handle {
