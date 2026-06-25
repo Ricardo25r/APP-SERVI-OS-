@@ -42,6 +42,7 @@ from app.core.exceptions import (
     PermissionDeniedError,
 )
 from app.core.storage import presigned_get_url, upload_bytes
+from app.core.ws_manager import ws_manager
 from app.models import (
     Conversation,
     ConversationStatus,
@@ -221,6 +222,18 @@ class ChatService:
                 "Não é possível enviar mensagens: usuário bloqueado."
             )
 
+    async def _publish_ws(self, conversation: Conversation) -> None:
+        """Avisa os dois participantes em tempo real (best-effort — #59)."""
+        payload = {
+            "type": "message",
+            "conversation_id": str(conversation.id),
+        }
+        for uid in (conversation.customer_id, conversation.professional_id):
+            try:
+                await ws_manager.publish(uid, payload)
+            except Exception:  # noqa: BLE001 - tempo real nunca quebra o envio
+                pass
+
     # ------------------------------------------------------------------ #
     async def send_message(
         self, current_user: User, conversation_id: uuid.UUID, *, message: str
@@ -264,7 +277,9 @@ class ChatService:
         await self.repo.flush()
         await self.db.commit()
         await self.db.refresh(msg)
-        return self._message_out(msg)
+        out = self._message_out(msg)
+        await self._publish_ws(conversation)
+        return out
 
     async def send_media_message(
         self,
@@ -309,7 +324,9 @@ class ChatService:
         await self.repo.flush()
         await self.db.commit()
         await self.db.refresh(msg)
-        return self._message_out(msg)
+        out = self._message_out(msg)
+        await self._publish_ws(conversation)
+        return out
 
     # ------------------------------------------------------------------ #
     # Helpers internos

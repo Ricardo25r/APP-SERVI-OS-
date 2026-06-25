@@ -17,8 +17,10 @@ criação manual.
 
 from __future__ import annotations
 
+import asyncio
 import uuid
 
+import jwt
 from fastapi import (
     APIRouter,
     Depends,
@@ -27,13 +29,18 @@ from fastapi import (
     HTTPException,
     Query,
     UploadFile,
+    WebSocket,
+    WebSocketDisconnect,
     status,
 )
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import get_current_user
-from app.database.session import get_db
-from app.models import User
+from app.core.security import claim_version, decode_token
+from app.core.ws_manager import ws_manager
+from app.database.session import async_session_maker, get_db
+from app.models import User, UserStatus
 from app.schemas.chat import (
     ConversationListResponse,
     ConversationOut,
@@ -168,3 +175,83 @@ async def send_message_image(
         data=data,
         caption=caption,
     )
+
+
+# --------------------------------------------------------------------------- #
+# Tempo real (WebSocket) — #59
+# --------------------------------------------------------------------------- #
+async def _authenticate_ws(token: str | None) -> uuid.UUID | None:
+    """Valida o access token recebido pelo socket (sem expor token na URL).
+
+    Espelha o ``get_current_user``: decodifica, exige ``type=access``, confere
+    usuário ativo e ``token_version`` (revogação). Retorna o ``user_id`` ou None.
+    """
+    if not token:
+        return None
+    try:
+        payload = decode_token(token)
+    except jwt.PyJWTError:
+        return None
+    if payload.get("type") != "access":
+        return None
+    try:
+        user_id = uuid.UUID(str(payload.get("sub")))
+    except (ValueError, TypeError):
+        return None
+    async with async_session_maker() as db:
+        user = (
+            await db.execute(
+                select(User).where(
+                    User.id == user_id, User.deleted_at.is_(None)
+                )
+            )
+        ).scalar_one_or_none()
+        if user is None or user.status != UserStatus.active:
+            return None
+        if claim_version(payload) != (user.token_version or 0):
+            return None
+    return user_id
+
+
+@router.websocket("/ws")
+async def chat_ws(websocket: WebSocket) -> None:
+    """Canal de tempo real do chat (#59).
+
+    Handshake: o cliente conecta e manda como **primeira mensagem**
+    ``{"token": "<access>"}`` (token nunca vai na URL — não vaza em log). Depois
+    o servidor empurra eventos ``{"type":"message","conversation_id":...}`` ao
+    chegar mensagem nova; o cliente então rebusca a conversa. Mantém vivo com
+    ``ping`` do cliente. Funciona entre os 2 workers via Redis (ws_manager).
+    """
+    await websocket.accept()
+    try:
+        auth = await asyncio.wait_for(websocket.receive_json(), timeout=15)
+    except Exception:  # noqa: BLE001 - sem auth no prazo: encerra
+        await websocket.close(code=4001)
+        return
+
+    token = auth.get("token") if isinstance(auth, dict) else None
+    user_id = await _authenticate_ws(token)
+    if user_id is None:
+        await websocket.close(code=4001)
+        return
+
+    # Envia o handshake ANTES de registrar — assim nenhuma entrega do listener
+    # (outra corrotina) colide com este send no mesmo socket (escritas
+    # concorrentes não são seguras no Starlette).
+    try:
+        await websocket.send_json({"type": "ready"})
+    except Exception:  # noqa: BLE001 - cliente sumiu antes do handshake
+        return
+
+    ws_manager.register(user_id, websocket)
+    try:
+        while True:
+            # Mantém o socket vivo (cliente envia "ping" periodicamente).
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        pass
+    except Exception:  # noqa: BLE001 - qualquer erro encerra a conexão
+        pass
+    finally:
+        ws_manager.unregister(user_id, websocket)

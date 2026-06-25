@@ -21,6 +21,7 @@ from app.core import alerts, metrics
 from app.core.config import settings
 from app.core.exceptions import register_exception_handlers
 from app.core.logging import setup_logging
+from app.core.ws_manager import ws_manager
 from app.database.session import async_session_maker
 from app.services.lead_recycle import (
     recycle_expired_purchases,
@@ -150,3 +151,10 @@ async def _start_winback_worker() -> None:
 
     asyncio.create_task(_loop())
     logger.info("Worker de win-back iniciado.")
+
+
+@app.on_event("startup")
+async def _start_ws_listener() -> None:
+    """Consumidor Redis do chat em tempo real (#59) — um por worker uvicorn."""
+    await ws_manager.start_listener()
+    logger.info("WS listener do chat iniciado.")

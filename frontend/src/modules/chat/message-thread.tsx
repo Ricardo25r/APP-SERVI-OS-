@@ -28,6 +28,7 @@ import { cn } from "@/lib/utils";
 import { fetchMessages } from "./api";
 import { conversationsKey } from "./conversation-list";
 import type { ChatMessage } from "./types";
+import { useChatSocket } from "./use-chat-socket";
 import {
   chatErrorMessage,
   formatDayLabel,
@@ -53,12 +54,24 @@ export function MessageThread({
   const queryClient = useQueryClient();
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
+  // Tempo real (#59): ao chegar evento de mensagem desta conversa, rebusca já.
+  const connected = useChatSocket((event) => {
+    if (event.type !== "message") return;
+    if (event.conversation_id === conversationId) {
+      void queryClient.invalidateQueries({
+        queryKey: messagesKey(conversationId),
+      });
+    }
+    void queryClient.invalidateQueries({ queryKey: conversationsKey });
+  });
+
   const { data, isLoading, isError, error } = useQuery<ChatMessage[]>({
     queryKey: messagesKey(conversationId),
     queryFn: () => fetchMessages(conversationId),
     enabled: Boolean(conversationId),
-    // Polling do chat (requisito da Fase 8).
-    refetchInterval: 4000,
+    // WebSocket entrega em tempo real; o polling vira rede de segurança
+    // (20s com WS conectado; 4s se cair, como antes).
+    refetchInterval: connected ? 20000 : 4000,
   });
 
   const messages = data ?? [];
