@@ -16,6 +16,7 @@ from datetime import UTC, datetime
 from sqlalchemy import Select, and_, func, or_, select
 from sqlalchemy.orm import selectinload
 
+from app.core.config import settings
 from app.models import (
     AvailabilityStatus,
     Category,
@@ -309,6 +310,11 @@ class LeadRepository:
             )
             .distinct()
         )
+        # Gate KYC: só notifica profissionais com documento aprovado (#48).
+        if settings.KYC_REQUIRED_FOR_OPPORTUNITIES:
+            stmt = stmt.join(
+                User, User.id == ProfessionalProfile.user_id
+            ).where(User.kyc_status == "approved")
         result = await self.db.execute(stmt)
         return [row[0] for row in result.all()]
 

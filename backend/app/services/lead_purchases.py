@@ -109,6 +109,14 @@ class LeadPurchaseService:
         profile = await self.lead_repo.get_professional_profile(current_user.id)
         if profile is None:
             raise NotFoundError("Perfil profissional não encontrado.")
+        if (
+            settings.KYC_REQUIRED_FOR_OPPORTUNITIES
+            and current_user.kyc_status != "approved"
+        ):
+            raise PermissionDeniedError(
+                "Sua verificação de documentos ainda não foi aprovada. Envie "
+                "seus documentos e aguarde a análise para desbloquear pedidos."
+            )
         if profile.no_show_count >= settings.MARKETPLACE_MAX_NO_SHOWS:
             raise PermissionDeniedError(
                 "Sua conta está suspensa por excesso de não comparecimentos. "

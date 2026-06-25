@@ -97,6 +97,9 @@ class Settings(BaseSettings):
     # Bônus de boas-vindas liberado 1x quando o perfil do profissional fica 100%
     # completo (foto + cidade/estado + descrição + ao menos 1 categoria).
     WELCOME_CREDITS: int = 10
+    # Profissional só RECEBE/DESBLOQUEIA oportunidades após o KYC ser aprovado.
+    # Desligue (false) se precisar priorizar liquidez no início.
+    KYC_REQUIRED_FOR_OPPORTUNITIES: bool = True
     # Indique e ganhe: créditos ao indicador quando o indicado faz a 1ª compra.
     REFERRAL_BONUS_CREDITS: int = 5
 

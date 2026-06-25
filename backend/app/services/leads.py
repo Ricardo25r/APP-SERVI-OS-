@@ -256,6 +256,12 @@ class LeadService:
             return items, total
 
         if effective_role(current_user) == UserRole.professional:
+            # Gate KYC: só recebe oportunidades depois de aprovado (#48).
+            if (
+                settings.KYC_REQUIRED_FOR_OPPORTUNITIES
+                and current_user.kyc_status != "approved"
+            ):
+                return [], 0
             profile = await self.repo.get_professional_profile(current_user.id)
             if profile is None:
                 # Sem perfil profissional não há critério de elegibilidade.

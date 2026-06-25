@@ -15,7 +15,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { RefreshCw, SearchX, Wallet } from "lucide-react";
+import { RefreshCw, SearchX, ShieldCheck, Wallet } from "lucide-react";
 
 import { BalanceCard } from "@/components/ui/balance-card";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -176,7 +176,38 @@ export default function MarketplacePage() {
         className="mb-4"
       />
 
-      {loading ? (
+      {auth.user?.kyc_status !== "approved" ? (
+        <div className="rounded-2xl border bg-card p-6 text-center shadow-sm">
+          <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <ShieldCheck className="h-6 w-6" aria-hidden />
+          </span>
+          <p className="text-base font-bold tracking-tight text-foreground">
+            {auth.user?.kyc_status === "pending"
+              ? "Documentos em análise"
+              : auth.user?.kyc_status === "rejected"
+                ? "Verificação recusada"
+                : "Conclua sua verificação"}
+          </p>
+          <p className="mx-auto mt-1.5 max-w-md text-sm text-muted-foreground">
+            {auth.user?.kyc_status === "pending"
+              ? "Estamos conferindo seus documentos. Assim que for aprovado, as oportunidades aparecem aqui."
+              : auth.user?.kyc_status === "rejected"
+                ? "Seus documentos não foram aprovados. Reenvie no seu perfil para liberar as oportunidades."
+                : "Para receber oportunidades, envie seu documento e uma selfie no seu perfil. Leva 1 minuto."}
+          </p>
+          <Link
+            href="/profile"
+            className={cn(
+              buttonVariants({ variant: "default", size: "sm" }),
+              "mt-4 gap-1.5"
+            )}
+          >
+            {auth.user?.kyc_status === "pending"
+              ? "Ver status"
+              : "Enviar documentos"}
+          </Link>
+        </div>
+      ) : loading ? (
         <div className="grid gap-4 sm:grid-cols-2">
           {[0, 1, 2, 3].map((i) => (
             <div
