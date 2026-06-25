@@ -26,13 +26,14 @@ import {
   Layers,
   RefreshCw,
   Timer,
+  X,
   Zap,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useRequireAuth } from "@/hooks/use-auth";
-import { apiDelete, apiGet, apiPost } from "@/services/api";
+import { apiDelete, apiGet, apiPost, apiPut } from "@/services/api";
 
 interface SlowEndpoint {
   method: string;
@@ -253,6 +254,62 @@ export default function MonitoringPage() {
     } finally {
       setClearing(false);
     }
+  }
+
+  // E-mails que recebem alerta de erro (equipe — o do dono vem do .env).
+  const [teamEmails, setTeamEmails] = useState<string[]>([]);
+  const [ownerEmails, setOwnerEmails] = useState<string[]>([]);
+  const [newEmail, setNewEmail] = useState("");
+  const [savingEmails, setSavingEmails] = useState(false);
+  const [emailsMsg, setEmailsMsg] = useState<string | null>(null);
+
+  const loadEmails = useCallback(async () => {
+    try {
+      const r = await apiGet<{ emails: string[]; owner_emails: string[] }>(
+        "/monitoring/alert-emails"
+      );
+      setTeamEmails(r.emails ?? []);
+      setOwnerEmails(r.owner_emails ?? []);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!auth.isAuthenticated || !auth.isAdmin) return;
+    void loadEmails();
+  }, [auth.isAuthenticated, auth.isAdmin, loadEmails]);
+
+  async function saveEmails(next: string[]) {
+    setSavingEmails(true);
+    setEmailsMsg(null);
+    try {
+      const r = await apiPut<{ emails: string[] }>("/monitoring/alert-emails", {
+        emails: next,
+      });
+      setTeamEmails(r.emails ?? []);
+      setEmailsMsg("E-mails salvos.");
+    } catch {
+      setEmailsMsg("Não foi possível salvar.");
+    } finally {
+      setSavingEmails(false);
+    }
+  }
+
+  function addEmail() {
+    const e = newEmail.trim();
+    if (
+      !e ||
+      !e.includes("@") ||
+      teamEmails.some((x) => x.toLowerCase() === e.toLowerCase())
+    )
+      return;
+    setNewEmail("");
+    void saveEmails([...teamEmails, e]);
+  }
+
+  function removeEmail(target: string) {
+    void saveEmails(teamEmails.filter((x) => x !== target));
   }
 
   const load = useCallback(async () => {
@@ -699,6 +756,89 @@ export default function MonitoringPage() {
                   })}
                 </ul>
               )}
+            </div>
+
+            <div className="rounded-2xl border bg-card p-4 shadow-sm">
+              <h2 className="mb-1 flex items-center gap-2 text-sm font-bold tracking-tight">
+                <BellRing className="h-4 w-4 text-primary" aria-hidden />
+                E-mails que recebem alerta de erro
+              </h2>
+              <p className="mb-3 text-xs text-muted-foreground">
+                Adicione e-mails da equipe. Todos recebem aviso por e-mail
+                quando o sistema registrar um erro.
+              </p>
+
+              {ownerEmails.length > 0 ? (
+                <div className="mb-3">
+                  <p className="mb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                    Dono (sempre recebe)
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {ownerEmails.map((e) => (
+                      <span
+                        key={e}
+                        className="rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground"
+                      >
+                        {e}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+              <div className="space-y-1.5">
+                {teamEmails.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">
+                    Nenhum e-mail da equipe ainda.
+                  </p>
+                ) : (
+                  teamEmails.map((e) => (
+                    <div
+                      key={e}
+                      className="flex items-center justify-between gap-2 rounded-lg border bg-background px-3 py-1.5"
+                    >
+                      <span className="truncate text-sm">{e}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeEmail(e)}
+                        disabled={savingEmails}
+                        className="shrink-0 text-muted-foreground hover:text-destructive disabled:opacity-50"
+                        aria-label={`Remover ${e}`}
+                      >
+                        <X className="h-4 w-4" aria-hidden />
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <form
+                onSubmit={(ev) => {
+                  ev.preventDefault();
+                  addEmail();
+                }}
+                className="mt-3 flex gap-2"
+              >
+                <input
+                  type="email"
+                  value={newEmail}
+                  onChange={(ev) => setNewEmail(ev.target.value)}
+                  placeholder="email@equipe.com"
+                  className="min-w-0 flex-1 rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+                />
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={savingEmails || !newEmail.trim()}
+                >
+                  Adicionar
+                </Button>
+              </form>
+              {emailsMsg ? (
+                <p className="mt-1.5 text-xs text-muted-foreground">
+                  {emailsMsg}
+                </p>
+              ) : null}
             </div>
           </div>
         </div>

@@ -29,7 +29,7 @@ from app.core.deps import require_roles
 from app.core.exceptions import NotFoundError
 from app.core.ratelimit import rate_limit
 from app.database.session import get_db
-from app.models import ErrorLog, User, UserRole
+from app.models import AlertSettings, ErrorLog, User, UserRole
 from app.services.lead_recycle import recycle_expired_purchases
 
 router = APIRouter()
@@ -42,6 +42,12 @@ class ClientErrorIn(BaseModel):
     name: str | None = Field(default=None, max_length=160)
     stack: str | None = Field(default=None, max_length=12000)
     url: str | None = Field(default=None, max_length=512)
+
+
+class AlertEmailsIn(BaseModel):
+    """Lista de e-mails extra (equipe) que recebem alerta de erro."""
+
+    emails: list[str] = Field(default_factory=list, max_length=50)
 
 
 @router.post(
@@ -186,3 +192,53 @@ async def test_alert(
     ``dev-log`` (SMTP não configurado — alerta só registrado no log)."""
     result = await send_test_alert()
     return {"result": result}
+
+
+def _split_emails(raw: str | None) -> list[str]:
+    return [e.strip() for e in (raw or "").split(",") if e.strip()]
+
+
+@router.get("/alert-emails", summary="E-mails que recebem alerta de erro (admin)")
+async def get_alert_emails(
+    _admin: User = Depends(require_roles(UserRole.admin)),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """E-mails da equipe (editáveis) + o(s) do dono (env, fixos)."""
+    row = (
+        await db.execute(select(AlertSettings).limit(1))
+    ).scalar_one_or_none()
+    return {
+        "emails": _split_emails(row.error_emails if row else ""),
+        "owner_emails": _split_emails(settings.ALERT_EMAIL_TO),
+    }
+
+
+@router.put("/alert-emails", summary="Definir e-mails de alerta de erro (admin)")
+async def set_alert_emails(
+    payload: AlertEmailsIn,
+    _admin: User = Depends(require_roles(UserRole.admin)),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Salva os e-mails da equipe (valida formato simples e remove duplicados)."""
+    clean: list[str] = []
+    seen: set[str] = set()
+    for raw in payload.emails:
+        e = raw.strip()
+        if not e or "@" not in e or "." not in e.rsplit("@", 1)[-1]:
+            continue
+        low = e.lower()
+        if low in seen:
+            continue
+        seen.add(low)
+        clean.append(e)
+
+    row = (
+        await db.execute(select(AlertSettings).limit(1))
+    ).scalar_one_or_none()
+    if row is None:
+        row = AlertSettings(error_emails=",".join(clean))
+        db.add(row)
+    else:
+        row.error_emails = ",".join(clean)
+    await db.commit()
+    return {"emails": clean, "owner_emails": _split_emails(settings.ALERT_EMAIL_TO)}

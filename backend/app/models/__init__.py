@@ -45,6 +45,7 @@ from app.models.mixins import (
     TimestampMixin,
     UUIDPKMixin,
 )
+from app.models.alert_settings import AlertSettings
 from app.models.notification import Notification
 from app.models.notification_preference import NotificationPreference
 from app.models.payment_order import PaymentOrder
@@ -107,6 +108,7 @@ __all__ = [
     "Message",
     "Notification",
     "NotificationPreference",
+    "AlertSettings",
     "PushSubscription",
     "XpTransaction",
     "Achievement",

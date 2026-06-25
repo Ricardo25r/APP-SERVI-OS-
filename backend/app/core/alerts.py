@@ -41,12 +41,45 @@ def _should_send(key: str) -> bool:
     return True
 
 
-def _recipients() -> list[str]:
+def _env_recipients() -> list[str]:
+    """E-mails do ``.env`` (ALERT_EMAIL_TO) — sempre incluídos."""
     return [e.strip() for e in settings.ALERT_EMAIL_TO.split(",") if e.strip()]
 
 
+async def _all_recipients() -> list[str]:
+    """Env (ALERT_EMAIL_TO) + os e-mails extra geridos no painel admin
+    (``AlertSettings``), sem duplicar. Best-effort: se o DB falhar, usa o env."""
+    emails = list(_env_recipients())
+    try:
+        from sqlalchemy import select
+
+        from app.database.session import async_session_maker
+        from app.models import AlertSettings
+
+        async with async_session_maker() as db:
+            row = (
+                await db.execute(select(AlertSettings).limit(1))
+            ).scalar_one_or_none()
+            if row and row.error_emails:
+                emails += [
+                    e.strip()
+                    for e in row.error_emails.split(",")
+                    if e.strip()
+                ]
+    except Exception:  # noqa: BLE001 - cai no env se o DB falhar
+        pass
+    seen: set[str] = set()
+    out: list[str] = []
+    for e in emails:
+        low = e.lower()
+        if low and low not in seen:
+            seen.add(low)
+            out.append(e)
+    return out
+
+
 def _smtp_ready() -> bool:
-    return bool(settings.ALERTS_ENABLED and settings.SMTP_HOST and _recipients())
+    return bool(settings.ALERTS_ENABLED and settings.SMTP_HOST)
 
 
 def _mask_emails(emails: list[str]) -> str:
@@ -58,7 +91,7 @@ def _mask_emails(emails: list[str]) -> str:
     return ", ".join(masked)
 
 
-def _send_smtp(subject: str, body: str) -> None:
+def _send_smtp(subject: str, body: str, recipients: list[str]) -> None:
     """Envia o e-mail via SMTP (bloqueante — sempre chamar em thread).
 
     Porta **465** → SSL implícito (``SMTP_SSL``, ex.: Resend). Demais portas →
@@ -67,7 +100,7 @@ def _send_smtp(subject: str, body: str) -> None:
     msg = EmailMessage()
     msg["Subject"] = subject
     msg["From"] = settings.SMTP_FROM or settings.SMTP_USER or "faztudo@localhost"
-    msg["To"] = ", ".join(_recipients())
+    msg["To"] = ", ".join(recipients)
     msg.set_content(body)
 
     if settings.SMTP_PORT == 465:
@@ -93,11 +126,12 @@ async def _dispatch(
 ) -> None:
     if not force and not _should_send(key):
         return
-    if not _smtp_ready():
+    recipients = await _all_recipients()
+    if not (_smtp_ready() and recipients):
         logger.warning("[ALERTA - dev/log] %s | %s", subject, body.replace("\n", " "))
         return
     try:
-        await asyncio.to_thread(_send_smtp, subject, body)
+        await asyncio.to_thread(_send_smtp, subject, body, recipients)
         logger.info("Alerta enviado: %s", subject)
     except Exception:  # noqa: BLE001 - alerta best-effort, nunca propaga
         logger.exception("Falha ao enviar alerta por e-mail")
@@ -226,7 +260,7 @@ def alerts_status() -> dict:
     """Status (sem segredos) dos alertas, para exibir no painel."""
     return {
         "enabled": bool(settings.ALERTS_ENABLED),
-        "configured": _smtp_ready(),
-        "email_to": _mask_emails(_recipients()),
+        "configured": bool(_smtp_ready() and _env_recipients()),
+        "email_to": _mask_emails(_env_recipients()),
         "slow_ms": settings.ALERT_SLOW_MS,
     }
