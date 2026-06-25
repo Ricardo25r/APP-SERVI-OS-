@@ -18,6 +18,7 @@
  */
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm, type FieldErrors, type Resolver } from "react-hook-form";
@@ -29,7 +30,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/ui/password-input";
 import { cn } from "@/lib/utils";
-import { useAuthStore } from "@/store/auth";
+import { setRememberPreference, useAuthStore } from "@/store/auth";
 import { apiPost } from "@/services/api";
 import type { AuthResponse } from "@/types";
 import {
@@ -130,6 +131,7 @@ export default function LoginPage() {
   const [signupRole, setSignupRole] = useState<"customer" | "professional">(
     "customer"
   );
+  const [remember, setRemember] = useState(true);
 
   // Navegadores embutidos (Instagram/Facebook/etc.) bloqueiam o login Google —
   // detectamos para orientar o usuário a abrir no navegador do sistema.
@@ -152,6 +154,7 @@ export default function LoginPage() {
 
   async function onSubmit(values: LoginValues) {
     setFormError(null);
+    setRememberPreference(remember);
     try {
       const resp = await apiPost<AuthResponse>("/auth/login", {
         email: values.email,
@@ -196,10 +199,16 @@ export default function LoginPage() {
           <Link
             href="/"
             aria-label="Página inicial do FazTudo"
-            className="inline-flex items-baseline justify-center text-4xl font-extrabold tracking-tight"
+            className="inline-flex justify-center"
           >
-            <span>Faz</span>
-            <span className="italic">Tudo</span>
+            <Image
+              src="/brand/logo-branco.png"
+              alt="FazTudo"
+              width={320}
+              height={214}
+              priority
+              className="h-24 w-auto"
+            />
           </Link>
           <p className="mt-2 text-sm text-primary-foreground/85">
             O jeito fácil de resolver.
@@ -366,6 +375,19 @@ export default function LoginPage() {
                   message={errors.password?.message}
                 />
               </div>
+
+              <label className="flex items-center gap-2 text-sm text-muted-foreground">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 accent-primary"
+                  checked={remember}
+                  onChange={(e) => {
+                    setRemember(e.target.checked);
+                    setRememberPreference(e.target.checked);
+                  }}
+                />
+                Lembrar de mim neste aparelho
+              </label>
 
               <Button
                 type="submit"

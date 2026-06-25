@@ -127,8 +127,8 @@ export default function ProfilePage() {
       {role === "professional" && (
         <div className="space-y-6">
           <ProfessionalProfileSection />
-          <ProfessionalCategoriesSection />
           <KycSection />
+          <ProfessionalCategoriesSection />
         </div>
       )}
 

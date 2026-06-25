@@ -42,6 +42,54 @@ export interface AuthState {
 }
 
 const STORAGE_KEY = "faztudo-auth";
+const REMEMBER_KEY = "faztudo-remember";
+
+/**
+ * Define se a sessão deve sobreviver ao fechar o app (localStorage = "lembrar
+ * de mim") ou durar só a sessão atual (sessionStorage). Chamar ANTES do setAuth
+ * do login para o `persist` escrever no lugar certo.
+ */
+export function setRememberPreference(remember: boolean): void {
+  try {
+    localStorage.setItem(REMEMBER_KEY, remember ? "1" : "0");
+  } catch {
+    /* ignore */
+  }
+}
+
+// Storage dinâmico: localStorage (lembrar; entra direto na próxima vez) ou
+// sessionStorage (não lembrar; pede login de novo após fechar o app).
+const authStorage = {
+  getItem: (name: string): string | null => {
+    try {
+      return localStorage.getItem(name) ?? sessionStorage.getItem(name);
+    } catch {
+      return null;
+    }
+  },
+  setItem: (name: string, value: string): void => {
+    try {
+      const remember = localStorage.getItem(REMEMBER_KEY) !== "0";
+      if (remember) {
+        localStorage.setItem(name, value);
+        sessionStorage.removeItem(name);
+      } else {
+        sessionStorage.setItem(name, value);
+        localStorage.removeItem(name);
+      }
+    } catch {
+      /* ignore */
+    }
+  },
+  removeItem: (name: string): void => {
+    try {
+      localStorage.removeItem(name);
+      sessionStorage.removeItem(name);
+    } catch {
+      /* ignore */
+    }
+  },
+};
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -75,7 +123,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: STORAGE_KEY,
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => authStorage),
       // Persiste apenas o necessário (não o flag de hidratação).
       partialize: (state) => ({
         user: state.user,

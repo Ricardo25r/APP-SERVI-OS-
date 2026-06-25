@@ -156,10 +156,10 @@ export function SelfieCapture({
           />
           {/* Máscara oval (escurece tudo menos o rosto) */}
           <div
-            className="pointer-events-none absolute left-1/2 top-[40%] h-[18rem] w-[14rem] -translate-x-1/2 -translate-y-1/2 rounded-[50%] border-2 border-white/80"
-            style={{ boxShadow: "0 0 0 9999px rgba(0,0,0,0.6)" }}
+            className="pointer-events-none absolute left-1/2 top-[42%] h-[58vh] max-h-[34rem] w-[82vw] max-w-[26rem] -translate-x-1/2 -translate-y-1/2 rounded-[50%] border-2 border-white/80"
+            style={{ boxShadow: "0 0 0 9999px rgba(0,0,0,0.55)" }}
           />
-          <p className="absolute inset-x-0 top-[72%] px-6 text-center text-sm font-medium text-white">
+          <p className="absolute inset-x-0 bottom-32 px-6 text-center text-sm font-medium text-white">
             Posicione seu rosto dentro do círculo e toque para capturar.
           </p>
           <div className="absolute inset-x-0 bottom-10 flex flex-col items-center gap-4">
