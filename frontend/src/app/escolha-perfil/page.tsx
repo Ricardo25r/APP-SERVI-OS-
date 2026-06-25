@@ -51,27 +51,29 @@ const OPTIONS: ProfileOption[] = [
     title: "Contratar profissionais",
     description:
       "Quero encontrar profissionais qualificados para realizar serviços.",
-    mascote: "/brand/mascote-contratante.png",
-    mascoteAlt: "Pessoa usando o celular para contratar profissionais",
+    mascote: "/brand/duo-contratante.png",
+    mascoteAlt: "Contratantes — homem e mulher",
     badgeIcon: Home,
     cardClassName: "bg-primary/5",
     badgeClassName: "text-primary",
-    // Mesmo enquadramento do boneco (w-44 + object-top) p/ ficarem proporcionais.
-    mascoteWrapper: "absolute left-1/2 top-3 h-[22rem] w-44 -translate-x-1/2",
-    mascoteImg: "object-contain object-top",
+    // Imagem do casal (m+f): centraliza e usa contain p/ mostrar os dois.
+    mascoteWrapper:
+      "absolute left-1/2 top-1/2 h-40 w-[19rem] max-w-[90%] -translate-x-1/2 -translate-y-1/2",
+    mascoteImg: "object-contain object-center",
   },
   {
     value: "professional",
     title: "Trabalhar como profissional",
     description: "Quero oferecer meus serviços e conquistar novos clientes.",
-    mascote: "/brand/mascote-profissional.webp",
-    mascoteAlt: "Profissional com ferramentas representando oferta de serviços",
+    mascote: "/brand/duo-profissional.png",
+    mascoteAlt: "Profissionais — homem e mulher",
     badgeIcon: Briefcase,
     cardClassName: "bg-success/5",
     badgeClassName: "text-success",
-    // Imagem é corpo inteiro: caixa alta + object-top recorta em busto.
-    mascoteWrapper: "absolute left-1/2 top-3 h-[22rem] w-44 -translate-x-1/2",
-    mascoteImg: "object-contain object-top",
+    // Imagem do casal (m+f): centraliza e usa contain p/ mostrar os dois.
+    mascoteWrapper:
+      "absolute left-1/2 top-1/2 h-40 w-[19rem] max-w-[90%] -translate-x-1/2 -translate-y-1/2",
+    mascoteImg: "object-contain object-center",
   },
 ];
 

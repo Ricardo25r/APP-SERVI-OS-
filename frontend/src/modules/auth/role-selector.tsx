@@ -30,14 +30,14 @@ const OPTIONS: RoleOption[] = [
     value: "customer",
     title: "Contratante",
     description: "Quero contratar serviços",
-    image: "/brand/busto-contratante.png",
+    image: "/brand/duo-contratante.png",
     chipClassName: "bg-primary/10",
   },
   {
     value: "professional",
     title: "Profissional",
     description: "Quero oferecer serviços",
-    image: "/brand/busto-profissional.png",
+    image: "/brand/duo-profissional.png",
     chipClassName: "bg-brand/10",
   },
 ];
@@ -79,7 +79,7 @@ export function RoleSelector({
             aria-checked={selected}
             onClick={() => onChange(option.value)}
             className={cn(
-              "flex flex-col items-start gap-2 rounded-xl border-2 bg-card p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+              "flex flex-col items-center gap-2 rounded-xl border-2 bg-card p-4 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
               selected
                 ? "border-primary bg-primary/5"
                 : "border-border hover:border-primary/40 hover:bg-accent/40",
@@ -88,17 +88,17 @@ export function RoleSelector({
           >
             <span
               className={cn(
-                "inline-flex h-16 w-16 items-center justify-center overflow-hidden rounded-full",
+                "flex h-20 w-full items-center justify-center overflow-hidden rounded-lg",
                 option.chipClassName
               )}
             >
               <Image
                 src={option.image}
-                width={120}
-                height={120}
+                width={220}
+                height={160}
                 alt=""
                 aria-hidden
-                className="h-full w-full object-cover object-top"
+                className="h-full w-auto object-contain"
               />
             </span>
             <span className="text-sm font-semibold text-foreground">
