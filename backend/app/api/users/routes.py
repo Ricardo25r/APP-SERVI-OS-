@@ -29,6 +29,7 @@ from fastapi import (
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import get_current_user
+from app.core.imagecheck import detect_image
 from app.core.ratelimit import rate_limit
 from app.core.storage import upload_bytes
 from app.database.session import get_db
@@ -89,6 +90,11 @@ async def upload_avatar(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
             detail="Imagem muito grande (máximo 5 MB).",
         )
+    if detect_image(data) is None:
+        raise HTTPException(
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail="Arquivo não é uma imagem válida.",
+        )
     ext = _AVATAR_EXT.get(file.content_type, "")
     key = f"avatars/{current_user.id}/{uuid.uuid4().hex}{ext}"
     upload_bytes(data, key, content_type=file.content_type)
@@ -148,6 +154,11 @@ async def add_portfolio_item(
         raise HTTPException(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
             detail="Imagem muito grande (máximo 5 MB).",
+        )
+    if detect_image(data) is None:
+        raise HTTPException(
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail="Arquivo não é uma imagem válida.",
         )
     ext = _AVATAR_EXT.get(file.content_type, "")
     key = f"portfolio/{current_user.id}/{uuid.uuid4().hex}{ext}"

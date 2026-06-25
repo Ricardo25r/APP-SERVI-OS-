@@ -39,6 +39,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.deps import get_current_user
+from app.core.imagecheck import detect_image
 from app.core.ratelimit import rate_limit
 from app.core.security import claim_version, decode_token
 from app.core.storage import get_private_object, verify_media
@@ -172,6 +173,11 @@ async def send_message_image(
         raise HTTPException(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
             detail="Imagem muito grande (máximo 5 MB).",
+        )
+    if detect_image(data) is None:
+        raise HTTPException(
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail="Arquivo não é uma imagem válida.",
         )
     service = ChatService(db)
     return await service.send_media_message(
