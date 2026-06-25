@@ -18,9 +18,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectOption } from "@/components/ui/select";
+import { CitySelect } from "@/components/ui/city-select";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { apiDelete, apiGet, apiPost } from "@/services/api";
 import { StarRating } from "@/modules/reviews/star-rating";
+import { BRAZIL_STATES } from "@/modules/profile/constants";
 import type { Category } from "@/types";
 
 interface ProItem {
@@ -91,9 +93,15 @@ function ProCard({ p }: { p: ProItem }) {
 export default function ProfissionaisPage() {
   const auth = useRequireAuth();
   const [categoryId, setCategoryId] = useState("");
+  const [stateUf, setStateUf] = useState("");
   const [city, setCity] = useState("");
   const [q, setQ] = useState("");
-  const [applied, setApplied] = useState({ categoryId: "", city: "", q: "" });
+  const [applied, setApplied] = useState({
+    categoryId: "",
+    stateUf: "",
+    city: "",
+    q: "",
+  });
 
   const { data: cats } = useQuery({
     queryKey: ["categories", "all-public"],
@@ -111,13 +119,15 @@ export default function ProfissionaisPage() {
     const sp = new URLSearchParams(window.location.search);
     const uq = sp.get("q") ?? "";
     const ucity = sp.get("cidade") ?? sp.get("city") ?? "";
+    const uuf = (sp.get("uf") ?? sp.get("estado") ?? "").toUpperCase();
     const slug = sp.get("categoria");
     const catId = slug ? cats.find((c) => c.slug === slug)?.id ?? "" : "";
-    if (uq || ucity || catId) {
+    if (uq || ucity || uuf || catId) {
       setQ(uq);
       setCity(ucity);
+      setStateUf(uuf);
       setCategoryId(catId);
-      setApplied({ q: uq, city: ucity, categoryId: catId });
+      setApplied({ q: uq, city: ucity, stateUf: uuf, categoryId: catId });
     }
     seededRef.current = true;
   }, [cats]);
@@ -127,6 +137,7 @@ export default function ProfissionaisPage() {
     queryFn: () => {
       const p = new URLSearchParams();
       if (applied.categoryId) p.set("category_id", applied.categoryId);
+      if (applied.stateUf) p.set("state", applied.stateUf);
       if (applied.city.trim()) p.set("city", applied.city.trim());
       if (applied.q.trim()) p.set("q", applied.q.trim());
       const qs = p.toString();
@@ -185,7 +196,10 @@ export default function ProfissionaisPage() {
   const favItems = favs?.items ?? [];
   const alerts = alertsData?.items ?? [];
   const noSearch =
-    !applied.categoryId && !applied.city.trim() && !applied.q.trim();
+    !applied.categoryId &&
+    !applied.stateUf &&
+    !applied.city.trim() &&
+    !applied.q.trim();
 
   return (
     <main className="mx-auto max-w-2xl space-y-5 px-4 py-6 sm:px-6 sm:py-8">
@@ -201,7 +215,7 @@ export default function ProfissionaisPage() {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          setApplied({ categoryId, city, q });
+          setApplied({ categoryId, stateUf, city, q });
         }}
         className="space-y-3 rounded-2xl border bg-card p-4 shadow-sm"
       >
@@ -220,14 +234,32 @@ export default function ProfissionaisPage() {
             ))}
           </Select>
         </div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="uf">Estado</Label>
+            <Select
+              id="uf"
+              value={stateUf}
+              onChange={(e) => {
+                setStateUf(e.target.value);
+                setCity("");
+              }}
+            >
+              <SelectOption value="">Todos</SelectOption>
+              {BRAZIL_STATES.map((uf) => (
+                <SelectOption key={uf} value={uf}>
+                  {uf}
+                </SelectOption>
+              ))}
+            </Select>
+          </div>
           <div className="space-y-1.5">
             <Label htmlFor="city">Cidade</Label>
-            <Input
+            <CitySelect
               id="city"
+              uf={stateUf}
               value={city}
-              onChange={(e) => setCity(e.target.value)}
-              placeholder="Ex.: Ariquemes"
+              onChange={(c) => setCity(c)}
             />
           </div>
           <div className="space-y-1.5">
@@ -270,9 +302,11 @@ export default function ProfissionaisPage() {
                   type="button"
                   onClick={() => {
                     setCategoryId(a.category_id);
+                    setStateUf("");
                     setCity(a.city ?? "");
                     setApplied({
                       categoryId: a.category_id,
+                      stateUf: "",
                       city: a.city ?? "",
                       q: "",
                     });
