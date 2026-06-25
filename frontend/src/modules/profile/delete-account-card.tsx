@@ -1,29 +1,30 @@
 "use client";
 
 /**
- * `DeleteAccountCard` — exclusão de conta self-service (LGPD Art. 18 + exigência
- * das app stores). Pede confirmação digitando "EXCLUIR" para evitar acidente,
- * chama `DELETE /users/me` (anonimiza + desativa no backend), faz logout e
- * redireciona. Ação irreversível.
+ * `DeleteAccountButton` — exclusão de conta self-service (LGPD Art. 18 +
+ * exigência das app stores). Apenas o BOTÃO "Excluir minha conta"; ao tocar,
+ * abre uma confirmação enxuta (digitar "EXCLUIR") por segurança — a ação é
+ * irreversível: `DELETE /users/me` (anonimiza + desativa), logout e redirect.
  */
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { apiDelete } from "@/services/api";
 import { useAuthStore } from "@/store/auth";
 
-export function DeleteAccountCard() {
+export function DeleteAccountButton() {
   const router = useRouter();
   const logout = useAuthStore((s) => s.logout);
   const [open, setOpen] = useState(false);
   const [confirmText, setConfirmText] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const canDelete = confirmText.trim().toUpperCase() === "EXCLUIR";
 
   async function handleDelete() {
     setBusy(true);
@@ -40,78 +41,65 @@ export function DeleteAccountCard() {
     }
   }
 
-  const canDelete = confirmText.trim().toUpperCase() === "EXCLUIR";
-
   return (
-    <section className="rounded-2xl border border-destructive/30 bg-destructive/5 p-4 sm:p-5">
-      <div className="flex items-start gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-destructive/10 text-destructive">
-          <AlertTriangle className="h-5 w-5" aria-hidden />
-        </span>
-        <div className="min-w-0 flex-1">
-          <h2 className="text-sm font-bold text-foreground">
-            Excluir minha conta
-          </h2>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Ação permanente. Seus dados pessoais são apagados e os pedidos em
-            aberto, cancelados. Não pode ser desfeito.
-          </p>
+    <>
+      <Button
+        variant="outline"
+        onClick={() => setOpen(true)}
+        className="w-full border-destructive/40 text-destructive hover:bg-destructive/10"
+      >
+        Excluir minha conta
+      </Button>
 
-          {!open ? (
-            <Button
-              variant="outline"
-              className="mt-3 border-destructive/40 text-destructive hover:bg-destructive/10"
-              onClick={() => setOpen(true)}
-            >
-              Excluir minha conta
-            </Button>
-          ) : (
-            <div className="mt-3 space-y-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="confirm-delete" className="text-xs">
-                  Para confirmar, digite{" "}
-                  <span className="font-bold">EXCLUIR</span>:
-                </Label>
-                <Input
-                  id="confirm-delete"
-                  value={confirmText}
-                  onChange={(e) => setConfirmText(e.target.value)}
-                  placeholder="EXCLUIR"
-                  autoComplete="off"
-                />
-              </div>
-              {error ? (
-                <p className="text-xs text-destructive" role="alert">
-                  {error}
-                </p>
-              ) : null}
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setOpen(false);
-                    setConfirmText("");
-                    setError(null);
-                  }}
-                  disabled={busy}
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  onClick={() => void handleDelete()}
-                  disabled={busy || !canDelete}
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                >
-                  {busy ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />
-                  ) : null}
-                  Excluir definitivamente
-                </Button>
-              </div>
+      {open ? (
+        <div className="fixed inset-0 z-[80] flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-4">
+          <div className="w-full rounded-t-2xl border border-border bg-card p-5 shadow-xl sm:max-w-sm sm:rounded-2xl">
+            <p className="text-base font-bold text-foreground">
+              Excluir minha conta?
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Ação permanente e irreversível. Para confirmar, digite{" "}
+              <span className="font-bold">EXCLUIR</span>.
+            </p>
+            <Input
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value)}
+              placeholder="EXCLUIR"
+              autoComplete="off"
+              className="mt-3"
+            />
+            {error ? (
+              <p className="mt-2 text-xs text-destructive" role="alert">
+                {error}
+              </p>
+            ) : null}
+            <div className="mt-4 flex gap-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                disabled={busy}
+                onClick={() => {
+                  setOpen(false);
+                  setConfirmText("");
+                  setError(null);
+                }}
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={() => void handleDelete()}
+                disabled={busy || !canDelete}
+                className="flex-1 bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {busy ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />
+                ) : null}
+                Excluir
+              </Button>
             </div>
-          )}
+          </div>
         </div>
-      </div>
-    </section>
+      ) : null}
+    </>
   );
 }

@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { apiGet, apiUpload } from "@/services/api";
+import { SelfieCapture } from "./selfie-capture";
 
 interface KycStatus {
   status: string;
@@ -31,7 +32,7 @@ interface KycStatus {
 export function KycSection() {
   const queryClient = useQueryClient();
   const docRef = useRef<HTMLInputElement>(null);
-  const selfieRef = useRef<HTMLInputElement>(null);
+  const [selfieFile, setSelfieFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,9 +44,8 @@ export function KycSection() {
 
   async function submit() {
     const doc = docRef.current?.files?.[0];
-    const selfie = selfieRef.current?.files?.[0];
-    if (!doc || !selfie) {
-      setError("Envie a foto do documento e a selfie.");
+    if (!doc || !selfieFile) {
+      setError("Envie a foto do documento e tire a selfie.");
       return;
     }
     setSubmitting(true);
@@ -53,7 +53,7 @@ export function KycSection() {
     try {
       const form = new FormData();
       form.append("document", doc);
-      form.append("selfie", selfie);
+      form.append("selfie", selfieFile);
       await apiUpload("/kyc/me", form);
       queryClient.invalidateQueries({ queryKey: ["kyc", "me"] });
     } catch {
@@ -104,15 +104,8 @@ export function KycSection() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="kyc-selfie">Selfie (foto do seu rosto)</Label>
-              <input
-                ref={selfieRef}
-                id="kyc-selfie"
-                type="file"
-                accept="image/*"
-                capture="user"
-                className="block w-full text-sm text-muted-foreground file:mr-3 file:rounded-md file:border file:border-input file:bg-card file:px-3 file:py-1.5 file:text-sm file:font-medium"
-              />
+              <Label>Selfie (foto do seu rosto, ao vivo)</Label>
+              <SelfieCapture onCapture={setSelfieFile} />
             </div>
             {error ? (
               <p className="text-sm text-destructive" role="alert">

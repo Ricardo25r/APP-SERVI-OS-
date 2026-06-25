@@ -35,6 +35,7 @@ import { SettingsRow, SettingsRowList } from "@/components/ui/settings-row";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { ProfileHeaderCard } from "@/modules/profile/profile-header-card";
 import { LoadingState } from "@/modules/profile/feedback";
+import { DeleteAccountButton } from "@/modules/profile/delete-account-card";
 
 export default function ConfiguracoesPage() {
   const router = useRouter();
@@ -179,6 +180,8 @@ export default function ConfiguracoesPage() {
           </SettingsRowList>
         </Card>
       </section>
+
+      {user.role !== "admin" ? <DeleteAccountButton /> : null}
 
       <Card>
         <CardContent className="py-4 text-center text-xs text-muted-foreground">
