@@ -11,7 +11,7 @@ WORKDIR /app
 
 # Dependências de sistema mínimas (build de wheels nativas, ex.: asyncpg/bcrypt).
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends build-essential libpq-dev \
+    && apt-get install -y --no-install-recommends build-essential libpq-dev libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
 # Instala dependências Python primeiro (melhor cache de camadas).

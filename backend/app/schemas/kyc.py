@@ -12,7 +12,18 @@ __all__ = [
     "KycReviewIn",
     "KycPendingItem",
     "KycPendingList",
+    "FaceMatchOut",
 ]
+
+
+class FaceMatchOut(BaseModel):
+    """Score de semelhança facial (documento × selfie) — assist do KYC."""
+
+    score: float | None = None  # -1..1 (maior = mais parecido)
+    doc_face: bool = False
+    selfie_face: bool = False
+    threshold: float = 0.363
+    available: bool = True
 
 
 class KycStatusOut(BaseModel):

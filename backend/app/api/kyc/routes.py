@@ -27,7 +27,12 @@ from app.core.deps import get_current_user, require_roles
 from app.core.ratelimit import rate_limit
 from app.database.session import get_db
 from app.models import User, UserRole
-from app.schemas.kyc import KycPendingList, KycReviewIn, KycStatusOut
+from app.schemas.kyc import (
+    FaceMatchOut,
+    KycPendingList,
+    KycReviewIn,
+    KycStatusOut,
+)
 from app.services.kyc import KycService
 
 router = APIRouter()
@@ -136,3 +141,17 @@ async def kyc_review(
     user = await db.get(User, user_id)
     assert user is not None
     return service.status_of(user)
+
+
+@router.get(
+    "/admin/{user_id}/face-match",
+    response_model=FaceMatchOut,
+    summary="Score de semelhança facial documento × selfie (assist)",
+)
+async def kyc_face_match(
+    user_id: uuid.UUID,
+    _admin: User = Depends(require_roles(UserRole.admin)),
+    db: AsyncSession = Depends(get_db),
+) -> FaceMatchOut:
+    """Auxílio à análise: compara o rosto do documento com o da selfie."""
+    return await KycService(db).face_match(user_id)

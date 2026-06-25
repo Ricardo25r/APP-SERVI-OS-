@@ -21,7 +21,7 @@ from app.models import (
     SavedCategoryAlert,
     User,
 )
-from app.schemas.kyc import KycPendingItem, KycStatusOut
+from app.schemas.kyc import FaceMatchOut, KycPendingItem, KycStatusOut
 from app.services.notifications import add_notification
 
 __all__ = ["KycService"]
@@ -120,6 +120,23 @@ class KycService:
         if not key:
             raise NotFoundError("Imagem de KYC não encontrada.")
         return get_private_object(key, bucket=settings.S3_KYC_BUCKET)
+
+    async def face_match(self, user_id: uuid.UUID) -> FaceMatchOut:
+        """Score de semelhança facial documento × selfie (assist; CPU em thread).
+        Só auxilia a decisão humana — não aprova/recusa sozinho."""
+        import asyncio
+
+        user = await self.db.get(User, user_id)
+        if user is None:
+            raise NotFoundError("Usuário não encontrado.")
+        if not user.kyc_document_key or not user.kyc_selfie_key:
+            return FaceMatchOut(score=None, doc_face=False, selfie_face=False)
+        doc, _ = await self.get_image(user_id, "document")
+        sel, _ = await self.get_image(user_id, "selfie")
+        from app.core.facematch import compare_faces
+
+        result = await asyncio.to_thread(compare_faces, doc, sel)
+        return FaceMatchOut(**result)
 
     async def _notify_saved_alert_subscribers(self, pro_user: User) -> None:
         """Notifica clientes com alerta salvo na categoria+cidade do novo
