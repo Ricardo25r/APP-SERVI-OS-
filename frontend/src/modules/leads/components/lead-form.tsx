@@ -282,8 +282,11 @@ export function LeadForm({
   function validate(): boolean {
     const errs: Record<string, string> = {};
     if (!isEdit && !values.category_id) errs.category_id = "Selecione uma categoria.";
-    if (!values.title.trim()) errs.title = "Informe um título.";
-    if (!values.description.trim()) errs.description = "Descreva a solicitação.";
+    if (values.title.trim().length < 4)
+      errs.title = "Informe um título claro (ex.: Pintura de 2 quartos).";
+    if (values.description.trim().length < 20)
+      errs.description =
+        "Conte com mais detalhes (o que precisa, onde e quando) — pedidos completos recebem muito mais respostas.";
     if (!isEdit && !values.city.trim()) errs.city = "Informe a cidade.";
     if (!isEdit && !values.state.trim()) errs.state = "Informe o estado (UF).";
     setFieldErrors(errs);
@@ -407,13 +410,18 @@ export function LeadForm({
           id="description"
           value={values.description}
           onChange={(e) => setField("description", e.target.value)}
-          placeholder="Detalhe o que você precisa, prazos e observações."
+          placeholder="Ex.: Pintar 2 quartos (~30 m²), paredes brancas, já tenho a tinta. Para a próxima semana, no bairro Setor 01."
           rows={5}
           aria-invalid={Boolean(fieldErrors.description)}
         />
         {fieldErrors.description ? (
           <p className="text-xs text-destructive">{fieldErrors.description}</p>
-        ) : null}
+        ) : (
+          <p className="text-xs text-muted-foreground">
+            Quanto mais detalhe (medidas, local e prazo), mais profissionais
+            respondem ao seu pedido.
+          </p>
+        )}
       </div>
 
       {/* Tipo de serviço (chips) — só na criação (afeta o custo). */}

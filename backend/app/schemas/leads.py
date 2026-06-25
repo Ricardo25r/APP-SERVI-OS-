@@ -59,7 +59,9 @@ class LeadCreate(BaseModel):
 
     category_id: uuid.UUID
     title: str = Field(min_length=3, max_length=140)
-    description: str = Field(min_length=1)
+    # Mínimo real de detalhe (#15 da esteira): pedido vago queima o crédito do
+    # profissional. O front exige 20; o backend garante ao menos 15.
+    description: str = Field(min_length=15, max_length=4000)
     lead_type: LeadType
     urgency: LeadUrgency
     city: str = Field(min_length=1, max_length=120)
