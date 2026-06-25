@@ -18,7 +18,7 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { Check, Circle, Gift } from "lucide-react";
+import { Check, Circle, Gift, ShieldCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
@@ -27,7 +27,13 @@ import { claimWelcomeCredits, getProfileCompletion } from "./api";
 import { SpotlightTour, type TourStep } from "./spotlight";
 import { WelcomeSuperCard } from "./welcome-super-card";
 
-type Phase = "none" | "welcome" | "guide" | "super" | "app-tour";
+type Phase =
+  | "none"
+  | "welcome"
+  | "guide"
+  | "super"
+  | "app-tour"
+  | "kyc";
 
 const key = (k: string, id: string) => `faztudo-${k}-${id}`;
 const got = (k: string, id: string): boolean => {
@@ -40,6 +46,21 @@ const got = (k: string, id: string): boolean => {
 const mark = (k: string, id: string): void => {
   try {
     localStorage.setItem(key(k, id), "1");
+  } catch {
+    /* ignore */
+  }
+};
+// Lembretes por SESSÃO (reaparecem a cada nova entrada no app, não a cada tela).
+const sessionGot = (k: string, id: string): boolean => {
+  try {
+    return sessionStorage.getItem(key(k, id)) === "1";
+  } catch {
+    return false;
+  }
+};
+const sessionMark = (k: string, id: string): void => {
+  try {
+    sessionStorage.setItem(key(k, id), "1");
   } catch {
     /* ignore */
   }
@@ -121,6 +142,7 @@ export function OnboardingFlow() {
   const [reward, setReward] = useState(10);
   const claimedRef = useRef(false);
   const welcomeShownRef = useRef(false);
+  const kycShownRef = useRef(false);
 
   const proEnabled = hasHydrated && isAuthenticated && isPro && !!uid;
 
@@ -137,6 +159,16 @@ export function OnboardingFlow() {
   // PROFISSIONAL — decide a fase a partir da completude + flags.
   useEffect(() => {
     if (!proEnabled || !completion) return;
+
+    const kyc = user?.kyc_status;
+    const kycNeedsSubmit = kyc === "none" || kyc === "rejected";
+    // Lembrete de KYC: 1x por sessão, quando nada mais está ativo.
+    const maybeKycReminder = () => {
+      if (kycNeedsSubmit && !kycShownRef.current && !sessionGot("kyc-reminder", uid)) {
+        kycShownRef.current = true;
+        setPhase((p) => (p === "none" ? "kyc" : p));
+      }
+    };
 
     if (completion.complete) {
       // Só celebra quem REALMENTE acaba de ganhar (claim concede 1x). Quem já
@@ -155,7 +187,10 @@ export function OnboardingFlow() {
           .catch(() => {
             claimedRef.current = false;
           });
+        return;
       }
+      // Perfil 100% + bônus resolvido → lembra de enviar os documentos.
+      maybeKycReminder();
       return;
     }
 
@@ -167,8 +202,11 @@ export function OnboardingFlow() {
     if (!got("onb-welcome", uid) && !welcomeShownRef.current) {
       welcomeShownRef.current = true;
       setPhase("welcome");
+      return;
     }
-  }, [proEnabled, completion, path, uid, refetch]);
+    // Já viu o card de boas-vindas → ainda assim lembra do KYC.
+    maybeKycReminder();
+  }, [proEnabled, completion, path, uid, refetch, user?.kyc_status]);
 
   // CONTRATANTE — só o tour do app, uma vez, na home.
   useEffect(() => {
@@ -188,6 +226,15 @@ export function OnboardingFlow() {
   }
   function dismissWelcome() {
     mark("onb-welcome", uid);
+    setPhase("none");
+  }
+  function submitKyc() {
+    sessionMark("kyc-reminder", uid);
+    setPhase("none");
+    router.push("/profile");
+  }
+  function dismissKyc() {
+    sessionMark("kyc-reminder", uid);
     setPhase("none");
   }
   function endGuide() {
@@ -269,6 +316,51 @@ export function OnboardingFlow() {
           <button
             type="button"
             onClick={dismissWelcome}
+            className="mt-2 w-full text-center text-xs text-muted-foreground hover:text-foreground"
+          >
+            Agora não
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (phase === "kyc") {
+    const rejected = user?.kyc_status === "rejected";
+    return (
+      <div className="fixed inset-0 z-[75] flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-4">
+        <div className="w-full rounded-t-2xl border border-border bg-card p-5 shadow-xl sm:max-w-sm sm:rounded-2xl">
+          <div className="flex items-center gap-3">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <ShieldCheck className="h-6 w-6" aria-hidden />
+            </span>
+            <div>
+              <p className="text-base font-bold tracking-tight text-foreground">
+                {rejected
+                  ? "Reenvie seus documentos"
+                  : "Falta enviar seus documentos"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Verificação rápida e segura.
+              </p>
+            </div>
+          </div>
+          <p className="mt-3 text-sm text-muted-foreground">
+            {rejected
+              ? "Seus documentos não foram aprovados. Reenvie uma foto do documento e uma selfie no seu perfil para voltar a receber oportunidades."
+              : "Para começar a receber oportunidades, envie uma foto do seu documento e uma selfie do seu rosto. Leva 1 minuto."}
+          </p>
+          <Button
+            type="button"
+            size="lg"
+            onClick={submitKyc}
+            className="mt-4 w-full bg-brand text-brand-foreground hover:bg-brand/90"
+          >
+            Enviar documentos
+          </Button>
+          <button
+            type="button"
+            onClick={dismissKyc}
             className="mt-2 w-full text-center text-xs text-muted-foreground hover:text-foreground"
           >
             Agora não
