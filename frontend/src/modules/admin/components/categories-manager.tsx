@@ -201,7 +201,67 @@ export function CategoriesManager() {
             <p className="text-base font-medium">Nenhuma categoria cadastrada.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-lg border bg-card">
+          <>
+          {/* Cards (mobile) */}
+          <ul className="space-y-3 md:hidden">
+            {categories.map((category) => (
+              <li
+                key={category.id}
+                className="space-y-3 rounded-lg border bg-card p-4 shadow-sm"
+              >
+                <div>
+                  <p className="font-medium text-foreground">{category.name}</p>
+                  <p className="font-mono text-xs text-muted-foreground">
+                    {category.slug}
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-muted-foreground">Faixa</span>
+                  <span className="text-right">
+                    <Badge variant="outline">{TIER_LABEL[category.tier]}</Badge>
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-muted-foreground">Situação</span>
+                  <span className="text-right">
+                    {category.active ? (
+                      <Badge variant="success">Ativa</Badge>
+                    ) : (
+                      <Badge variant="secondary">Inativa</Badge>
+                    )}
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => openEdit(category)}
+                  >
+                    <Pencil className="mr-1.5 h-3.5 w-3.5" aria-hidden />
+                    Editar
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={!category.active}
+                    onClick={() => {
+                      deactivateMutation.reset();
+                      setToDeactivate(category);
+                    }}
+                  >
+                    <PowerOff className="mr-1.5 h-3.5 w-3.5" aria-hidden />
+                    Desativar
+                  </Button>
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          {/* Tabela (desktop) */}
+          <div className="hidden overflow-x-auto rounded-lg border bg-card md:block">
             <table className="w-full min-w-[620px] text-sm">
               <thead>
                 <tr className="border-b text-left text-xs uppercase tracking-wide text-muted-foreground">
@@ -260,6 +320,7 @@ export function CategoriesManager() {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </div>
 

@@ -44,7 +44,8 @@ export default function IndiquePage() {
     typeof window !== "undefined"
       ? window.location.origin
       : "https://faztudoapp.com.br";
-  const link = data ? `${origin}/register?ref=${data.code}` : "";
+  // Link curto: /i/CODIGO redireciona para /register?ref=CODIGO (regra no Caddy).
+  const link = data ? `${origin}/i/${data.code}` : "";
   const message = `Conheça o FazTudo! Cadastre-se pelo meu link: ${link}`;
 
   async function copy() {
@@ -59,7 +60,9 @@ export default function IndiquePage() {
   async function share() {
     if (typeof navigator !== "undefined" && navigator.share) {
       try {
-        await navigator.share({ title: "FazTudo", text: message, url: link });
+        // Só `text` (sem `url`): apps como o WhatsApp anexam a url ao texto e
+        // o link sairia duplicado. O link já está dentro de `message`.
+        await navigator.share({ title: "FazTudo", text: message });
         return;
       } catch {
         /* usuário cancelou ou não suportado → cai no copiar */

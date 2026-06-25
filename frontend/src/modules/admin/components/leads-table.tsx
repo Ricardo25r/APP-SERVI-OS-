@@ -146,7 +146,7 @@ export function LeadsTable() {
           />
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button type="submit">
             <Search className="mr-2 h-4 w-4" aria-hidden />
             Filtrar
@@ -181,7 +181,73 @@ export function LeadsTable() {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-lg border bg-card">
+          <>
+          <ul className="space-y-3 md:hidden">
+            {items.map((lead) => (
+              <li
+                key={lead.id}
+                className="space-y-3 rounded-lg border bg-card p-4 shadow-sm"
+              >
+                <div>
+                  <p className="font-medium text-foreground">{lead.title}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {LEAD_TYPE_LABEL[lead.lead_type]}
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-muted-foreground">Categoria</span>
+                  <span className="text-right">{categoryName(lead.category_id)}</span>
+                </div>
+
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-muted-foreground">Local</span>
+                  <span className="text-right">
+                    {lead.city}/{lead.state}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-muted-foreground">Status</span>
+                  <span className="text-right">
+                    <Badge variant={leadStatusVariant(lead.status)}>
+                      {LEAD_STATUS_LABEL[lead.status]}
+                    </Badge>
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-muted-foreground">Custo</span>
+                  <span className="text-right tabular-nums">
+                    {lead.credits_cost} cr.
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-muted-foreground">Criado</span>
+                  <span className="text-right">{formatDateTime(lead.created_at)}</span>
+                </div>
+
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={lead.status === "cancelled"}
+                    onClick={() => {
+                      setReason("");
+                      mutation.reset();
+                      setPending(lead);
+                    }}
+                  >
+                    <Ban className="mr-1.5 h-3.5 w-3.5" aria-hidden />
+                    Cancelar
+                  </Button>
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          <div className="hidden overflow-x-auto rounded-lg border bg-card md:block">
             <table className="w-full min-w-[820px] text-sm">
               <thead>
                 <tr className="border-b text-left text-xs uppercase tracking-wide text-muted-foreground">
@@ -242,6 +308,7 @@ export function LeadsTable() {
               </tbody>
             </table>
           </div>
+          </>
         )}
 
         {data && (

@@ -275,7 +275,111 @@ export function UsersTable() {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-lg border bg-card">
+          <>
+          {/* Mobile: cards (mesmos itens/handlers da tabela) */}
+          <ul className="space-y-3 md:hidden">
+            {items.map((user) => (
+              <li
+                key={user.id}
+                className="space-y-3 rounded-lg border bg-card p-4 shadow-sm"
+              >
+                <div>
+                  <p className="font-medium text-foreground">{user.name}</p>
+                  <p className="text-xs text-muted-foreground">{user.email}</p>
+                </div>
+
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-muted-foreground">Papel</span>
+                  <span className="text-right">
+                    {currentUser?.id === user.id ? (
+                      <Badge variant="outline">
+                        {ROLE_LABEL[user.role]} (você)
+                      </Badge>
+                    ) : (
+                      <Select
+                        aria-label="Papel do usuário"
+                        value={user.role}
+                        onChange={(e) => {
+                          const role = e.target.value as UserRole;
+                          if (role !== user.role) {
+                            setRoleReason("");
+                            roleMutation.reset();
+                            setPendingRole({ user, role });
+                          }
+                        }}
+                        className="w-full"
+                      >
+                        <SelectOption value="customer">Contratante</SelectOption>
+                        <SelectOption value="professional">
+                          Profissional
+                        </SelectOption>
+                        <SelectOption value="admin">Admin</SelectOption>
+                      </Select>
+                    )}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-muted-foreground">Status</span>
+                  <span className="text-right">
+                    <Badge variant={userStatusVariant(user.status)}>
+                      {USER_STATUS_LABEL[user.status]}
+                    </Badge>
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-muted-foreground">Cadastro</span>
+                  <span className="text-right text-xs text-muted-foreground">
+                    {formatDateTime(user.created_at)}
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {actionsFor(user).map((status) => {
+                    const Icon = actionIcon(status);
+                    const copy = ACTION_COPY[status];
+                    return (
+                      <Button
+                        key={status}
+                        size="sm"
+                        variant={
+                          copy.variant === "destructive"
+                            ? "outline"
+                            : "default"
+                        }
+                        onClick={() => {
+                          setReason("");
+                          mutation.reset();
+                          setPending({ user, status });
+                        }}
+                      >
+                        <Icon className="mr-1.5 h-3.5 w-3.5" aria-hidden />
+                        {copy.label}
+                      </Button>
+                    );
+                  })}
+                  {currentUser?.id !== user.id ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-destructive hover:text-destructive"
+                      onClick={() => {
+                        deleteMutation.reset();
+                        setPendingDelete(user);
+                      }}
+                    >
+                      <Trash2 className="mr-1.5 h-3.5 w-3.5" aria-hidden />
+                      Excluir
+                    </Button>
+                  ) : null}
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          {/* Desktop: tabela (md+) */}
+          <div className="hidden overflow-x-auto rounded-lg border bg-card md:block">
             <table className="w-full min-w-[760px] text-sm">
               <thead>
                 <tr className="border-b text-left text-xs uppercase tracking-wide text-muted-foreground">
@@ -377,6 +481,7 @@ export function UsersTable() {
               </tbody>
             </table>
           </div>
+          </>
         )}
 
         {data && (

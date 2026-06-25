@@ -35,6 +35,12 @@
 		reverse_proxy minio:9000
 	}
 
+	# Link curto de indicação: /i/CODIGO -> /register?ref=CODIGO (302).
+	@indica path_regexp indica ^/i/([A-Za-z0-9_-]+)/?$
+	handle @indica {
+		redir /register?ref={re.indica.1} 302
+	}
+
 	handle {
 		root * /srv/web
 		try_files {path} {path}/ /index.html

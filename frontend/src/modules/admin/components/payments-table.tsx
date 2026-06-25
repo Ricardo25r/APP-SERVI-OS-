@@ -182,7 +182,67 @@ export function PaymentsTable() {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-lg border bg-card">
+          <>
+          <ul className="space-y-3 md:hidden">
+            {items.map((order) => (
+              <li
+                key={order.id}
+                className="space-y-3 rounded-lg border bg-card p-4 shadow-sm"
+              >
+                <div>
+                  <p className="font-medium text-foreground">
+                    {order.provider}
+                  </p>
+                  <p className="font-mono text-xs text-muted-foreground">
+                    {order.external_reference}
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-muted-foreground">Créditos</span>
+                  <span className="text-right tabular-nums">{order.credits}</span>
+                </div>
+
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-muted-foreground">Valor</span>
+                  <span className="text-right font-medium tabular-nums">
+                    {formatCentsToBRL(order.amount_cents)}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-muted-foreground">Status</span>
+                  <span className="text-right">
+                    <Badge variant={paymentStatusVariant(order.status)}>
+                      {PAYMENT_STATUS_LABEL[order.status]}
+                    </Badge>
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-muted-foreground">Data</span>
+                  <span className="text-right text-xs text-muted-foreground">
+                    {formatDateTime(order.paid_at ?? order.created_at)}
+                  </span>
+                </div>
+
+                {order.status === "pending" ? (
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={confirm.isPending}
+                      onClick={() => confirm.mutate(order.id)}
+                    >
+                      Confirmar
+                    </Button>
+                  </div>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+
+          <div className="hidden overflow-x-auto rounded-lg border bg-card md:block">
             <table className="w-full min-w-[820px] text-sm">
               <thead>
                 <tr className="border-b text-left text-xs uppercase tracking-wide text-muted-foreground">
@@ -231,6 +291,7 @@ export function PaymentsTable() {
               </tbody>
             </table>
           </div>
+          </>
         )}
 
         {data && (
