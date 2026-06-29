@@ -10,7 +10,7 @@
 
 import { useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { BadgeCheck, Clock, Loader2, ShieldCheck } from "lucide-react";
+import { BadgeCheck, CheckCircle2, Clock, Loader2, ShieldCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -34,6 +34,7 @@ export function KycSection() {
   const docRef = useRef<HTMLInputElement>(null);
   const [selfieFile, setSelfieFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const { data } = useQuery({
@@ -55,6 +56,7 @@ export function KycSection() {
       form.append("document", doc);
       form.append("selfie", selfieFile);
       await apiUpload("/kyc/me", form);
+      setSubmitted(true);
       queryClient.invalidateQueries({ queryKey: ["kyc", "me"] });
     } catch {
       setError("Não foi possível enviar. Tente novamente.");
@@ -64,7 +66,8 @@ export function KycSection() {
   }
 
   return (
-    <Card>
+    <>
+    <Card id="kyc" className="scroll-mt-24">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <ShieldCheck className="h-5 w-5 text-primary" aria-hidden />
@@ -122,5 +125,35 @@ export function KycSection() {
         )}
       </CardContent>
     </Card>
+
+      {submitted ? (
+        <div
+          className="fixed inset-0 z-[90] flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-4"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="w-full rounded-t-2xl border border-border bg-card p-6 text-center shadow-xl sm:max-w-sm sm:rounded-2xl">
+            <span className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-success/10 text-success">
+              <CheckCircle2 className="h-8 w-8" aria-hidden />
+            </span>
+            <p className="text-base font-bold tracking-tight text-foreground">
+              Documentos enviados com sucesso
+            </p>
+            <p className="mx-auto mt-1.5 max-w-xs text-sm text-muted-foreground">
+              Aguarde a aprovação. Você será avisado assim que sua conta for
+              verificada.
+            </p>
+            <Button
+              type="button"
+              size="lg"
+              onClick={() => setSubmitted(false)}
+              className="mt-5 w-full"
+            >
+              Entendi
+            </Button>
+          </div>
+        </div>
+      ) : null}
+    </>
   );
 }

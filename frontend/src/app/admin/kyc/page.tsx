@@ -8,10 +8,19 @@
  * token via fetch → blob (um `<img>` não envia o header de auth). Aprovar/recusar.
  */
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Loader2, ScanFace } from "lucide-react";
+import {
+  ArrowLeft,
+  Loader2,
+  Maximize2,
+  RotateCcw,
+  ScanFace,
+  X,
+  ZoomIn,
+  ZoomOut,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -89,17 +98,158 @@ async function loadImage(userId: string, which: string): Promise<string | null> 
   }
 }
 
+/**
+ * Visualizador em tela cheia com zoom (botões, scroll do mouse, clique e
+ * arrastar para mover). Modal do próprio sistema — fecha no X ou Esc.
+ */
+function ImageViewer({
+  url,
+  label,
+  onClose,
+}: {
+  url: string;
+  label: string;
+  onClose: () => void;
+}) {
+  const [scale, setScale] = useState(1);
+  const [tx, setTx] = useState(0);
+  const [ty, setTy] = useState(0);
+  const drag = useRef<{ x: number; y: number; tx: number; ty: number } | null>(
+    null
+  );
+
+  const reset = () => {
+    setScale(1);
+    setTx(0);
+    setTy(0);
+  };
+  const zoomBy = (delta: number) =>
+    setScale((s) => {
+      const next = Math.min(5, Math.max(1, Math.round((s + delta) * 100) / 100));
+      if (next === 1) {
+        setTx(0);
+        setTy(0);
+      }
+      return next;
+    });
+
+  // Fecha no Esc.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  function onPointerDown(e: React.PointerEvent<HTMLImageElement>) {
+    if (scale === 1) return;
+    drag.current = { x: e.clientX, y: e.clientY, tx, ty };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  }
+  function onPointerMove(e: React.PointerEvent<HTMLImageElement>) {
+    if (!drag.current) return;
+    setTx(drag.current.tx + (e.clientX - drag.current.x));
+    setTy(drag.current.ty + (e.clientY - drag.current.y));
+  }
+  function onPointerUp() {
+    drag.current = null;
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex flex-col bg-black/90"
+      role="dialog"
+      aria-modal="true"
+      aria-label={`${label} em tela cheia`}
+    >
+      <div className="flex items-center justify-between gap-2 p-3 text-white">
+        <span className="truncate text-sm font-medium">{label}</span>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => zoomBy(-0.3)}
+            aria-label="Diminuir zoom"
+            className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/15"
+          >
+            <ZoomOut className="h-5 w-5" aria-hidden />
+          </button>
+          <span className="w-12 text-center text-xs tabular-nums text-white/80">
+            {Math.round(scale * 100)}%
+          </span>
+          <button
+            type="button"
+            onClick={() => zoomBy(0.3)}
+            aria-label="Aumentar zoom"
+            className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/15"
+          >
+            <ZoomIn className="h-5 w-5" aria-hidden />
+          </button>
+          <button
+            type="button"
+            onClick={reset}
+            aria-label="Redefinir zoom"
+            className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/15"
+          >
+            <RotateCcw className="h-5 w-5" aria-hidden />
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Fechar"
+            className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/15"
+          >
+            <X className="h-5 w-5" aria-hidden />
+          </button>
+        </div>
+      </div>
+      <div
+        className="relative flex-1 overflow-hidden"
+        onWheel={(e) => zoomBy(e.deltaY < 0 ? 0.3 : -0.3)}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={url}
+          alt={label}
+          draggable={false}
+          onClick={() => (scale === 1 ? setScale(2.5) : reset())}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          className="absolute left-1/2 top-1/2 max-h-full max-w-full select-none object-contain"
+          style={{
+            transform: `translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px)) scale(${scale})`,
+            cursor: scale > 1 ? "grab" : "zoom-in",
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
 function ImageBox({ label, userId, which }: { label: string; userId: string; which: string }) {
   const [url, setUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
   if (url) {
     return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={url}
-        alt={label}
-        className="h-44 w-full rounded-lg border bg-muted object-contain"
-      />
+      <>
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-label={`Ampliar ${label}`}
+          className="group relative block h-44 w-full overflow-hidden rounded-lg border bg-muted"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={url} alt={label} className="h-full w-full object-contain" />
+          <span className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-black/55 text-white opacity-90">
+            <Maximize2 className="h-4 w-4" aria-hidden />
+          </span>
+        </button>
+        {open ? (
+          <ImageViewer url={url} label={label} onClose={() => setOpen(false)} />
+        ) : null}
+      </>
     );
   }
   return (
@@ -125,6 +275,8 @@ function KycRow({ item, onDone }: { item: PendingItem; onDone: () => void }) {
   const [busy, setBusy] = useState(false);
   const [fm, setFm] = useState<FaceMatch | null>(null);
   const [fmLoading, setFmLoading] = useState(false);
+  const [rejecting, setRejecting] = useState(false);
+  const [reason, setReason] = useState("");
 
   async function runFaceMatch() {
     setFmLoading(true);
@@ -145,15 +297,14 @@ function KycRow({ item, onDone }: { item: PendingItem; onDone: () => void }) {
     }
   }
 
-  async function review(approve: boolean) {
-    let reason: string | null = null;
-    if (!approve) {
-      reason = window.prompt("Motivo da recusa:");
-      if (!reason) return;
-    }
+  async function review(approve: boolean, rejectReason: string | null = null) {
     setBusy(true);
     try {
-      await apiPatch(`/kyc/admin/${item.user_id}`, { approve, reason });
+      await apiPatch(`/kyc/admin/${item.user_id}`, {
+        approve,
+        reason: rejectReason,
+      });
+      setRejecting(false);
       onDone();
     } finally {
       setBusy(false);
@@ -215,13 +366,62 @@ function KycRow({ item, onDone }: { item: PendingItem; onDone: () => void }) {
         </Button>
         <Button
           variant="outline"
-          onClick={() => void review(false)}
+          onClick={() => {
+            setReason("");
+            setRejecting(true);
+          }}
           disabled={busy}
           className="flex-1"
         >
           Recusar
         </Button>
       </div>
+
+      {rejecting ? (
+        <div
+          className="fixed inset-0 z-[100] flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-4"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="w-full rounded-t-2xl border border-border bg-card p-5 shadow-xl sm:max-w-sm sm:rounded-2xl">
+            <p className="text-base font-bold tracking-tight text-foreground">
+              Recusar verificação
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Informe o motivo da recusa. O profissional verá esta mensagem.
+            </p>
+            <textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              rows={3}
+              autoFocus
+              placeholder="Ex: documento ilegível, selfie não confere com o documento..."
+              className="mt-3 w-full rounded-lg border border-input bg-background p-2.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+            <div className="mt-4 flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setRejecting(false)}
+                disabled={busy}
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => void review(false, reason.trim())}
+                disabled={busy || !reason.trim()}
+                className="flex-1"
+              >
+                {busy ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />
+                ) : null}
+                Confirmar recusa
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -231,7 +231,8 @@ export function OnboardingFlow() {
   function submitKyc() {
     sessionMark("kyc-reminder", uid);
     setPhase("none");
-    router.push("/profile");
+    // Leva direto à seção de documentos (KYC) no perfil, sem cair no topo.
+    router.push("/profile#kyc");
   }
   function dismissKyc() {
     sessionMark("kyc-reminder", uid);

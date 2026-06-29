@@ -19,7 +19,7 @@ export function SelfieCapture({
 }) {
   const [open, setOpen] = useState(false);
   const [starting, setStarting] = useState(false);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [captured, setCaptured] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -77,7 +77,9 @@ export function SelfieCapture({
         if (!blob) return;
         const file = new File([blob], "selfie.jpg", { type: "image/jpeg" });
         onCapture(file);
-        setPreview(URL.createObjectURL(blob));
+        // A foto do rosto NÃO fica visível — guardamos só o anexo e sinalizamos
+        // que foi capturada (privacidade; o preview não é exibido).
+        setCaptured(true);
         stopCamera();
         setOpen(false);
       },
@@ -92,26 +94,21 @@ export function SelfieCapture({
   }
 
   function retake() {
-    setPreview(null);
+    setCaptured(false);
     onCapture(null);
     void startCamera();
   }
 
   return (
     <div className="space-y-2">
-      {preview ? (
-        <div className="flex items-center gap-3">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={preview}
-            alt="Selfie capturada"
-            className="h-20 w-20 rounded-lg border object-cover"
-          />
-          <div className="space-y-1">
-            <p className="flex items-center gap-1.5 text-sm font-medium text-success">
-              <Check className="h-4 w-4" aria-hidden />
-              Selfie capturada
-            </p>
+      {captured ? (
+        // Sem preview da foto do rosto — exibimos apenas que o anexo foi feito.
+        <div className="flex items-center gap-3 rounded-lg border bg-card p-3">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-success/10 text-success">
+            <Check className="h-5 w-5" aria-hidden />
+          </span>
+          <div className="space-y-0.5">
+            <p className="text-sm font-medium text-success">Selfie anexada</p>
             <button
               type="button"
               onClick={retake}
