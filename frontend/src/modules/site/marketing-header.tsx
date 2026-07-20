@@ -16,7 +16,7 @@ import { Menu, X } from "lucide-react";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { SITE_NAV } from "@/modules/site/site-config";
+import { SITE_NAV, appHref } from "@/modules/site/site-config";
 
 /** Wordmark clicável (símbolo + "FazTudo"). */
 function Wordmark() {
@@ -71,7 +71,7 @@ export function MarketingHeader() {
         {/* CTAs desktop */}
         <div className="ml-auto hidden items-center gap-2 lg:flex">
           <Link
-            href="/login"
+            href={appHref("/login")}
             className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
           >
             Entrar
@@ -125,7 +125,7 @@ export function MarketingHeader() {
             ))}
             <div className="mt-2 flex flex-col gap-2 border-t pt-3">
               <Link
-                href="/login"
+                href={appHref("/login")}
                 className={cn(buttonVariants({ variant: "outline" }), "w-full")}
               >
                 Entrar

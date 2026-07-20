@@ -9,6 +9,7 @@ import { ShieldCheck, Star, Lock, ArrowRight } from "lucide-react";
 
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { appHref } from "@/modules/site/site-config";
 import {
   Container,
   Section,
@@ -66,7 +67,7 @@ export default function ParaContratantesPage() {
               Descreva o serviço e receba propostas de quem está perto de você.
             </p>
             <Link
-              href="/register"
+              href={appHref("/register")}
               className={cn(
                 buttonVariants({ size: "lg" }),
                 "mt-7 bg-brand text-brand-foreground hover:bg-brand/90"
@@ -124,7 +125,7 @@ export default function ParaContratantesPage() {
               Precisa de um serviço agora?
             </h2>
             <Link
-              href="/register"
+              href={appHref("/register")}
               className={cn(
                 buttonVariants({ size: "lg" }),
                 "bg-brand text-brand-foreground hover:bg-brand/90"

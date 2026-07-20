@@ -15,7 +15,7 @@ import { Loader2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { apiPost } from "@/services/api";
+import { siteApiBase } from "@/modules/site/site-config";
 
 type State = "idle" | "submitting" | "success" | "error";
 
@@ -51,7 +51,12 @@ export function NotifyMeForm({
     setState("submitting");
     setMessage("");
     try {
-      await apiPost("/site/waitlist", { email: value, source });
+      const res = await fetch(`${siteApiBase()}/api/v1/site/waitlist`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: value, source }),
+      });
+      if (!res.ok) throw new Error(String(res.status));
       setState("success");
       setMessage("Pronto! Avisaremos você no lançamento.");
       setEmail("");

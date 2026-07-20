@@ -24,7 +24,11 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { AppStoreBadges } from "@/modules/site/app-store-badges";
 import { NotifyMeForm } from "@/modules/site/notify-me-form";
-import { APP_COMING_SOON, POPULAR_CATEGORIES } from "@/modules/site/site-config";
+import {
+  APP_COMING_SOON,
+  POPULAR_CATEGORIES,
+  appHref,
+} from "@/modules/site/site-config";
 import {
   Container,
   Section,
@@ -93,7 +97,7 @@ export function MarketingHome() {
             </p>
             <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
               <Link
-                href="/register"
+                href={appHref("/register")}
                 className={cn(
                   buttonVariants({ size: "lg" }),
                   "bg-brand text-brand-foreground hover:bg-brand/90"
@@ -242,7 +246,7 @@ export function MarketingHome() {
             </p>
             <div className="flex flex-col gap-3 sm:flex-row">
               <Link
-                href="/register"
+                href={appHref("/register")}
                 className={cn(
                   buttonVariants({ size: "lg" }),
                   "bg-brand text-brand-foreground hover:bg-brand/90"

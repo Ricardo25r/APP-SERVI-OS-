@@ -9,6 +9,7 @@ import { Clock, MapPin, Star, Lock } from "lucide-react";
 
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { appHref } from "@/modules/site/site-config";
 import {
   Container,
   Section,
@@ -51,7 +52,7 @@ export default function ParaProfissionaisPage() {
               serviço de clientes na sua região.
             </p>
             <Link
-              href="/register"
+              href={appHref("/register")}
               className={cn(
                 buttonVariants({ size: "lg" }),
                 "mt-7 bg-brand text-brand-foreground hover:bg-brand/90"
@@ -107,7 +108,7 @@ export default function ParaProfissionaisPage() {
               Comece a receber clientes
             </h2>
             <Link
-              href="/register"
+              href={appHref("/register")}
               className={cn(
                 buttonVariants({ size: "lg" }),
                 "bg-brand text-brand-foreground hover:bg-brand/90"

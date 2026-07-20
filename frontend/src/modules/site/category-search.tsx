@@ -12,7 +12,7 @@ import { Search } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/ui/empty-state";
-import { ALL_CATEGORIES } from "@/modules/site/site-config";
+import { ALL_CATEGORIES, appHref } from "@/modules/site/site-config";
 import { CategoryTile } from "@/modules/site/marketing-ui";
 
 /** Normaliza para busca: minúsculas e sem acento (remove diacríticos U+0300–U+036F). */
@@ -55,7 +55,7 @@ export function CategorySearch() {
               key={cat.name}
               name={cat.name}
               icon={cat.icon}
-              href="/register"
+              href={appHref("/register")}
             />
           ))}
         </div>

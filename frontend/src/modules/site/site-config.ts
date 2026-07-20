@@ -23,6 +23,37 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
+/**
+ * Origem do APP (domínio puro) para os CTAs do site que levam ao aplicativo
+ * (Entrar/Cadastrar/Criar solicitação). O site mora no subdomínio `www` e o app
+ * no domínio puro; mandar as ações de app para lá mantém uma sessão só.
+ *
+ * Vem de `NEXT_PUBLIC_APP_ORIGIN` (definido no build de produção). Em dev fica
+ * vazio → links relativos (funciona no localhost).
+ */
+export const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN ?? "";
+
+/** Monta um link para uma rota do APP (absoluto em prod, relativo em dev). */
+export function appHref(path: string): string {
+  return `${APP_ORIGIN}${path}`;
+}
+
+/**
+ * Base para os formulários públicos do site chamarem a API. Em produção usa o
+ * MESMO host (relativo) — assim o `www` chama `www/api/*` (o Caddy encaminha ao
+ * backend) e não há CORS entre subdomínio e domínio puro. Em dev usa a API_URL.
+ */
+export function siteApiBase(): string {
+  if (typeof window !== "undefined") {
+    const h = window.location.hostname;
+    if (h === "localhost" || h === "127.0.0.1") {
+      return process.env.NEXT_PUBLIC_API_URL ?? "";
+    }
+    return "";
+  }
+  return process.env.NEXT_PUBLIC_API_URL ?? "";
+}
+
 /** Link de navegação do header/footer de marketing. */
 export interface SiteNavLink {
   href: string;

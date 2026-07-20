@@ -13,7 +13,7 @@ import { Loader2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { apiPost } from "@/services/api";
+import { siteApiBase } from "@/modules/site/site-config";
 
 type State = "idle" | "submitting" | "success" | "error";
 
@@ -51,12 +51,17 @@ export function ContactForm() {
     setState("submitting");
     setError("");
     try {
-      await apiPost("/site/contact", {
-        name: form.name.trim(),
-        email: form.email.trim(),
-        subject: form.subject.trim(),
-        message: form.message.trim(),
+      const res = await fetch(`${siteApiBase()}/api/v1/site/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name.trim(),
+          email: form.email.trim(),
+          subject: form.subject.trim(),
+          message: form.message.trim(),
+        }),
       });
+      if (!res.ok) throw new Error(String(res.status));
       setState("success");
     } catch {
       setState("error");
