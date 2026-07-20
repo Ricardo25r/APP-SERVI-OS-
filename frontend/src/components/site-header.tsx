@@ -55,7 +55,7 @@ const NAV_BY_ROLE: Record<UserRole, NavLink[]> = {
   ],
 };
 
-/** Telas full-screen com header próprio (não mostram a barra de marketing). */
+/** Telas full-screen com header próprio (não mostram a barra do app). */
 const AUTH_ROUTES = [
   "/splash",
   "/onboarding",
@@ -65,13 +65,39 @@ const AUTH_ROUTES = [
   "/recuperar-senha",
 ];
 
+/**
+ * Rotas do site institucional (grupo `(site)`) — têm header/footer de marketing
+ * próprios (`MarketingShell`), então o header do app não deve aparecer nelas.
+ */
+const MARKETING_ROUTES = [
+  "/para-contratantes",
+  "/para-profissionais",
+  "/categorias",
+  "/sobre",
+  "/contato",
+  "/baixar",
+];
+
 export function SiteHeader() {
   const router = useRouter();
   const pathname = usePathname() ?? "";
   const { user, role, isAuthenticated, hasHydrated, logout } = useAuth();
 
-  // Não mostrar a barra de marketing nas telas de auth (evita header duplicado).
+  // Não mostrar o header do app nas telas de auth (evita header duplicado).
   if (AUTH_ROUTES.some((r) => pathname === r || pathname.startsWith(`${r}/`))) {
+    return null;
+  }
+
+  // Site institucional: header próprio (MarketingShell) cuida dessas rotas.
+  if (
+    MARKETING_ROUTES.some((r) => pathname === r || pathname.startsWith(`${r}/`))
+  ) {
+    return null;
+  }
+
+  // Home (`/`) deslogada: mostra a home institucional (ou redireciona p/ splash
+  // no app) — em ambos os casos o header do app não deve aparecer.
+  if (pathname === "/" && (!hasHydrated || !isAuthenticated)) {
     return null;
   }
 

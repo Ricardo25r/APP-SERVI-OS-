@@ -15,6 +15,7 @@ from app.models.achievement import Achievement, UserAchievement
 from app.models.analytics_event import AnalyticsEvent
 from app.models.audit_log import AuditLog
 from app.models.category import Category
+from app.models.contact_message import ContactMessage
 from app.models.conversation import Conversation
 from app.models.credit_package import CreditPackage
 from app.models.credit_transaction import CreditTransaction
@@ -72,6 +73,7 @@ from app.models.support_ticket import SupportTicket
 from app.models.support_ticket_message import SupportTicketMessage
 from app.models.user import User
 from app.models.user_block import UserBlock
+from app.models.waitlist_entry import WaitlistEntry
 from app.models.xp_transaction import XpTransaction
 
 __all__ = [
@@ -119,6 +121,8 @@ __all__ = [
     "SubscriptionSettings",
     "SupportTicket",
     "SupportTicketMessage",
+    "WaitlistEntry",
+    "ContactMessage",
     "Sprint",
     "SprintIdea",
     "SprintIdeaAnexo",

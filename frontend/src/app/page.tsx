@@ -1,13 +1,14 @@
 /**
- * Home (`/`) — despacha por estado de autenticação e papel.
+ * Home (`/`) — despacha por plataforma, estado de autenticação e papel.
  *
- * - Deslogado: redireciona para a **Splash** (`/splash`), que conduz o fluxo de
- *   primeiro acesso (Splash → Onboarding → Login/Cadastro). É a "cara de app".
- *   A landing de marketing (`@/modules/home/landing`) segue disponível como
- *   componente, caso queira reusá-la em outra rota.
- * - Logado: home por papel (`CustomerHome`, `ProfessionalHome`, `AdminHome`).
+ * - **Logado:** home por papel (`CustomerHome`, `ProfessionalHome`, `AdminHome`).
+ * - **Deslogado no app nativo:** redireciona para a **Splash** (`/splash`), que
+ *   conduz o primeiro acesso (Splash → Onboarding → Login/Cadastro) — a "cara de app".
+ * - **Deslogado no navegador (web):** mostra a **home institucional**
+ *   (`MarketingHome`) dentro da `MarketingShell` (header/footer de marketing).
  *
- * Usa `useAuth()` + `hasHydrated` para evitar flicker entre SSR e hidratação.
+ * A detecção navegador × app usa `useIsNativeApp()` (Capacitor). Usa `hasHydrated`
+ * para evitar flicker entre SSR e hidratação.
  */
 "use client";
 
@@ -16,42 +17,57 @@ import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
 import { useAuth } from "@/hooks/use-auth";
+import { useIsNativeApp } from "@/hooks/use-native-app";
 import { CustomerHome } from "@/modules/home/customer-home";
 import { ProfessionalHome } from "@/modules/home/professional-home";
 import { AdminHome } from "@/modules/home/admin-home";
+import { MarketingShell } from "@/modules/site/marketing-shell";
+import { MarketingHome } from "@/modules/site/marketing-home";
+
+function FullscreenLoader() {
+  return (
+    <main className="flex min-h-[70vh] items-center justify-center bg-background px-4">
+      <div className="flex flex-col items-center gap-3">
+        <Loader2 className="h-7 w-7 animate-spin text-primary" aria-hidden />
+        <span className="text-sm text-muted-foreground">Carregando...</span>
+      </div>
+    </main>
+  );
+}
 
 export default function HomePage() {
   const router = useRouter();
   const { user, role, isAuthenticated, hasHydrated } = useAuth();
+  const isNativeApp = useIsNativeApp();
 
-  // Deslogado: entra pelo fluxo do app (splash → onboarding → login).
+  // Deslogado + app nativo: entra pelo fluxo do app (splash → onboarding → login).
   useEffect(() => {
-    if (hasHydrated && !isAuthenticated) {
+    if (hasHydrated && !isAuthenticated && isNativeApp) {
       router.replace("/splash");
     }
-  }, [hasHydrated, isAuthenticated, router]);
+  }, [hasHydrated, isAuthenticated, isNativeApp, router]);
 
-  // Antes da hidratação — ou enquanto redireciona p/ splash — loader centralizado
-  // (evita a sensação de "tela branca" no refresh).
-  if (!hasHydrated || !isAuthenticated || !user) {
-    return (
-      <main className="flex min-h-[70vh] items-center justify-center bg-background px-4">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-7 w-7 animate-spin text-primary" aria-hidden />
-          <span className="text-sm text-muted-foreground">Carregando...</span>
-        </div>
-      </main>
-    );
+  // Antes da hidratação — evita flash de conteúdo errado.
+  if (!hasHydrated) {
+    return <FullscreenLoader />;
   }
 
-  if (role === "professional") {
-    return <ProfessionalHome user={user} />;
+  // Logado: home por papel.
+  if (isAuthenticated && user) {
+    if (role === "professional") return <ProfessionalHome user={user} />;
+    if (role === "admin") return <AdminHome user={user} />;
+    return <CustomerHome user={user} />;
   }
 
-  if (role === "admin") {
-    return <AdminHome user={user} />;
+  // Deslogado no app nativo: enquanto redireciona para a splash.
+  if (isNativeApp) {
+    return <FullscreenLoader />;
   }
 
-  // customer (default).
-  return <CustomerHome user={user} />;
+  // Deslogado no navegador (web): home institucional pública.
+  return (
+    <MarketingShell>
+      <MarketingHome />
+    </MarketingShell>
+  );
 }
