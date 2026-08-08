@@ -139,9 +139,9 @@ export const APP_COMING_SOON =
  * (WhatsApp, e-mail e cidade). Ver spec: docs/superpowers/specs/.
  */
 export const CONTACT = {
-  whatsappDisplay: "(00) 00000-0000",
+  whatsappDisplay: "(69) 99602-1954",
   /** Só dígitos, com DDI, para link wa.me. */
-  whatsappE164: "5500000000000",
+  whatsappE164: "5569996021954",
   email: "contato@faztudo.app",
   city: "Ariquemes, RO",
 } as const;

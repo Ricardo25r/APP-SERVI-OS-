@@ -7,6 +7,7 @@
  */
 
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import {
   Clock,
@@ -136,7 +137,13 @@ export default function ParaProfissionaisPage() {
       {/* Faixa de destaque — bônus de boas-vindas */}
       <div className="bg-brand text-brand-foreground">
         <Container className="flex flex-col items-center justify-center gap-3 py-5 text-center sm:flex-row sm:gap-5">
-          <Coins className="h-9 w-9 shrink-0" aria-hidden />
+          <Image
+            src="/brand/moedas.png"
+            width={80}
+            height={80}
+            alt="Créditos FazTudo"
+            className="h-14 w-14 shrink-0 object-contain drop-shadow-md"
+          />
           <p className="text-lg font-extrabold leading-tight sm:text-xl">
             Cadastre-se e ganhe 10 créditos grátis — para você já começar
             faturando!
