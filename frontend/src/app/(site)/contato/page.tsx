@@ -3,6 +3,7 @@
  */
 
 import type { Metadata } from "next";
+import Image from "next/image";
 import { MessageCircle, Mail, MapPin } from "lucide-react";
 
 import { Container, Section } from "@/modules/site/marketing-ui";
@@ -20,6 +21,14 @@ export default function ContatoPage() {
       <Container className="grid gap-10 lg:grid-cols-2">
         {/* Canais */}
         <div>
+          <Image
+            src="/brand/atendente-suporte.png"
+            width={432}
+            height={640}
+            alt="Atendimento FazTudo"
+            priority
+            className="mb-4 h-40 w-auto drop-shadow-xl"
+          />
           <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
             Fale com a gente
           </h1>

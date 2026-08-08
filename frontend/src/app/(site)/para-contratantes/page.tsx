@@ -79,12 +79,12 @@ export default function ParaContratantesPage() {
           </div>
           <div className="flex justify-center">
             <Image
-              src="/brand/mascote-tudo.png"
-              width={260}
-              height={340}
-              alt="Mascote Tudo"
+              src="/brand/duo-contratante.png"
+              width={1128}
+              height={1450}
+              alt="Contratantes usando o FazTudo"
               priority
-              className="h-auto w-44 sm:w-56"
+              className="h-auto w-60 drop-shadow-2xl sm:w-72"
             />
           </div>
         </Container>

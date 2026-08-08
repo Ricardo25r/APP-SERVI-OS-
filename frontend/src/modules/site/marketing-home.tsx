@@ -119,20 +119,12 @@ export function MarketingHome() {
 
           <div className="order-1 flex items-end justify-center lg:order-2">
             <Image
-              src="/brand/mascote-faz.png"
-              width={240}
-              height={320}
-              alt="Mascote Faz"
+              src="/brand/duo-profissional.png"
+              width={812}
+              height={963}
+              alt="Profissionais FazTudo"
               priority
-              className="-mr-4 h-auto w-36 sm:w-44 lg:w-56"
-            />
-            <Image
-              src="/brand/mascote-tudo.png"
-              width={240}
-              height={320}
-              alt="Mascote Tudo"
-              priority
-              className="h-auto w-36 sm:w-44 lg:w-56"
+              className="h-auto w-64 drop-shadow-2xl sm:w-80 lg:w-[26rem]"
             />
           </div>
         </Container>
@@ -159,6 +151,77 @@ export function MarketingHome() {
           </div>
         </Container>
       </div>
+
+      {/* ---------------------------------------------------------------- */}
+      {/* Dois caminhos (contratante × profissional) */}
+      {/* ---------------------------------------------------------------- */}
+      <Section>
+        <Container>
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Contratante */}
+            <div className="flex flex-col overflow-hidden rounded-3xl border bg-card">
+              <div className="flex items-end justify-center bg-blue-50 px-6 pt-6">
+                <Image
+                  src="/brand/duo-contratante.png"
+                  width={1128}
+                  height={1450}
+                  alt="Contratantes usando o FazTudo"
+                  className="h-52 w-auto object-contain"
+                />
+              </div>
+              <div className="flex flex-1 flex-col p-6">
+                <h3 className="text-xl font-extrabold tracking-tight">
+                  Precisa de um serviço?
+                </h3>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Descreva o que precisa e receba propostas de profissionais
+                  avaliados da sua região.
+                </p>
+                <Link
+                  href={appHref("/register")}
+                  className={cn(
+                    buttonVariants(),
+                    "mt-5 self-start bg-brand text-brand-foreground hover:bg-brand/90"
+                  )}
+                >
+                  Criar solicitação
+                </Link>
+              </div>
+            </div>
+
+            {/* Profissional */}
+            <div className="flex flex-col overflow-hidden rounded-3xl border bg-card">
+              <div className="flex items-end justify-center bg-blue-50 px-6 pt-6">
+                <Image
+                  src="/brand/duo-profissional.png"
+                  width={812}
+                  height={963}
+                  alt="Profissionais FazTudo"
+                  className="h-52 w-auto object-contain"
+                />
+              </div>
+              <div className="flex flex-1 flex-col p-6">
+                <h3 className="text-xl font-extrabold tracking-tight">
+                  É profissional?
+                </h3>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Receba solicitações de clientes perto de você e faça seu
+                  negócio crescer.
+                </p>
+                <Link
+                  href="/para-profissionais"
+                  className={cn(
+                    buttonVariants({ variant: "outline" }),
+                    "mt-5 self-start"
+                  )}
+                >
+                  Saiba mais
+                </Link>
+              </div>
+            </div>
+          </div>
+        </Container>
+      </Section>
 
       {/* ---------------------------------------------------------------- */}
       {/* Como funciona */}
@@ -192,6 +255,7 @@ export function MarketingHome() {
                 key={cat.name}
                 name={cat.name}
                 icon={cat.icon}
+                image={cat.image}
                 href="/categorias"
               />
             ))}

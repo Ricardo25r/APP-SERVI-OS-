@@ -15,10 +15,6 @@ import {
   Wrench,
   PaintRoller,
   Trees,
-  Truck,
-  Wind,
-  Car,
-  Camera,
   LayoutGrid,
   type LucideIcon,
 } from "lucide-react";
@@ -139,34 +135,37 @@ export const CONTACT = {
   city: "Ariquemes, RO",
 } as const;
 
-/** Categoria em destaque no site (nome + ícone lucide). */
+/** Categoria em destaque no site (nome + ícone lucide + foto real opcional). */
 export interface SiteCategory {
   name: string;
   icon: LucideIcon;
+  /** Foto real da categoria (`/brand/categorias/*`). Cai no ícone se ausente. */
+  image?: string;
 }
 
-/** Grid curto exibido na Home ("Categorias populares"). */
+const CAT = "/brand/categorias";
+
+/** Grid curto exibido na Home ("Categorias populares") — todas com foto real. */
 export const POPULAR_CATEGORIES: SiteCategory[] = [
-  { name: "Eletricista", icon: Zap },
-  { name: "Encanador", icon: Wrench },
-  { name: "Diarista", icon: Sparkles },
-  { name: "Babá", icon: Baby },
-  { name: "Pintor", icon: PaintRoller },
-  { name: "Reformas", icon: Hammer },
+  { name: "Eletricista", icon: Zap, image: `${CAT}/eletricista.png` },
+  { name: "Encanador", icon: Wrench, image: `${CAT}/encanador.png` },
+  { name: "Diarista", icon: Sparkles, image: `${CAT}/diarista.png` },
+  { name: "Babá", icon: Baby, image: `${CAT}/baba.png` },
+  { name: "Pintor", icon: PaintRoller, image: `${CAT}/pintor.png` },
+  { name: "Reformas", icon: Hammer, image: `${CAT}/reforma.png` },
 ];
 
-/** Lista completa exibida na página `/categorias`. */
+/** Lista completa exibida na página `/categorias` — fotos reais disponíveis. */
 export const ALL_CATEGORIES: SiteCategory[] = [
-  { name: "Eletricista", icon: Zap },
-  { name: "Encanador", icon: Wrench },
-  { name: "Diarista", icon: Sparkles },
-  { name: "Babá", icon: Baby },
-  { name: "Pintor", icon: PaintRoller },
-  { name: "Reformas", icon: Hammer },
-  { name: "Jardinagem", icon: Trees },
-  { name: "Ar-condicionado", icon: Wind },
-  { name: "Mudanças", icon: Truck },
-  { name: "Automotivo", icon: Car },
-  { name: "Fotografia", icon: Camera },
-  { name: "Mais serviços", icon: LayoutGrid },
+  { name: "Eletricista", icon: Zap, image: `${CAT}/eletricista.png` },
+  { name: "Encanador", icon: Wrench, image: `${CAT}/encanador.png` },
+  { name: "Diarista", icon: Sparkles, image: `${CAT}/diarista.png` },
+  { name: "Doméstica", icon: Sparkles, image: `${CAT}/domestica.png` },
+  { name: "Babá", icon: Baby, image: `${CAT}/baba.png` },
+  { name: "Cuidador(a)", icon: Baby, image: `${CAT}/cuidador.png` },
+  { name: "Pintor", icon: PaintRoller, image: `${CAT}/pintor.png` },
+  { name: "Reformas", icon: Hammer, image: `${CAT}/reforma.png` },
+  { name: "Jardinagem", icon: Trees, image: `${CAT}/jardinagem.png` },
+  { name: "Montagem de móveis", icon: Hammer, image: `${CAT}/montagem.png` },
+  { name: "Outras", icon: LayoutGrid, image: `${CAT}/outras.png` },
 ];

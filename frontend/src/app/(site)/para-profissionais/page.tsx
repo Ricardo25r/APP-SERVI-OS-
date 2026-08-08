@@ -63,12 +63,12 @@ export default function ParaProfissionaisPage() {
           </div>
           <div className="flex justify-center">
             <Image
-              src="/brand/mascote-faz.png"
-              width={260}
-              height={340}
-              alt="Mascote Faz"
+              src="/brand/duo-profissional.png"
+              width={812}
+              height={963}
+              alt="Profissionais FazTudo"
               priority
-              className="h-auto w-44 sm:w-56"
+              className="h-auto w-60 drop-shadow-2xl sm:w-72"
             />
           </div>
         </Container>

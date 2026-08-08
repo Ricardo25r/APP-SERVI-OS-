@@ -55,6 +55,7 @@ export function CategorySearch() {
               key={cat.name}
               name={cat.name}
               icon={cat.icon}
+              image={cat.image}
               href={appHref("/register")}
             />
           ))}

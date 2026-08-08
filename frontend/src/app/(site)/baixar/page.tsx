@@ -33,22 +33,14 @@ export default function BaixarPage() {
             : "Leve a FazTudo no bolso — disponível para iOS e Android."}
         </p>
 
-        <div className="mt-8 flex items-end justify-center">
+        <div className="mt-8 flex justify-center">
           <Image
-            src="/brand/mascote-faz.png"
-            width={280}
-            height={360}
-            alt="Mascote Faz"
+            src="/brand/mascote-trio.webp"
+            width={640}
+            height={380}
+            alt="Equipe FazTudo"
             priority
-            className="-mr-5 h-auto w-40 sm:w-52"
-          />
-          <Image
-            src="/brand/mascote-tudo.png"
-            width={280}
-            height={360}
-            alt="Mascote Tudo"
-            priority
-            className="h-auto w-40 sm:w-52"
+            className="h-auto w-full max-w-lg drop-shadow-2xl"
           />
         </div>
 

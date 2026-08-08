@@ -5,6 +5,7 @@
  * de categoria, passo numerado e benefício. Cores sempre via token.
  */
 
+import Image from "next/image";
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 
@@ -58,27 +59,41 @@ export function SectionTitle({
   );
 }
 
-/** Tile de categoria (ícone tonal + nome); vira link se `href` informado. */
+/** Tile de categoria (foto real ou ícone tonal + nome); vira link se `href`. */
 export function CategoryTile({
   name,
   icon: Icon,
   href,
+  image,
 }: {
   name: string;
   icon: LucideIcon;
   href?: string;
+  image?: string;
 }) {
   const inner = (
     <>
-      <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-        <Icon className="h-6 w-6" aria-hidden />
-      </span>
+      {image ? (
+        <span className="relative h-20 w-20 overflow-hidden rounded-2xl ring-1 ring-border">
+          <Image
+            src={image}
+            alt={name}
+            fill
+            sizes="80px"
+            className="object-cover"
+          />
+        </span>
+      ) : (
+        <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+          <Icon className="h-7 w-7" aria-hidden />
+        </span>
+      )}
       <span className="text-sm font-bold">{name}</span>
     </>
   );
 
   const cls =
-    "flex flex-col items-center gap-2.5 rounded-2xl border bg-card p-4 text-center transition-colors hover:border-primary/40";
+    "flex flex-col items-center gap-3 rounded-2xl border bg-card p-4 text-center transition-colors hover:border-primary/40 hover:shadow-sm";
 
   return href ? (
     <Link href={href} className={cls}>

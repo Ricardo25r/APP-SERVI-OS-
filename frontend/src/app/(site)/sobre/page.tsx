@@ -55,22 +55,14 @@ export default function SobrePage() {
               </p>
             </div>
           </div>
-          <div className="flex items-end justify-center">
+          <div className="flex items-center justify-center">
             <Image
-              src="/brand/mascote-faz.png"
-              width={260}
-              height={340}
-              alt="Mascote Faz"
+              src="/brand/mascote-trio.webp"
+              width={640}
+              height={380}
+              alt="Equipe de profissionais FazTudo"
               priority
-              className="-mr-5 h-auto w-40 sm:w-52"
-            />
-            <Image
-              src="/brand/mascote-tudo.png"
-              width={260}
-              height={340}
-              alt="Mascote Tudo"
-              priority
-              className="h-auto w-40 sm:w-52"
+              className="h-auto w-full max-w-md drop-shadow-2xl"
             />
           </div>
         </Container>
