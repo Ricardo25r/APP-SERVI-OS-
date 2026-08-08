@@ -23,9 +23,9 @@ import {
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { AppStoreBadges } from "@/modules/site/app-store-badges";
-import { NotifyMeForm } from "@/modules/site/notify-me-form";
+import { ApkDownloadButton } from "@/modules/site/apk-download";
 import {
-  APP_COMING_SOON,
+  APK_AVAILABLE,
   POPULAR_CATEGORIES,
   appHref,
 } from "@/modules/site/site-config";
@@ -134,18 +134,14 @@ export function MarketingHome() {
       <div className="border-b bg-card">
         <Container className="flex flex-col items-center gap-4 py-6 md:flex-row md:justify-between">
           <div className="text-center md:text-left">
-            <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
-              {APP_COMING_SOON ? "App em breve nas lojas" : "Baixe o app"}
-            </p>
+            <p className="text-sm font-extrabold">Leve a FazTudo no bolso</p>
             <p className="text-sm text-muted-foreground">
-              Leve a FazTudo no bolso.
+              Baixe agora para <strong>Android</strong>. Nas lojas, em breve.
             </p>
           </div>
-          <div className="flex flex-col items-center gap-3 md:flex-row">
+          <div className="flex flex-col items-center gap-4 md:flex-row">
+            {APK_AVAILABLE ? <ApkDownloadButton tone="light" /> : null}
             <AppStoreBadges tone="dark" />
-            {APP_COMING_SOON ? (
-              <NotifyMeForm source="home" className="w-full sm:w-auto md:min-w-[18rem]" />
-            ) : null}
           </div>
         </Container>
       </div>

@@ -107,6 +107,15 @@ export interface StoreInfo {
   status: StoreStatus;
 }
 
+/**
+ * APK do Android para download direto (sideload), enquanto o app não está na
+ * Play Store. Servido estaticamente pelo site (`public/downloads`). É um caminho
+ * relativo → funciona tanto no site (www) quanto no domínio puro.
+ */
+export const APK_URL = "/downloads/faztudo.apk";
+/** Liga o botão "Baixar APK (Android)" no site. */
+export const APK_AVAILABLE = true;
+
 export const APP_STORE: StoreInfo = {
   label: "App Store",
   url: null,
