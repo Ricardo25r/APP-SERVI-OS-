@@ -3,13 +3,13 @@
  */
 
 import type { Metadata } from "next";
-import Image from "next/image";
 import { ShieldCheck, Users, Hammer } from "lucide-react";
 
 import {
   Container,
   Section,
   FeatureTile,
+  HeroFigure,
 } from "@/modules/site/marketing-ui";
 
 export const metadata: Metadata = {
@@ -55,16 +55,12 @@ export default function SobrePage() {
               </p>
             </div>
           </div>
-          <div className="flex items-center justify-center">
-            <Image
-              src="/brand/mascote-trio.webp"
-              width={640}
-              height={380}
-              alt="Equipe de profissionais FazTudo"
-              priority
-              className="h-auto w-full max-w-md drop-shadow-2xl"
-            />
-          </div>
+          <HeroFigure
+            src="/brand/mascote-trio.webp"
+            alt="Equipe de profissionais FazTudo"
+            tone="light"
+            priority
+          />
         </Container>
       </Section>
 

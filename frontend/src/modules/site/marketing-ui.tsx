@@ -59,6 +59,68 @@ export function SectionTitle({
   );
 }
 
+/**
+ * `HeroFigure` — figura (mascote/foto com fundo transparente) apoiada num
+ * "medalhão": um círculo/brilho tonal atrás + sombra no chão + fade suave na
+ * base. Mostra a figura INTEIRA (`object-contain`), então nada fica cortado, e
+ * ela deixa de "flutuar". `tone` adapta o fundo (herói escuro × seção clara).
+ */
+export function HeroFigure({
+  src,
+  alt,
+  tone = "dark",
+  priority,
+  className,
+}: {
+  src: string;
+  alt: string;
+  tone?: "dark" | "light";
+  priority?: boolean;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "relative mx-auto aspect-square w-64 sm:w-80 lg:w-[26rem]",
+        className
+      )}
+    >
+      {/* Medalhão (brilho/círculo atrás da figura) */}
+      <div
+        className={cn(
+          "absolute inset-x-2 bottom-2 top-8 rounded-full",
+          tone === "dark"
+            ? "bg-gradient-to-b from-white/20 to-white/5 ring-1 ring-inset ring-white/15"
+            : "bg-gradient-to-b from-blue-100 to-blue-50 ring-1 ring-inset ring-blue-100"
+        )}
+        aria-hidden
+      />
+      {/* Sombra no chão */}
+      <div
+        className={cn(
+          "absolute bottom-3 left-1/2 h-4 w-1/2 -translate-x-1/2 rounded-[50%] blur-md",
+          tone === "dark" ? "bg-black/25" : "bg-primary/15"
+        )}
+        aria-hidden
+      />
+      {/* Figura inteira, apoiada na base, com fade suave embaixo */}
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        priority={priority}
+        sizes="(min-width:1024px) 26rem, (min-width:640px) 20rem, 16rem"
+        className="relative z-10 object-contain object-bottom drop-shadow-2xl"
+        style={{
+          WebkitMaskImage:
+            "linear-gradient(to bottom, #000 90%, transparent 100%)",
+          maskImage: "linear-gradient(to bottom, #000 90%, transparent 100%)",
+        }}
+      />
+    </div>
+  );
+}
+
 /** Tile de categoria (foto real ou ícone tonal + nome); vira link se `href`. */
 export function CategoryTile({
   name,

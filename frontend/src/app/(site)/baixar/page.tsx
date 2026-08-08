@@ -7,12 +7,11 @@
  */
 
 import type { Metadata } from "next";
-import Image from "next/image";
 
 import { AppStoreBadges } from "@/modules/site/app-store-badges";
 import { NotifyMeForm } from "@/modules/site/notify-me-form";
 import { APP_COMING_SOON } from "@/modules/site/site-config";
-import { Container } from "@/modules/site/marketing-ui";
+import { Container, HeroFigure } from "@/modules/site/marketing-ui";
 
 export const metadata: Metadata = {
   title: "Baixar o app | FazTudo",
@@ -33,16 +32,13 @@ export default function BaixarPage() {
             : "Leve a FazTudo no bolso — disponível para iOS e Android."}
         </p>
 
-        <div className="mt-8 flex justify-center">
-          <Image
-            src="/brand/mascote-trio.webp"
-            width={640}
-            height={380}
-            alt="Equipe FazTudo"
-            priority
-            className="h-auto w-full max-w-lg drop-shadow-2xl"
-          />
-        </div>
+        <HeroFigure
+          src="/brand/mascote-trio.webp"
+          alt="Equipe FazTudo"
+          tone="dark"
+          priority
+          className="mt-8"
+        />
 
         <AppStoreBadges tone="light" className="mt-8 justify-center" />
 

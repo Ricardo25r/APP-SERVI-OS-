@@ -3,7 +3,6 @@
  */
 
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { ShieldCheck, Star, Lock, ArrowRight } from "lucide-react";
 
@@ -16,6 +15,7 @@ import {
   SectionTitle,
   NumberedStep,
   FeatureTile,
+  HeroFigure,
 } from "@/modules/site/marketing-ui";
 
 export const metadata: Metadata = {
@@ -77,16 +77,12 @@ export default function ParaContratantesPage() {
               <ArrowRight className="ml-2 h-4 w-4" aria-hidden />
             </Link>
           </div>
-          <div className="flex justify-center">
-            <Image
-              src="/brand/duo-contratante.png"
-              width={1128}
-              height={1450}
-              alt="Contratantes usando o FazTudo"
-              priority
-              className="h-auto w-60 drop-shadow-2xl sm:w-72"
-            />
-          </div>
+          <HeroFigure
+            src="/brand/duo-contratante.png"
+            alt="Contratantes usando o FazTudo"
+            tone="dark"
+            priority
+          />
         </Container>
       </section>
 

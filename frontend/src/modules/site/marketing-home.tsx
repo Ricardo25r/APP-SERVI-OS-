@@ -36,6 +36,7 @@ import {
   CategoryTile,
   NumberedStep,
   FeatureTile,
+  HeroFigure,
 } from "@/modules/site/marketing-ui";
 
 const STEPS = [
@@ -117,16 +118,13 @@ export function MarketingHome() {
             </div>
           </div>
 
-          <div className="order-1 flex items-end justify-center lg:order-2">
-            <Image
-              src="/brand/duo-profissional.png"
-              width={812}
-              height={963}
-              alt="Profissionais FazTudo"
-              priority
-              className="h-auto w-64 drop-shadow-2xl sm:w-80 lg:w-[26rem]"
-            />
-          </div>
+          <HeroFigure
+            src="/brand/duo-profissional.png"
+            alt="Profissionais FazTudo"
+            tone="dark"
+            priority
+            className="order-1 lg:order-2"
+          />
         </Container>
       </section>
 

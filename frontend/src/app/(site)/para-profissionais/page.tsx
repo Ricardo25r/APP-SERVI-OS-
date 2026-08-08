@@ -3,7 +3,6 @@
  */
 
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { Clock, MapPin, Star, Lock } from "lucide-react";
 
@@ -16,6 +15,7 @@ import {
   SectionTitle,
   NumberedStep,
   FeatureTile,
+  HeroFigure,
 } from "@/modules/site/marketing-ui";
 
 export const metadata: Metadata = {
@@ -61,16 +61,12 @@ export default function ParaProfissionaisPage() {
               Cadastrar
             </Link>
           </div>
-          <div className="flex justify-center">
-            <Image
-              src="/brand/duo-profissional.png"
-              width={812}
-              height={963}
-              alt="Profissionais FazTudo"
-              priority
-              className="h-auto w-60 drop-shadow-2xl sm:w-72"
-            />
-          </div>
+          <HeroFigure
+            src="/brand/duo-profissional.png"
+            alt="Profissionais FazTudo"
+            tone="dark"
+            priority
+          />
         </Container>
       </section>
 
