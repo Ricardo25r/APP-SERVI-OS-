@@ -112,7 +112,9 @@ export interface StoreInfo {
  * Play Store. Servido estaticamente pelo site (`public/downloads`). É um caminho
  * relativo → funciona tanto no site (www) quanto no domínio puro.
  */
-export const APK_URL = "/downloads/faztudo.apk";
+// `?v=` fura o cache do Cloudflare (que cacheia .apk por padrão). BUMP este
+// número toda vez que trocar o APK, senão o edge continua servindo o antigo.
+export const APK_URL = "/downloads/faztudo.apk?v=2";
 /** Liga o botão "Baixar APK (Android)" no site. */
 export const APK_AVAILABLE = true;
 
