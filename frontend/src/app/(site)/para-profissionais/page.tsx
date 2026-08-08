@@ -44,7 +44,7 @@ const STEPS = [
   {
     title: "Crie sua conta grátis",
     description:
-      "Cadastre-se e complete seu perfil para ganhar créditos de boas-vindas.",
+      "Cadastre-se e complete seu perfil para ganhar 10 créditos de boas-vindas.",
   },
   {
     title: "Receba pedidos da sua região",
@@ -121,7 +121,7 @@ export default function ParaProfissionaisPage() {
               <ArrowRight className="ml-2 h-4 w-4" aria-hidden />
             </Link>
             <p className="mt-3 text-xs text-blue-100/80">
-              Cadastro gratuito • créditos de boas-vindas • sem comissão
+              Cadastro gratuito • 10 créditos de boas-vindas • sem comissão
             </p>
           </div>
           <HeroFigure
@@ -132,6 +132,26 @@ export default function ParaProfissionaisPage() {
           />
         </Container>
       </section>
+
+      {/* Faixa de destaque — bônus de boas-vindas */}
+      <div className="bg-brand text-brand-foreground">
+        <Container className="flex flex-col items-center justify-center gap-3 py-5 text-center sm:flex-row sm:gap-5">
+          <Coins className="h-9 w-9 shrink-0" aria-hidden />
+          <p className="text-lg font-extrabold leading-tight sm:text-xl">
+            Cadastre-se e ganhe 10 créditos grátis — para você já começar
+            faturando!
+          </p>
+          <Link
+            href={appHref("/register")}
+            className={cn(
+              buttonVariants({ size: "lg" }),
+              "shrink-0 bg-white text-brand hover:bg-white/90"
+            )}
+          >
+            Quero meus créditos
+          </Link>
+        </Container>
+      </div>
 
       {/* Como funciona pra você */}
       <Section>
@@ -223,8 +243,8 @@ export default function ParaProfissionaisPage() {
               Pronto para receber mais clientes?
             </h2>
             <p className="max-w-lg text-blue-100">
-              Crie sua conta gratuita, complete seu perfil e comece com créditos
-              de boas-vindas.
+              Crie sua conta gratuita, complete seu perfil e comece com 10
+              créditos de boas-vindas.
             </p>
             <Link
               href={appHref("/register")}
